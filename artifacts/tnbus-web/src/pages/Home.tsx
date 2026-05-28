@@ -36,7 +36,7 @@ export default function Home() {
               <img
                 src="/images/tn-emblem.png"
                 alt="Tamil Nadu Government Emblem"
-                className="w-full h-full object-contain p-1"
+                className="w-full h-full object-cover"
               />
             </div>
             <div className="hidden sm:block">
@@ -67,7 +67,7 @@ export default function Home() {
               <img
                 src="/images/cm-vijay.png"
                 alt="Thiru. Vijay, Chief Minister of Tamil Nadu"
-                className="w-full h-full object-cover object-top scale-110"
+                className="w-full h-full object-cover object-center"
               />
             </div>
           </div>
