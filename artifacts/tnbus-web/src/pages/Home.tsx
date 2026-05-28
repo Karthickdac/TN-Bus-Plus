@@ -27,63 +27,47 @@ export default function Home() {
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
 
       {/* ── Government Banner ─────────────────────────────── */}
-      <div className="w-full bg-gradient-to-r from-amber-950 via-amber-900 to-amber-950 border-b border-amber-700/40">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
+      <div className="w-full bg-gradient-to-r from-amber-950 via-[#5a2e00] to-amber-950 border-b-2 border-amber-600/50">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between gap-4">
 
           {/* Left — TN Emblem */}
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-amber-400/60 shadow-lg shadow-amber-900/50 bg-amber-950/60 flex items-center justify-center shrink-0">
+          <div className="flex items-center gap-4 shrink-0">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-[3px] border-amber-400/80 shadow-xl shadow-amber-900/60 bg-white shrink-0">
               <img
                 src="/images/tn-emblem.png"
                 alt="Tamil Nadu Government Emblem"
-                className="w-full h-full object-cover"
-                onError={e => {
-                  const el = e.currentTarget;
-                  el.style.display = "none";
-                  (el.nextSibling as HTMLElement).style.display = "flex";
-                }}
+                className="w-full h-full object-contain p-1"
               />
-              {/* Fallback SVG emblem */}
-              <div style={{ display: "none" }} className="w-full h-full items-center justify-center">
-                <svg viewBox="0 0 80 80" className="w-10 h-10" fill="none">
-                  <rect x="30" y="8" width="4" height="40" fill="#F59E0B"/>
-                  <rect x="46" y="8" width="4" height="40" fill="#F59E0B"/>
-                  <rect x="26" y="8" width="28" height="6" rx="2" fill="#F59E0B"/>
-                  <rect x="28" y="46" width="24" height="4" rx="1" fill="#F59E0B"/>
-                  <rect x="24" y="50" width="32" height="4" rx="1" fill="#D97706"/>
-                  <circle cx="40" cy="4" r="4" fill="#FBBF24"/>
-                  <circle cx="22" cy="28" r="4" fill="#FCD34D" opacity="0.8"/>
-                  <path d="M30 28 Q26 24 22 28 Q26 32 30 28Z" fill="#FCD34D" opacity="0.6"/>
-                  <path d="M50 28 Q54 24 58 28 Q54 32 50 28Z" fill="#FCD34D" opacity="0.6"/>
-                  <circle cx="58" cy="28" r="3" fill="#FCD34D" opacity="0.8"/>
-                </svg>
-              </div>
             </div>
             <div className="hidden sm:block">
-              <p className="text-amber-200 text-xs font-medium leading-tight">அரசு தமிழ்நாடு</p>
-              <p className="text-amber-100 text-xs leading-tight">Government of Tamil Nadu</p>
+              <p className="text-amber-200 text-sm font-semibold leading-snug">தமிழ்நாடு அரசு</p>
+              <p className="text-amber-100 text-base font-bold leading-snug">Government of Tamil Nadu</p>
+              <p className="text-amber-400/80 text-xs mt-0.5">வாய்மையே வெல்லும்</p>
             </div>
           </div>
 
           {/* Centre — Title */}
-          <div className="text-center flex-1">
-            <p className="text-amber-300 text-xs sm:text-sm font-semibold tracking-wider uppercase">Tamil Nadu State Transport</p>
-            <h2 className="text-amber-100 text-sm sm:text-base font-bold leading-tight">TN Bus+ Premium Portal</h2>
-            <p className="text-amber-400/80 text-xs hidden sm:block">Official Online Booking System</p>
+          <div className="text-center flex-1 px-2">
+            <h1 className="text-amber-100 text-base sm:text-xl md:text-2xl font-extrabold leading-tight tracking-widest uppercase">
+              Tamil Nadu State Transport Corporation
+            </h1>
+            <div className="w-2/3 mx-auto h-px bg-amber-500/50 my-2" />
+            <p className="text-amber-300 text-sm sm:text-base font-semibold tracking-wide">TN Bus+ Premium Portal</p>
+            <p className="text-amber-400/70 text-xs mt-0.5 tracking-wider">Official Online Bus Booking System</p>
           </div>
 
           {/* Right — CM Photo */}
-          <div className="flex items-center gap-3 shrink-0 flex-row-reverse sm:flex-row">
+          <div className="flex items-center gap-4 shrink-0">
             <div className="hidden sm:block text-right">
-              <p className="text-amber-100 text-xs font-bold leading-tight">Thiru. Vijay</p>
-              <p className="text-amber-300 text-xs leading-tight">Chief Minister</p>
-              <p className="text-amber-400/70 text-xs leading-tight">Tamil Nadu</p>
+              <p className="text-amber-400/80 text-xs leading-tight mb-0.5">Hon'ble Chief Minister</p>
+              <p className="text-amber-100 text-base font-extrabold leading-tight">Thiru. Vijay</p>
+              <p className="text-amber-300 text-xs leading-tight">Tamil Nadu</p>
             </div>
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-amber-400/60 shadow-lg shadow-amber-900/50 bg-amber-950/60 shrink-0">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-[3px] border-amber-400/80 shadow-xl shadow-amber-900/60 bg-amber-950/60 shrink-0">
               <img
                 src="/images/cm-vijay.png"
                 alt="Thiru. Vijay, Chief Minister of Tamil Nadu"
-                className="w-full h-full object-cover object-top"
+                className="w-full h-full object-cover object-top scale-110"
               />
             </div>
           </div>
