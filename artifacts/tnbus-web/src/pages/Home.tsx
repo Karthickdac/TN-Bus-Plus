@@ -71,13 +71,12 @@ export default function Home() {
       {/* ── Hero Section ──────────────────────────────────── */}
       <div className="relative overflow-hidden" style={{ background: "linear-gradient(135deg, #3730a3 0%, #6d28d9 35%, #0891b2 70%, #0e7490 100%)" }}>
         {/* Decorative blobs */}
-        <div className="absolute top-0 left-0 w-72 h-72 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-10 left-1/3 w-40 h-40 bg-orange-400/10 rounded-full" />
+        <div className="absolute top-0 left-0 w-48 h-48 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2" />
 
-        <div className="container mx-auto px-6 pt-10 pb-16 flex flex-col md:flex-row items-center gap-8 relative z-10">
+        <div className="container mx-auto px-6 pt-8 pb-14 flex flex-col md:flex-row items-start justify-between gap-8 relative z-10">
 
           {/* Left — Tagline */}
-          <div className="flex-1 text-center md:text-left">
+          <div className="flex-1 max-w-lg text-center md:text-left pt-2">
             <motion.div
               initial={{ opacity: 0, x: -24 }}
               animate={{ opacity: 1, x: 0 }}
