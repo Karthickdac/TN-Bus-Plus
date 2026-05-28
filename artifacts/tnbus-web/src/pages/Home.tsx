@@ -69,28 +69,25 @@ export default function Home() {
       </div>
 
       {/* ── Hero Section ──────────────────────────────────── */}
-      <div className="relative overflow-hidden" style={{ background: "linear-gradient(135deg, #3730a3 0%, #6d28d9 35%, #0891b2 70%, #0e7490 100%)" }}>
-        {/* Decorative blobs */}
-        <div className="absolute top-0 left-0 w-48 h-48 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2" />
-
-        <div className="container mx-auto px-6 pt-8 pb-14 flex flex-col md:flex-row items-start justify-between gap-8 relative z-10">
+      <div className="relative" style={{ background: "linear-gradient(135deg, #3730a3 0%, #6d28d9 40%, #0891b2 75%, #0e7490 100%)" }}>
+        <div className="w-full px-8 md:px-16 py-10 flex flex-col md:flex-row items-center gap-10">
 
           {/* Left — Tagline */}
-          <div className="flex-1 max-w-lg text-center md:text-left pt-2">
+          <div className="flex-1 text-left flex flex-col justify-center">
             <motion.div
-              initial={{ opacity: 0, x: -24 }}
+              initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.45 }}
             >
               <span className="inline-flex items-center gap-1.5 bg-white/15 text-orange-200 text-xs font-bold px-3 py-1 rounded-full border border-white/20 mb-4 uppercase tracking-wider">
                 <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
                 Live Booking Open
               </span>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight mb-4">
+              <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-3">
                 Tamil Nadu's <span className="text-orange-300">#1 Official</span><br />Bus Booking Portal
               </h1>
-              <p className="text-indigo-100 text-base sm:text-lg max-w-md mx-auto md:mx-0 mb-6">
-                Book government AC buses, track live location, and travel safely across every corner of Tamil Nadu.
+              <p className="text-indigo-100 text-base md:text-lg mb-6 max-w-sm">
+                Book government AC buses, track live location, and travel safely across Tamil Nadu.
               </p>
             </motion.div>
 
@@ -98,7 +95,7 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="flex flex-wrap justify-center md:justify-start gap-3"
+              className="flex flex-wrap gap-2"
             >
               {[
                 { icon: <Bus className="w-3.5 h-3.5" />, label: "10+ Bus Types" },
@@ -106,19 +103,19 @@ export default function Home() {
                 { icon: <Star className="w-3.5 h-3.5" />, label: "87% On-time" },
                 { icon: <Wifi className="w-3.5 h-3.5" />, label: "AC & WiFi" },
               ].map(b => (
-                <span key={b.label} className="flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/20">
+                <span key={b.label} className="flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full border border-white/20">
                   {b.icon} {b.label}
                 </span>
               ))}
             </motion.div>
           </div>
 
-          {/* Right — Search Card (login-form style) */}
+          {/* Right — Search Card */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.15 }}
-            className="w-full md:w-[380px] shrink-0"
+            transition={{ duration: 0.45, delay: 0.1 }}
+            className="w-full md:w-[360px] shrink-0"
           >
             <div className="bg-white rounded-2xl shadow-2xl shadow-black/30 border border-white/60 overflow-hidden">
               {/* Card Header */}
@@ -203,12 +200,6 @@ export default function Home() {
           </motion.div>
         </div>
 
-        {/* Wave bottom */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 60" className="w-full" preserveAspectRatio="none">
-            <path d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z" fill="#f4f6fb"/>
-          </svg>
-        </div>
       </div>
 
       {/* ── Popular Routes ─────────────────────────────────── */}
