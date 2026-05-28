@@ -1,22 +1,35 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: TN Bus+ API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: routes
+    description: Bus route operations
+  - name: buses
+    description: Bus operations
+  - name: bookings
+    description: Booking operations
+  - name: passengers
+    description: Passenger operations
+  - name: tracking
+    description: Live GPS tracking
+  - name: dashboard
+    description: Dashboard aggregates
+  - name: admin
+    description: Admin operations
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +37,535 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # Routes
+  /routes:
+    get:
+      operationId: listRoutes
+      tags: [routes]
+      summary: List all routes
+      parameters:
+        - name: origin
+          in: query
+          schema:
+            type: string
+        - name: destination
+          in: query
+          schema:
+            type: string
+        - name: date
+          in: query
+          schema:
+            type: string
+        - name: busType
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of routes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Route"
+
+  /routes/{id}:
+    get:
+      operationId: getRoute
+      tags: [routes]
+      summary: Get route by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Route details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Route"
+        "404":
+          description: Not found
+
+  # Buses
+  /buses:
+    get:
+      operationId: listBuses
+      tags: [buses]
+      summary: List all buses
+      responses:
+        "200":
+          description: List of buses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Bus"
+
+  /buses/{id}:
+    get:
+      operationId: getBus
+      tags: [buses]
+      summary: Get bus by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Bus details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bus"
+        "404":
+          description: Not found
+
+  # Search
+  /search:
+    get:
+      operationId: searchBuses
+      tags: [routes]
+      summary: Search for buses between origin and destination
+      parameters:
+        - name: origin
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: destination
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: busType
+          in: query
+          schema:
+            type: string
+        - name: ac
+          in: query
+          schema:
+            type: boolean
+        - name: sleeper
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SearchResult"
+
+  # Seats
+  /schedules/{scheduleId}/seats:
+    get:
+      operationId: getSeats
+      tags: [buses]
+      summary: Get seat layout for a schedule
+      parameters:
+        - name: scheduleId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Seat layout
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Seat"
+
+  # Bookings
+  /bookings:
+    get:
+      operationId: listBookings
+      tags: [bookings]
+      summary: List bookings for a passenger
+      parameters:
+        - name: passengerId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+    post:
+      operationId: createBooking
+      tags: [bookings]
+      summary: Create a new booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingInput"
+      responses:
+        "201":
+          description: Booking created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+  /bookings/{id}:
+    get:
+      operationId: getBooking
+      tags: [bookings]
+      summary: Get booking by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Booking details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "404":
+          description: Not found
+
+  /bookings/{id}/cancel:
+    post:
+      operationId: cancelBooking
+      tags: [bookings]
+      summary: Cancel a booking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Booking cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+  /pnr/{pnr}:
+    get:
+      operationId: getPnrStatus
+      tags: [bookings]
+      summary: Get PNR status
+      parameters:
+        - name: pnr
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: PNR status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "404":
+          description: Not found
+
+  # Passengers
+  /passengers:
+    post:
+      operationId: createPassenger
+      tags: [passengers]
+      summary: Register a new passenger
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PassengerInput"
+      responses:
+        "201":
+          description: Passenger created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Passenger"
+
+  /passengers/{id}:
+    get:
+      operationId: getPassenger
+      tags: [passengers]
+      summary: Get passenger profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Passenger profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Passenger"
+        "404":
+          description: Not found
+    patch:
+      operationId: updatePassenger
+      tags: [passengers]
+      summary: Update passenger profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PassengerUpdate"
+      responses:
+        "200":
+          description: Passenger updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Passenger"
+
+  # Wallet
+  /passengers/{id}/wallet:
+    get:
+      operationId: getWallet
+      tags: [passengers]
+      summary: Get wallet balance and transactions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Wallet details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Wallet"
+
+  # Tracking
+  /tracking/{busId}:
+    get:
+      operationId: getBusLocation
+      tags: [tracking]
+      summary: Get live bus location
+      parameters:
+        - name: busId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Bus location
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BusLocation"
+        "404":
+          description: Not found
+
+  # Dashboard (wow endpoints)
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get passenger dashboard summary stats
+      parameters:
+        - name: passengerId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/popular-routes:
+    get:
+      operationId: getPopularRoutes
+      tags: [dashboard]
+      summary: Get popular routes
+      responses:
+        "200":
+          description: Popular routes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PopularRoute"
+
+  /dashboard/upcoming-trips:
+    get:
+      operationId: getUpcomingTrips
+      tags: [dashboard]
+      summary: Get upcoming trips for a passenger
+      parameters:
+        - name: passengerId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Upcoming trips
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+
+  # Admin
+  /admin/stats:
+    get:
+      operationId: getAdminStats
+      tags: [admin]
+      summary: Admin overview stats
+      responses:
+        "200":
+          description: Admin stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+
+  /admin/buses:
+    get:
+      operationId: adminListBuses
+      tags: [admin]
+      summary: Admin bus fleet list with status
+      responses:
+        "200":
+          description: Fleet list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Bus"
+
+  /admin/bookings:
+    get:
+      operationId: adminListBookings
+      tags: [admin]
+      summary: Admin list all bookings
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: date
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: All bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+
+  /admin/revenue:
+    get:
+      operationId: getRevenueAnalytics
+      tags: [admin]
+      summary: Get revenue analytics by date range
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: string
+        - name: to
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Revenue analytics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RevenueAnalytics"
+
+  /admin/complaints:
+    get:
+      operationId: listComplaints
+      tags: [admin]
+      summary: List all complaints
+      responses:
+        "200":
+          description: Complaints list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Complaint"
+    post:
+      operationId: createComplaint
+      tags: [admin]
+      summary: Submit a complaint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplaintInput"
+      responses:
+        "201":
+          description: Complaint created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Complaint"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +576,518 @@ components:
       required:
         - status
 
+    Route:
+      type: object
+      properties:
+        id:
+          type: integer
+        origin:
+          type: string
+        destination:
+          type: string
+        distanceKm:
+          type: number
+        durationMinutes:
+          type: integer
+        basefare:
+          type: number
+        stops:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - origin
+        - destination
+        - distanceKm
+        - durationMinutes
+        - basefare
+
+    Bus:
+      type: object
+      properties:
+        id:
+          type: integer
+        busNumber:
+          type: string
+        busType:
+          type: string
+        totalSeats:
+          type: integer
+        amenities:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        currentLocation:
+          type: ["string", "null"]
+        punctualityScore:
+          type: number
+        driverName:
+          type: ["string", "null"]
+        routeId:
+          type: ["integer", "null"]
+      required:
+        - id
+        - busNumber
+        - busType
+        - totalSeats
+        - status
+
+    SearchResult:
+      type: object
+      properties:
+        scheduleId:
+          type: integer
+        busId:
+          type: integer
+        busNumber:
+          type: string
+        busType:
+          type: string
+        origin:
+          type: string
+        destination:
+          type: string
+        departureTime:
+          type: string
+        arrivalTime:
+          type: string
+        fare:
+          type: number
+        availableSeats:
+          type: integer
+        totalSeats:
+          type: integer
+        amenities:
+          type: array
+          items:
+            type: string
+        punctualityScore:
+          type: number
+        crowdDensity:
+          type: string
+        estimatedDelay:
+          type: integer
+      required:
+        - scheduleId
+        - busId
+        - busNumber
+        - busType
+        - origin
+        - destination
+        - departureTime
+        - arrivalTime
+        - fare
+        - availableSeats
+        - totalSeats
+
+    Seat:
+      type: object
+      properties:
+        seatNumber:
+          type: string
+        row:
+          type: integer
+        column:
+          type: integer
+        type:
+          type: string
+        isAvailable:
+          type: boolean
+        isWomenOnly:
+          type: boolean
+        price:
+          type: number
+      required:
+        - seatNumber
+        - row
+        - column
+        - type
+        - isAvailable
+        - isWomenOnly
+        - price
+
+    Booking:
+      type: object
+      properties:
+        id:
+          type: integer
+        pnr:
+          type: string
+        passengerId:
+          type: integer
+        scheduleId:
+          type: integer
+        busNumber:
+          type: string
+        origin:
+          type: string
+        destination:
+          type: string
+        departureTime:
+          type: string
+        arrivalTime:
+          type: string
+        seatNumbers:
+          type: array
+          items:
+            type: string
+        totalFare:
+          type: number
+        status:
+          type: string
+        paymentStatus:
+          type: string
+        passengerName:
+          type: string
+        passengerPhone:
+          type: string
+        createdAt:
+          type: string
+        qrCode:
+          type: ["string", "null"]
+      required:
+        - id
+        - pnr
+        - passengerId
+        - scheduleId
+        - origin
+        - destination
+        - departureTime
+        - arrivalTime
+        - seatNumbers
+        - totalFare
+        - status
+        - paymentStatus
+        - passengerName
+        - passengerPhone
+        - createdAt
+
+    BookingInput:
+      type: object
+      properties:
+        passengerId:
+          type: integer
+        scheduleId:
+          type: integer
+        seatNumbers:
+          type: array
+          items:
+            type: string
+        passengerName:
+          type: string
+        passengerPhone:
+          type: string
+        totalFare:
+          type: number
+      required:
+        - passengerId
+        - scheduleId
+        - seatNumbers
+        - passengerName
+        - passengerPhone
+        - totalFare
+
+    Passenger:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        walletBalance:
+          type: number
+        rewardPoints:
+          type: integer
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - email
+        - phone
+        - walletBalance
+        - rewardPoints
+        - createdAt
+
+    PassengerInput:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        password:
+          type: string
+      required:
+        - name
+        - email
+        - phone
+        - password
+
+    PassengerUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+
+    Wallet:
+      type: object
+      properties:
+        balance:
+          type: number
+        rewardPoints:
+          type: integer
+        transactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/WalletTransaction"
+      required:
+        - balance
+        - rewardPoints
+        - transactions
+
+    WalletTransaction:
+      type: object
+      properties:
+        id:
+          type: integer
+        amount:
+          type: number
+        type:
+          type: string
+        description:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - amount
+        - type
+        - description
+        - createdAt
+
+    BusLocation:
+      type: object
+      properties:
+        busId:
+          type: integer
+        busNumber:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        speed:
+          type: number
+        heading:
+          type: number
+        lastUpdated:
+          type: string
+        nextStop:
+          type: string
+        etaMinutes:
+          type: integer
+        status:
+          type: string
+      required:
+        - busId
+        - busNumber
+        - latitude
+        - longitude
+        - speed
+        - heading
+        - lastUpdated
+        - status
+
+    DashboardStats:
+      type: object
+      properties:
+        totalTrips:
+          type: integer
+        totalSpent:
+          type: number
+        walletBalance:
+          type: number
+        rewardPoints:
+          type: integer
+        upcomingTrips:
+          type: integer
+        savedRoutes:
+          type: integer
+      required:
+        - totalTrips
+        - totalSpent
+        - walletBalance
+        - rewardPoints
+        - upcomingTrips
+        - savedRoutes
+
+    PopularRoute:
+      type: object
+      properties:
+        origin:
+          type: string
+        destination:
+          type: string
+        bookingsCount:
+          type: integer
+        avgFare:
+          type: number
+        nextDeparture:
+          type: string
+      required:
+        - origin
+        - destination
+        - bookingsCount
+        - avgFare
+
+    AdminStats:
+      type: object
+      properties:
+        totalBuses:
+          type: integer
+        activeBuses:
+          type: integer
+        totalBookingsToday:
+          type: integer
+        revenueToday:
+          type: number
+        totalPassengers:
+          type: integer
+        activeRoutes:
+          type: integer
+        pendingComplaints:
+          type: integer
+        onTimePercentage:
+          type: number
+      required:
+        - totalBuses
+        - activeBuses
+        - totalBookingsToday
+        - revenueToday
+        - totalPassengers
+        - activeRoutes
+        - pendingComplaints
+        - onTimePercentage
+
+    RevenueAnalytics:
+      type: object
+      properties:
+        totalRevenue:
+          type: number
+        bookingsByDay:
+          type: array
+          items:
+            $ref: "#/components/schemas/DailyRevenue"
+        revenueByRoute:
+          type: array
+          items:
+            $ref: "#/components/schemas/RouteRevenue"
+        revenueByBusType:
+          type: array
+          items:
+            $ref: "#/components/schemas/BusTypeRevenue"
+      required:
+        - totalRevenue
+        - bookingsByDay
+        - revenueByRoute
+        - revenueByBusType
+
+    DailyRevenue:
+      type: object
+      properties:
+        date:
+          type: string
+        revenue:
+          type: number
+        bookings:
+          type: integer
+      required:
+        - date
+        - revenue
+        - bookings
+
+    RouteRevenue:
+      type: object
+      properties:
+        route:
+          type: string
+        revenue:
+          type: number
+        bookings:
+          type: integer
+      required:
+        - route
+        - revenue
+        - bookings
+
+    BusTypeRevenue:
+      type: object
+      properties:
+        busType:
+          type: string
+        revenue:
+          type: number
+        bookings:
+          type: integer
+      required:
+        - busType
+        - revenue
+        - bookings
+
+    Complaint:
+      type: object
+      properties:
+        id:
+          type: integer
+        passengerId:
+          type: integer
+        busNumber:
+          type: ["string", "null"]
+        category:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        priority:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - passengerId
+        - category
+        - description
+        - status
+        - priority
+        - createdAt
+
+    ComplaintInput:
+      type: object
+      properties:
+        passengerId:
+          type: integer
+        busNumber:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+      required:
+        - passengerId
+        - category
+        - description

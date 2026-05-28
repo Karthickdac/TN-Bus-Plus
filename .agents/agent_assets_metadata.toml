@@ -1,0 +1,14 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "UiPA39ncNCPaXMYisnx-t"
+uri = "file://attached_assets/generated_images/official_government_portrait_photograph_af57.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "qja-cXt6WYDiQj-8NkDMn"
+uri = "file://attached_assets/generated_images/tamil_nadu_government_official_995a.png"
+type = "image"
+title = "generated_image"
