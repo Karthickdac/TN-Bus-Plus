@@ -21,16 +21,16 @@
 
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
-  
+
   --color-secondary: hsl(var(--secondary));
   --color-secondary-foreground: hsl(var(--secondary-foreground));
-  
+
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
-  
+
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
-  
+
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
 
@@ -41,67 +41,71 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  
+
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 }
 
+/* ── Light theme (default) ──────────────────────────── */
 :root {
-  --background: 0 0% 100%;
-  --foreground: 20 30% 8%;
-  --card: 38 20% 97%;
-  --card-foreground: 20 30% 8%;
-  --card-border: 38 30% 88%;
+  /* Vibrant Indigo + Saffron Orange */
+  --background: 220 20% 97%;
+  --foreground: 222 40% 12%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 222 40% 12%;
+  --card-border: 220 20% 90%;
+
   --popover: 0 0% 100%;
-  --popover-foreground: 20 30% 8%;
-  --popover-border: 38 30% 88%;
-  --primary: 38 90% 48%;
-  --primary-foreground: 20 40% 5%;
-  --secondary: 142 55% 36%;
+  --popover-foreground: 222 40% 12%;
+  --popover-border: 220 20% 90%;
+
+  /* Deep Royal Indigo */
+  --primary: 243 75% 48%;
+  --primary-foreground: 0 0% 100%;
+
+  /* Vivid Saffron Orange */
+  --secondary: 25 95% 50%;
   --secondary-foreground: 0 0% 100%;
-  --muted: 38 20% 94%;
-  --muted-foreground: 20 15% 50%;
-  --accent: 38 20% 94%;
-  --accent-foreground: 20 30% 8%;
-  --destructive: 0 84.2% 60.2%;
+
+  --muted: 220 18% 93%;
+  --muted-foreground: 220 15% 46%;
+
+  --accent: 243 40% 94%;
+  --accent-foreground: 243 75% 40%;
+
+  --destructive: 0 84% 58%;
   --destructive-foreground: 0 0% 100%;
-  --border: 38 25% 86%;
-  --input: 38 25% 86%;
-  --ring: 38 90% 48%;
+
+  --border: 220 18% 88%;
+  --input: 220 18% 88%;
+  --ring: 243 75% 48%;
   --radius: 0.75rem;
 }
 
+/* ── Dark theme (kept for other pages) ─────────────── */
 .dark {
-  /* Deep temple stone / sacred dark — Tamil Nadu theme */
-  --background: 24 35% 5%;
-  --foreground: 38 25% 96%;
-  --card: 24 28% 8%;
-  --card-foreground: 38 25% 96%;
-  --card-border: 24 20% 16%;
-  --popover: 24 28% 8%;
-  --popover-foreground: 38 25% 96%;
-  --popover-border: 24 20% 16%;
-  
-  /* Saffron / Amber Gold — primary government accent */
-  --primary: 38 92% 52%;
-  --primary-foreground: 24 35% 5%;
-  
-  /* Forest Emerald Green — Tamil Nadu greenery */
-  --secondary: 142 60% 32%;
-  --secondary-foreground: 38 25% 96%;
-  
-  --muted: 24 22% 13%;
-  --muted-foreground: 38 15% 58%;
-  
-  --accent: 142 60% 32%;
-  --accent-foreground: 38 25% 96%;
-  
-  --destructive: 0 62.8% 36%;
-  --destructive-foreground: 38 25% 96%;
-  
-  --border: 24 20% 16%;
-  --input: 24 20% 16%;
-  --ring: 38 92% 52%;
+  --background: 222 40% 6%;
+  --foreground: 220 20% 97%;
+  --card: 222 35% 9%;
+  --card-foreground: 220 20% 97%;
+  --card-border: 222 25% 16%;
+  --popover: 222 35% 9%;
+  --popover-foreground: 220 20% 97%;
+  --popover-border: 222 25% 16%;
+  --primary: 243 75% 62%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 25 95% 55%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 222 25% 14%;
+  --muted-foreground: 220 15% 58%;
+  --accent: 243 40% 20%;
+  --accent-foreground: 243 75% 75%;
+  --destructive: 0 62% 36%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 222 25% 16%;
+  --input: 222 25% 16%;
+  --ring: 243 75% 62%;
 }
 
 @layer base {
@@ -114,9 +118,9 @@
 }
 
 .glass {
-  @apply bg-white/5 backdrop-blur-md border border-white/10 shadow-xl;
+  @apply bg-white/70 backdrop-blur-md border border-white/60 shadow-lg;
 }
 
 .dark .glass {
-  @apply bg-black/20 backdrop-blur-xl border border-white/8 shadow-2xl;
+  @apply bg-black/20 backdrop-blur-xl border border-white/10 shadow-2xl;
 }
