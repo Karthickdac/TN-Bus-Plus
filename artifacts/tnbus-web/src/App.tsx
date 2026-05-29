@@ -23,6 +23,7 @@ import AdminFleet from "@/pages/admin/AdminFleet";
 import AdminBookings from "@/pages/admin/AdminBookings";
 import AdminRevenue from "@/pages/admin/AdminRevenue";
 import AdminComplaints from "@/pages/admin/AdminComplaints";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -46,10 +47,10 @@ function Router() {
           <Route path="/book" component={Book} />
           <Route path="/pnr" component={PNR} />
           <Route path="/track/:busId" component={Track} />
-          <Route path="/dashboard" component={Dashboard} />
-          <Route path="/dashboard/trips" component={Trips} />
-          <Route path="/dashboard/wallet" component={WalletPage} />
-          <Route path="/dashboard/profile" component={Profile} />
+          <Route path="/dashboard">{() => <ProtectedRoute component={Dashboard} />}</Route>
+          <Route path="/dashboard/trips">{() => <ProtectedRoute component={Trips} />}</Route>
+          <Route path="/dashboard/wallet">{() => <ProtectedRoute component={WalletPage} />}</Route>
+          <Route path="/dashboard/profile">{() => <ProtectedRoute component={Profile} />}</Route>
           <Route path="/admin" component={AdminDashboard} />
           <Route path="/admin/fleet" component={AdminFleet} />
           <Route path="/admin/bookings" component={AdminBookings} />

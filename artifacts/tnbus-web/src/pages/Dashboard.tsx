@@ -9,13 +9,15 @@ import {
   useGetUpcomingTrips,
   useGetPopularRoutes,
 } from "@workspace/api-client-react";
-
-const PASSENGER_ID = 1;
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
-  const { data: stats, isLoading: statsLoading } = useGetDashboardStats({ passengerId: PASSENGER_ID });
-  const { data: upcoming, isLoading: upcomingLoading } = useGetUpcomingTrips({ passengerId: PASSENGER_ID });
+  const { user } = useAuth();
+  const passengerId = user?.id ?? 0;
+
+  const { data: stats, isLoading: statsLoading } = useGetDashboardStats({ passengerId });
+  const { data: upcoming, isLoading: upcomingLoading } = useGetUpcomingTrips({ passengerId });
   const { data: popular } = useGetPopularRoutes();
 
   const fmtDt = (iso: string) => new Date(iso).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
@@ -24,7 +26,7 @@ export default function Dashboard() {
     <div className="container mx-auto px-4 py-8 max-w-5xl">
       <div className="mb-8">
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back, Arun</p>
+        <p className="text-muted-foreground">Welcome back, {user?.name?.split(" ")[0] ?? "Traveller"}</p>
       </div>
 
       {/* Stats grid */}

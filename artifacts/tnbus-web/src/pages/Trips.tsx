@@ -6,14 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useListBookings, useCancelBooking, getListBookingsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-
-const PASSENGER_ID = 1;
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Trips() {
   const [filter, setFilter] = useState<string>("all");
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const passengerId = user?.id ?? 0;
 
-  const { data: bookings, isLoading } = useListBookings({ passengerId: PASSENGER_ID });
+  const { data: bookings, isLoading } = useListBookings({ passengerId });
   const cancelBooking = useCancelBooking();
 
   const filtered = (bookings ?? []).filter(b => filter === "all" || b.status === filter);
@@ -29,7 +30,7 @@ export default function Trips() {
   const handleCancel = async (id: number) => {
     if (!confirm("Cancel this booking? You will receive a refund.")) return;
     await cancelBooking.mutateAsync({ id });
-    queryClient.invalidateQueries({ queryKey: getListBookingsQueryKey({ passengerId: PASSENGER_ID }) });
+    queryClient.invalidateQueries({ queryKey: getListBookingsQueryKey({ passengerId }) });
   };
 
   return (

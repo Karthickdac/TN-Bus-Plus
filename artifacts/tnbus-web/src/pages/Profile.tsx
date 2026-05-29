@@ -6,12 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetPassenger, useUpdatePassenger, getGetPassengerQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-
-const PASSENGER_ID = 1;
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Profile() {
   const queryClient = useQueryClient();
-  const { data: passenger, isLoading } = useGetPassenger(PASSENGER_ID);
+  const { user, refresh } = useAuth();
+  const passengerId = user?.id ?? 0;
+  const { data: passenger, isLoading } = useGetPassenger(passengerId);
   const updatePassenger = useUpdatePassenger();
 
   const [name, setName] = useState("");
@@ -29,8 +30,9 @@ export default function Profile() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    await updatePassenger.mutateAsync({ id: PASSENGER_ID, data: { name, email, phone } });
-    queryClient.invalidateQueries({ queryKey: getGetPassengerQueryKey(PASSENGER_ID) });
+    await updatePassenger.mutateAsync({ id: passengerId, data: { name, email, phone } });
+    queryClient.invalidateQueries({ queryKey: getGetPassengerQueryKey(passengerId) });
+    await refresh();
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };

@@ -2,11 +2,11 @@ import { motion } from "framer-motion";
 import { ArrowDownLeft, ArrowUpRight, Wallet, Star } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetWallet } from "@workspace/api-client-react";
-
-const PASSENGER_ID = 1;
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function WalletPage() {
-  const { data: wallet, isLoading } = useGetWallet(PASSENGER_ID);
+  const { user } = useAuth();
+  const { data: wallet, isLoading } = useGetWallet(user?.id ?? 0);
 
   const fmtDt = (iso: string) => new Date(iso).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
 
