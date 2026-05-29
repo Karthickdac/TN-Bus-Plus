@@ -10,8 +10,27 @@ function generatePnr(): string {
   return "TN" + Date.now().toString().slice(-8).toUpperCase();
 }
 
-function generateQr(pnr: string): string {
-  return `QR:${pnr}:${Date.now()}`;
+function generateQrPayload(input: {
+  pnr: string;
+  origin: string;
+  destination: string;
+  departureTime: string;
+  busNumber: string;
+  seatNumbers: string[];
+  passengerName: string;
+  totalFare: number;
+}): string {
+  return JSON.stringify({
+    t: "TNBUS",
+    pnr: input.pnr,
+    from: input.origin,
+    to: input.destination,
+    dep: input.departureTime,
+    bus: input.busNumber,
+    seats: input.seatNumbers,
+    name: input.passengerName,
+    fare: input.totalFare,
+  });
 }
 
 router.get("/bookings", async (req, res) => {
@@ -38,17 +57,31 @@ router.post("/bookings", async (req, res) => {
   const route = schedule ? (await db.select().from(routesTable).where(eq(routesTable.id, schedule.routeId)))[0] : null;
 
   const pnr = generatePnr();
-  const qrCode = generateQr(pnr);
+  const origin = route?.origin ?? "Chennai";
+  const destination = route?.destination ?? "Madurai";
+  const departureTime = schedule?.departureTime.toISOString() ?? new Date().toISOString();
+  const arrivalTime = schedule?.arrivalTime.toISOString() ?? new Date().toISOString();
+  const busNumber = bus?.busNumber ?? "TN-XXX";
+  const qrCode = generateQrPayload({
+    pnr,
+    origin,
+    destination,
+    departureTime,
+    busNumber,
+    seatNumbers: data.seatNumbers,
+    passengerName: data.passengerName,
+    totalFare: data.totalFare,
+  });
 
   const [booking] = await db.insert(bookingsTable).values({
     pnr,
     passengerId: data.passengerId,
     scheduleId: data.scheduleId,
-    busNumber: bus?.busNumber ?? "TN-XXX",
-    origin: route?.origin ?? "Chennai",
-    destination: route?.destination ?? "Madurai",
-    departureTime: schedule?.departureTime.toISOString() ?? new Date().toISOString(),
-    arrivalTime: schedule?.arrivalTime.toISOString() ?? new Date().toISOString(),
+    busNumber,
+    origin,
+    destination,
+    departureTime,
+    arrivalTime,
     seatNumbers: data.seatNumbers,
     totalFare: String(data.totalFare),
     status: "confirmed",

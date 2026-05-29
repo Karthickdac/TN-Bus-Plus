@@ -34,11 +34,17 @@ router.get("/schedules/:scheduleId/seats", async (req, res) => {
   const totalSeats = bus.totalSeats;
   const seatsPerRow = 4;
   const rows = Math.ceil(totalSeats / seatsPerRow);
-  const bookedCount = totalSeats - schedule.availableSeats;
-  const bookedSeats = new Set<number>();
-  while (bookedSeats.size < bookedCount) {
-    bookedSeats.add(Math.floor(Math.random() * totalSeats));
-  }
+  const bookedCount = Math.max(0, totalSeats - schedule.availableSeats);
+  // Deterministic per-schedule occupancy: same seats every load (seeded by scheduleId).
+  const seeded = (n: number) => {
+    const x = Math.sin(n) * 43758.5453;
+    return x - Math.floor(x);
+  };
+  const bookedSeats = new Set<number>(
+    Array.from({ length: totalSeats }, (_, i) => i)
+      .sort((a, b) => seeded(scheduleId * 1000 + a) - seeded(scheduleId * 1000 + b))
+      .slice(0, bookedCount),
+  );
 
   const seats = [];
   let seatIndex = 0;

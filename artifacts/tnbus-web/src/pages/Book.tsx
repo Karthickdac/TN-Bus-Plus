@@ -1,11 +1,19 @@
 import { useState } from "react";
 import { useLocation, useSearch } from "wouter";
 import { motion } from "framer-motion";
-import { CreditCard, MapPin, Phone, User, CheckCircle } from "lucide-react";
+import { MapPin, Phone, User, Loader2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { useCreateBooking } from "@workspace/api-client-react";
+
+type Step = "details" | "payment" | "processing" | "failed";
+
+const PAYMENT_METHODS = [
+  { label: "UPI", icon: "₹", desc: "GPay, PhonePe, Paytm" },
+  { label: "Net Banking", icon: "🏦", desc: "All major banks" },
+  { label: "Credit Card", icon: "💳", desc: "Visa, Mastercard" },
+  { label: "Wallet", icon: "👛", desc: "TN Bus+ wallet" },
+];
 
 export default function Book() {
   const [, setLocation] = useLocation();
@@ -17,13 +25,17 @@ export default function Book() {
 
   const [name, setName] = useState("Arun Kumar");
   const [phone, setPhone] = useState("9876543210");
-  const [step, setStep] = useState<"details" | "payment" | "done">("details");
-  const [pnr, setPnr] = useState("");
+  const [method, setMethod] = useState("UPI");
+  const [step, setStep] = useState<Step>("details");
 
   const createBooking = useCreateBooking();
 
   const handleConfirm = async () => {
-    if (step === "details") { setStep("payment"); return; }
+    if (step === "details") {
+      setStep("payment");
+      return;
+    }
+    setStep("processing");
     try {
       const result = await createBooking.mutateAsync({
         data: {
@@ -33,39 +45,52 @@ export default function Book() {
           passengerName: name,
           passengerPhone: phone,
           totalFare: fare,
-        }
+        },
       });
-      setPnr(result.pnr);
-      setStep("done");
+      // Brief simulated settle delay, then move to the e-ticket.
+      setTimeout(() => setLocation(`/booking/${result.id}`), 600);
     } catch {
-      alert("Booking failed. Please try again.");
+      setStep("failed");
     }
   };
 
-  if (step === "done") return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-        className="bg-card border border-emerald-500/30 rounded-3xl p-10 text-center max-w-md w-full">
-        <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-          <CheckCircle className="w-10 h-10 text-emerald-400" />
-        </div>
-        <h2 className="text-2xl font-bold mb-2">Booking Confirmed</h2>
-        <p className="text-muted-foreground mb-6">Your tickets have been booked successfully</p>
-        <div className="bg-background/50 rounded-2xl p-4 mb-6">
-          <p className="text-xs text-muted-foreground mb-1">PNR Number</p>
-          <p className="text-3xl font-mono font-bold text-primary tracking-widest">{pnr}</p>
-        </div>
-        <div className="text-sm text-muted-foreground mb-8">
-          <p>Seats: {seats.join(", ")}</p>
-          <p className="mt-1">Total paid: ₹{fare.toFixed(2)}</p>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline" className="flex-1" onClick={() => setLocation("/dashboard/trips")}>My Trips</Button>
-          <Button className="flex-1 bg-primary" onClick={() => setLocation("/")}>Home</Button>
-        </div>
-      </motion.div>
-    </div>
-  );
+  if (step === "processing")
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center px-4">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
+          <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto mb-4" />
+          <h2 className="text-xl font-bold mb-1">Processing payment…</h2>
+          <p className="text-muted-foreground">Securing your seats — please don't close this window.</p>
+        </motion.div>
+      </div>
+    );
+
+  if (step === "failed")
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center px-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-card border border-red-500/30 rounded-3xl p-10 text-center max-w-md w-full"
+        >
+          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-5">
+            <XCircle className="w-9 h-9 text-red-400" />
+          </div>
+          <h2 className="text-xl font-bold mb-2">Payment Failed</h2>
+          <p className="text-muted-foreground mb-6">
+            Your payment couldn't be completed and you have not been charged. Please try again.
+          </p>
+          <div className="flex gap-3">
+            <Button variant="outline" className="flex-1" onClick={() => setLocation("/")}>
+              Cancel
+            </Button>
+            <Button className="flex-1 bg-primary" onClick={() => setStep("payment")}>
+              Try Again
+            </Button>
+          </div>
+        </motion.div>
+      </div>
+    );
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
@@ -75,13 +100,17 @@ export default function Book() {
       <div className="flex items-center gap-2 mb-8">
         {["Passenger Details", "Payment"].map((label, i) => {
           const isActive = (i === 0 && step === "details") || (i === 1 && step === "payment");
-          const isDone = (i === 0 && step === "payment");
+          const isDone = i === 0 && step === "payment";
           return (
             <div key={label} className="flex items-center gap-2">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${isDone ? "bg-emerald-500 text-white" : isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+              <div
+                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${isDone ? "bg-emerald-500 text-white" : isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+              >
                 {isDone ? "✓" : i + 1}
               </div>
-              <span className={`text-sm ${isActive ? "text-foreground font-medium" : "text-muted-foreground"}`}>{label}</span>
+              <span className={`text-sm ${isActive ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+                {label}
+              </span>
               {i < 1 && <div className="w-8 h-px bg-border mx-1" />}
             </div>
           );
@@ -96,18 +125,25 @@ export default function Book() {
               <MapPin className="w-3.5 h-3.5" />
               <span>Schedule #{scheduleId}</span>
             </div>
-            <p className="text-sm">Seats: <span className="font-semibold text-primary">{seats.join(", ")}</span></p>
+            <p className="text-sm">
+              Seats: <span className="font-semibold text-primary">{seats.join(", ")}</span>
+            </p>
           </div>
           <div className="text-right">
             <p className="text-2xl font-bold text-primary">₹{fare.toFixed(2)}</p>
-            <p className="text-xs text-muted-foreground">{seats.length} seat{seats.length > 1 ? "s" : ""}</p>
+            <p className="text-xs text-muted-foreground">
+              {seats.length} seat{seats.length > 1 ? "s" : ""}
+            </p>
           </div>
         </div>
       </div>
 
       {step === "details" && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-          className="bg-card border border-border/50 rounded-2xl p-6 space-y-4">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-card border border-border/50 rounded-2xl p-6 space-y-4"
+        >
           <h2 className="font-semibold text-lg mb-2">Passenger Information</h2>
           <div className="space-y-1">
             <label className="text-sm text-muted-foreground">Full Name</label>
@@ -127,35 +163,47 @@ export default function Book() {
       )}
 
       {step === "payment" && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-          className="bg-card border border-border/50 rounded-2xl p-6 space-y-4">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-card border border-border/50 rounded-2xl p-6 space-y-4"
+        >
           <h2 className="font-semibold text-lg mb-2">Payment</h2>
           <div className="grid grid-cols-2 gap-3">
-            {[
-              { label: "UPI", icon: "₹", desc: "GPay, PhonePe, Paytm" },
-              { label: "Net Banking", icon: "🏦", desc: "All major banks" },
-              { label: "Credit Card", icon: "💳", desc: "Visa, Mastercard" },
-              { label: "Wallet", icon: "👛", desc: "TN Bus+ wallet" },
-            ].map(opt => (
-              <div key={opt.label} className="border border-primary/30 bg-primary/5 rounded-xl p-3 cursor-pointer hover:bg-primary/10 transition-colors">
-                <div className="text-xl mb-1">{opt.icon}</div>
-                <div className="font-medium text-sm">{opt.label}</div>
-                <div className="text-xs text-muted-foreground">{opt.desc}</div>
-              </div>
-            ))}
+            {PAYMENT_METHODS.map(opt => {
+              const selected = method === opt.label;
+              return (
+                <button
+                  key={opt.label}
+                  type="button"
+                  onClick={() => setMethod(opt.label)}
+                  className={`text-left rounded-xl p-3 border transition-colors ${selected ? "border-primary bg-primary/10 ring-1 ring-primary/40" : "border-border/60 hover:bg-primary/5"}`}
+                >
+                  <div className="text-xl mb-1">{opt.icon}</div>
+                  <div className="font-medium text-sm">{opt.label}</div>
+                  <div className="text-xs text-muted-foreground">{opt.desc}</div>
+                </button>
+              );
+            })}
           </div>
-          <p className="text-xs text-muted-foreground text-center pt-2">Payments are secured with 256-bit SSL encryption</p>
+          <p className="text-xs text-muted-foreground text-center pt-2">
+            Simulated payment · secured with 256-bit SSL encryption
+          </p>
         </motion.div>
       )}
 
       <div className="mt-6 flex gap-3">
         {step === "payment" && (
-          <Button variant="outline" onClick={() => setStep("details")}>Back</Button>
+          <Button variant="outline" onClick={() => setStep("details")}>
+            Back
+          </Button>
         )}
-        <Button className="flex-1 bg-primary hover:bg-primary/90 h-12"
+        <Button
+          className="flex-1 bg-primary hover:bg-primary/90 h-12"
           onClick={handleConfirm}
-          disabled={createBooking.isPending}>
-          {createBooking.isPending ? "Processing..." : step === "details" ? "Continue to Payment" : `Pay ₹${fare.toFixed(2)}`}
+          disabled={createBooking.isPending}
+        >
+          {step === "details" ? "Continue to Payment" : `Pay ₹${fare.toFixed(2)}`}
         </Button>
       </div>
     </div>

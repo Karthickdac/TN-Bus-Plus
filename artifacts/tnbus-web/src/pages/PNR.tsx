@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, MapPin, Clock, CreditCard, QrCode, ChevronRight, CheckCircle, XCircle } from "lucide-react";
+import { Search, ChevronRight, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useGetPnrStatus } from "@workspace/api-client-react";
+import TicketQR from "@/components/TicketQR";
 
 export default function PNR() {
   const [query, setQuery] = useState("");
@@ -112,12 +113,12 @@ export default function PNR() {
                   </div>
                 </div>
 
-                {booking.qrCode && (
-                  <div className="border border-border/50 rounded-xl p-4 flex items-center gap-3">
-                    <QrCode className="w-8 h-8 text-primary shrink-0" />
+                {booking.status === "confirmed" && (
+                  <div className="border border-border/50 rounded-xl p-4 flex items-center gap-4">
+                    <TicketQR booking={booking} size={96} />
                     <div>
-                      <p className="text-xs text-muted-foreground">QR Code</p>
-                      <p className="font-mono text-xs">{booking.qrCode}</p>
+                      <p className="text-sm font-medium">Scan to verify</p>
+                      <p className="text-xs text-muted-foreground">Present this e-ticket QR at boarding.</p>
                     </div>
                   </div>
                 )}

@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, QrCode, XCircle, CheckCircle, Clock } from "lucide-react";
+import { ArrowRight, XCircle, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useListBookings, useCancelBooking, getListBookingsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
+import TicketQR from "@/components/TicketQR";
 
 export default function Trips() {
   const [filter, setFilter] = useState<string>("all");
@@ -87,10 +88,13 @@ export default function Trips() {
                 </div>
               </div>
 
-              {b.qrCode && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3 border border-border/40 rounded-lg px-3 py-2">
-                  <QrCode className="w-4 h-4 shrink-0" />
-                  <span className="font-mono">{b.qrCode}</span>
+              {b.status === "confirmed" && (
+                <div className="flex items-center gap-3 mb-3 border border-border/40 rounded-xl p-3">
+                  <TicketQR booking={b} size={72} />
+                  <div className="text-xs text-muted-foreground">
+                    <p className="font-medium text-foreground mb-0.5">Boarding pass</p>
+                    <p>Show this QR to the conductor when boarding.</p>
+                  </div>
                 </div>
               )}
 

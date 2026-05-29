@@ -1,1 +1,1 @@
-- [TN Bus+ conventions](tnbus-web-conventions.md) — query-hook queryKey gotcha, walk-in passengerId=0 sentinel, real endpoint paths, known systemic limits (non-transactional bookings, random seats, no admin authz).
+- [TN Bus+ conventions](tnbus-web-conventions.md) — query-hook queryKey gotcha, walk-in passengerId=0 sentinel, real endpoint paths, client-side e-ticket QR (buildTicketPayload/TicketQR), deterministic-but-not-real seats, systemic limits (non-transactional bookings, no booking/admin authz/IDOR).

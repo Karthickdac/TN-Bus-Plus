@@ -13,6 +13,7 @@ import Assistant from "@/pages/Assistant";
 import Search from "@/pages/Search";
 import BusDetail from "@/pages/BusDetail";
 import Book from "@/pages/Book";
+import Confirmation from "@/pages/Confirmation";
 import PNR from "@/pages/PNR";
 import Track from "@/pages/Track";
 import Dashboard from "@/pages/Dashboard";
@@ -51,6 +52,7 @@ function Router() {
           <Route path="/search" component={Search} />
           <Route path="/bus/:id" component={BusDetail} />
           <Route path="/book" component={Book} />
+          <Route path="/booking/:id" component={Confirmation} />
           <Route path="/pnr" component={PNR} />
           <Route path="/track/:busId" component={Track} />
           <Route path="/dashboard">{() => <ProtectedRoute component={Dashboard} />}</Route>
