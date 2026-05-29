@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
-import { bookingsTable, schedulesTable, busesTable, routesTable, refundsTable } from "@workspace/db";
-import { eq, and, gt } from "drizzle-orm";
+import { bookingsTable, schedulesTable, busesTable, routesTable, refundsTable, passengersTable } from "@workspace/db";
+import { eq, and, gt, sql } from "drizzle-orm";
 import { CreateBookingBody } from "@workspace/api-zod";
 import { createNotification } from "../lib/notify";
 
@@ -99,7 +99,37 @@ router.post("/bookings", async (req, res) => {
     body: `Your ticket is confirmed. PNR ${pnr}, seats ${data.seatNumbers.join(", ")} on bus ${busNumber}.`,
   });
 
+  // Loyalty: registered passengers earn 1 reward point per ₹10 of fare on a
+  // confirmed booking. Walk-in/counter bookings use the sentinel id 0 and are
+  // skipped since they have no passenger account to credit.
+  //
+  // Reward value is derived from the AUTHORITATIVE server-side fare
+  // (schedule price × seats), never the client-supplied `totalFare`. Since
+  // points redeem into real wallet credit, trusting client input here would
+  // let a caller mint arbitrary balance by inflating the fare. When no
+  // schedule is found we award nothing rather than trust the client.
+  const trustedFare = schedule ? Number(schedule.fare) * data.seatNumbers.length : 0;
+  const rewardPointsEarned = Math.floor(trustedFare / 10);
+  if (booking.passengerId > 0 && rewardPointsEarned > 0) {
+    await db.update(passengersTable)
+      .set({ rewardPoints: sql`${passengersTable.rewardPoints} + ${rewardPointsEarned}` })
+      .where(eq(passengersTable.id, booking.passengerId));
+    // Best-effort: the points are already committed, so a failed
+    // notification must not turn a successful booking into a 500.
+    try {
+      await createNotification({
+        passengerId: booking.passengerId,
+        type: "reward",
+        title: `You earned ${rewardPointsEarned} reward points`,
+        body: `${rewardPointsEarned} points were added for your ${origin} → ${destination} booking. Redeem them for wallet credit anytime.`,
+      });
+    } catch (err) {
+      req.log.error({ err }, "failed to send reward notification");
+    }
+  }
+
   res.status(201).json({
+    rewardPointsEarned,
     ...booking,
     totalFare: Number(booking.totalFare),
     createdAt: booking.createdAt.toISOString(),

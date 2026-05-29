@@ -14,6 +14,7 @@ import savedRoutesRouter from "./savedRoutes";
 import notificationsRouter from "./notifications";
 import refundsRouter from "./refunds";
 import preferencesRouter from "./preferences";
+import passesRouter from "./passes";
 
 const router: IRouter = Router();
 
@@ -29,6 +30,7 @@ router.use(savedRoutesRouter);
 router.use(notificationsRouter);
 router.use(refundsRouter);
 router.use(preferencesRouter);
+router.use(passesRouter);
 router.use(trackingRouter);
 router.use(dashboardRouter);
 router.use(adminRouter);

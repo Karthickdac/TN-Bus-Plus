@@ -10,6 +10,7 @@ import {
   Armchair,
   Bus,
   User,
+  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -114,6 +115,20 @@ export default function Confirmation({ params }: Props) {
           <div className="flex flex-col items-center py-6 border-b border-dashed border-border/60">
             <TicketQR booking={booking} size={168} />
             <p className="text-xs text-muted-foreground mt-3">Scan to verify this e-ticket</p>
+          </div>
+        )}
+
+        {/* Loyalty: 1 point per ₹10 of fare, mirrors the server award rule */}
+        {isConfirmed && Math.floor(Number(booking.totalFare) / 10) > 0 && (
+          <div className="mx-5 mt-5 flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3">
+            <Star className="w-4 h-4 text-amber-400 fill-amber-400 shrink-0" />
+            <p className="text-sm">
+              You earned{" "}
+              <span className="font-semibold text-amber-400">
+                {Math.floor(Number(booking.totalFare) / 10)} reward points
+              </span>{" "}
+              — redeem them in your wallet.
+            </p>
           </div>
         )}
 

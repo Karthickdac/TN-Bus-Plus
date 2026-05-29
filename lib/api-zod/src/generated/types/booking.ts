@@ -25,4 +25,6 @@ export interface Booking {
   createdAt: string;
   /** @nullable */
   qrCode?: string | null;
+  /** Reward points credited for this booking. Only present on the create-booking response. */
+  rewardPointsEarned?: number;
 }

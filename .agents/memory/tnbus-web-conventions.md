@@ -49,3 +49,14 @@ unbuilt (separate task).
   it needs real auth (Book.tsx hardcodes `passengerId`), so it's a security task,
   not a one-endpoint patch.
 - `/admin/*` routes (frontend) and admin APIs have no authz; AuthUser has no role field.
+
+## Loyalty/wallet value must derive from server-side fare, never client input
+Reward points on `POST /bookings` are computed from the AUTHORITATIVE schedule
+fare (`schedule.fare` × seat count), NOT the client-supplied `totalFare`.
+**Why:** points redeem into real wallet credit (1pt=₹1 via
+`/passengers/:id/rewards/redeem`), so trusting client fare would let a caller
+mint arbitrary balance by inflating the booking fare. NOTE: the ticket *charge*
+itself still trusts client `totalFare` (pre-existing, app-wide) — separate
+follow-up. Wallet/pass mutations (topup/redeem/purchase in `passes.ts`) use
+`db.transaction` + `.for("update")` row locks; post-commit notifications are
+best-effort (try/catch) so a notify failure never returns a false 500.

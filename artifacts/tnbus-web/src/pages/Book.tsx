@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation, useSearch } from "wouter";
 import { motion } from "framer-motion";
-import { MapPin, Phone, User, Loader2, XCircle } from "lucide-react";
+import { MapPin, Phone, User, Loader2, XCircle, ShieldCheck, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCreateBooking } from "@workspace/api-client-react";
@@ -134,6 +134,22 @@ export default function Book() {
             <p className="text-xs text-muted-foreground">
               {seats.length} seat{seats.length > 1 ? "s" : ""}
             </p>
+          </div>
+        </div>
+
+        {/* Government subsidy + loyalty */}
+        <div className="mt-4 pt-4 border-t border-border/40 space-y-2">
+          <div className="flex items-center gap-2 text-sm">
+            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span className="text-muted-foreground">
+              Government of Tamil Nadu subsidised fare — concession already applied.
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <Star className="w-4 h-4 text-amber-400 shrink-0" />
+            <span className="text-muted-foreground">
+              You'll earn <span className="font-semibold text-amber-400">{Math.floor(fare / 10)} reward points</span> on this booking.
+            </span>
           </div>
         </div>
       </div>

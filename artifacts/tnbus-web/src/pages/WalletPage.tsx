@@ -1,14 +1,85 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowDownLeft, ArrowUpRight, Wallet, Star } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Wallet, Star, Plus, Gift, Loader2, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useGetWallet } from "@workspace/api-client-react";
+import {
+  useGetWallet,
+  useTopUpWallet,
+  useRedeemRewardPoints,
+  getGetWalletQueryKey,
+} from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+
+const TOPUP_PRESETS = [100, 200, 500, 1000];
+
+function readApiError(err: unknown, fallback: string): string {
+  const data = (err as { data?: unknown } | undefined)?.data;
+  if (data && typeof data === "object" && "error" in data) {
+    return String((data as { error: unknown }).error);
+  }
+  return fallback;
+}
 
 export default function WalletPage() {
-  const { user } = useAuth();
-  const { data: wallet, isLoading } = useGetWallet(user?.id ?? 0);
+  const { user, refresh } = useAuth();
+  const passengerId = user?.id ?? 0;
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const { data: wallet, isLoading } = useGetWallet(passengerId, {
+    query: { enabled: passengerId > 0, queryKey: getGetWalletQueryKey(passengerId) },
+  });
+  const topUp = useTopUpWallet();
+  const redeem = useRedeemRewardPoints();
+
+  const [showTopUp, setShowTopUp] = useState(false);
+  const [amount, setAmount] = useState<string>("500");
+  const [redeemPoints, setRedeemPoints] = useState<string>("");
+  const [showRedeem, setShowRedeem] = useState(false);
 
   const fmtDt = (iso: string) => new Date(iso).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+
+  const refreshWallet = async () => {
+    await queryClient.invalidateQueries({ queryKey: getGetWalletQueryKey(passengerId) });
+    await refresh();
+  };
+
+  const handleTopUp = async () => {
+    const amt = Number(amount);
+    if (!(amt > 0)) {
+      toast({ title: "Enter a valid amount", variant: "destructive" });
+      return;
+    }
+    try {
+      await topUp.mutateAsync({ id: passengerId, data: { amount: amt, method: "UPI" } });
+      await refreshWallet();
+      setShowTopUp(false);
+      toast({ title: "Wallet topped up", description: `₹${amt.toFixed(2)} added to your wallet.` });
+    } catch (err) {
+      toast({ title: "Top-up failed", description: readApiError(err, "Please try again."), variant: "destructive" });
+    }
+  };
+
+  const handleRedeem = async () => {
+    const pts = Math.floor(Number(redeemPoints));
+    if (!(pts > 0)) {
+      toast({ title: "Enter points to redeem", variant: "destructive" });
+      return;
+    }
+    try {
+      await redeem.mutateAsync({ id: passengerId, data: { points: pts } });
+      await refreshWallet();
+      setShowRedeem(false);
+      setRedeemPoints("");
+      toast({ title: "Points redeemed", description: `₹${pts.toFixed(2)} credited to your wallet.` });
+    } catch (err) {
+      toast({ title: "Redeem failed", description: readApiError(err, "Please try again."), variant: "destructive" });
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
@@ -22,7 +93,7 @@ export default function WalletPage() {
       ) : wallet && (
         <>
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-br from-primary/20 via-primary/10 to-violet-500/10 border border-primary/30 rounded-2xl p-6 mb-6">
+            className="bg-gradient-to-br from-primary/20 via-primary/10 to-violet-500/10 border border-primary/30 rounded-2xl p-6 mb-4">
             <div className="flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-2 text-muted-foreground mb-2">
@@ -40,6 +111,87 @@ export default function WalletPage() {
               </div>
             </div>
           </motion.div>
+
+          {/* Actions */}
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            <Button className="h-11 bg-primary hover:bg-primary/90" onClick={() => { setShowTopUp(v => !v); setShowRedeem(false); }}>
+              <Plus className="w-4 h-4 mr-2" /> Add Money
+            </Button>
+            <Button
+              variant="outline"
+              className="h-11"
+              disabled={wallet.rewardPoints <= 0}
+              onClick={() => { setShowRedeem(v => !v); setShowTopUp(false); setRedeemPoints(String(wallet.rewardPoints)); }}
+            >
+              <Gift className="w-4 h-4 mr-2" /> Redeem Points
+            </Button>
+          </div>
+
+          {/* Top-up panel */}
+          {showTopUp && (
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+              className="bg-card border border-border/50 rounded-2xl p-5 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-semibold">Add Money</h2>
+                <button onClick={() => setShowTopUp(false)} className="text-muted-foreground hover:text-foreground">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="grid grid-cols-4 gap-2 mb-3">
+                {TOPUP_PRESETS.map(p => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setAmount(String(p))}
+                    className={`rounded-xl py-2 text-sm font-medium border transition-colors ${Number(amount) === p ? "border-primary bg-primary/10 text-primary" : "border-border/60 hover:bg-primary/5"}`}
+                  >
+                    ₹{p}
+                  </button>
+                ))}
+              </div>
+              <Input
+                type="number"
+                min={1}
+                value={amount}
+                onChange={e => setAmount(e.target.value)}
+                placeholder="Enter amount"
+                className="mb-3"
+              />
+              <p className="text-xs text-muted-foreground mb-3 text-center">Simulated payment · secured with 256-bit SSL</p>
+              <Button className="w-full bg-primary hover:bg-primary/90" onClick={handleTopUp} disabled={topUp.isPending}>
+                {topUp.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing…</> : `Add ₹${Number(amount || 0).toFixed(0)}`}
+              </Button>
+            </motion.div>
+          )}
+
+          {/* Redeem panel */}
+          {showRedeem && (
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+              className="bg-card border border-border/50 rounded-2xl p-5 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-semibold">Redeem Reward Points</h2>
+                <button onClick={() => setShowRedeem(false)} className="text-muted-foreground hover:text-foreground">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <p className="text-sm text-muted-foreground mb-3">
+                Convert points to wallet credit at <span className="font-medium text-foreground">1 point = ₹1</span>. You have{" "}
+                <span className="font-semibold text-amber-400">{wallet.rewardPoints} points</span>.
+              </p>
+              <Input
+                type="number"
+                min={1}
+                max={wallet.rewardPoints}
+                value={redeemPoints}
+                onChange={e => setRedeemPoints(e.target.value)}
+                placeholder="Points to redeem"
+                className="mb-3"
+              />
+              <Button className="w-full bg-primary hover:bg-primary/90" onClick={handleRedeem} disabled={redeem.isPending}>
+                {redeem.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Redeeming…</> : `Redeem for ₹${Math.floor(Number(redeemPoints || 0)).toFixed(0)}`}
+              </Button>
+            </motion.div>
+          )}
 
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
             className="bg-card border border-border/50 rounded-2xl overflow-hidden">
@@ -60,7 +212,7 @@ export default function WalletPage() {
                       <p className="text-xs text-muted-foreground">{fmtDt(t.createdAt)}</p>
                     </div>
                     <p className={`font-semibold tabular-nums shrink-0 ${isCredit ? "text-emerald-400" : "text-red-400"}`}>
-                      {isCredit ? "+" : ""}₹{Math.abs(Number(t.amount)).toFixed(2)}
+                      {isCredit ? "+" : "−"}₹{Math.abs(Number(t.amount)).toFixed(2)}
                     </p>
                   </motion.div>
                 );

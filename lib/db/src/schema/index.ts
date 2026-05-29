@@ -10,3 +10,4 @@ export * from "./savedRoutes";
 export * from "./notifications";
 export * from "./refunds";
 export * from "./userPreferences";
+export * from "./passes";

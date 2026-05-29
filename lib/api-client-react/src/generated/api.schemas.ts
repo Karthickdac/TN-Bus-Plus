@@ -144,6 +144,8 @@ export interface Booking {
   createdAt: string;
   /** @nullable */
   qrCode?: string | null;
+  /** Reward points credited for this booking. Only present on the create-booking response. */
+  rewardPointsEarned?: number;
 }
 
 export interface BookingInput {
@@ -190,6 +192,46 @@ export interface Wallet {
   balance: number;
   rewardPoints: number;
   transactions: WalletTransaction[];
+}
+
+export interface WalletTopUpInput {
+  amount: number;
+  method?: string;
+}
+
+export interface RewardRedeemInput {
+  points: number;
+}
+
+export interface PassProduct {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  durationDays: number;
+  price: number;
+  subsidyAmount: number;
+  netPrice: number;
+  benefits: string[];
+}
+
+export interface Pass {
+  id: number;
+  passengerId: number;
+  productId: string;
+  name: string;
+  category: string;
+  price: number;
+  subsidyAmount: number;
+  amountPaid: number;
+  validFrom: string;
+  validUntil: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface PassPurchaseInput {
+  productId: string;
 }
 
 export interface BusLocation {

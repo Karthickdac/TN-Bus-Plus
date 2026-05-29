@@ -19,6 +19,7 @@ import Track from "@/pages/Track";
 import Dashboard from "@/pages/Dashboard";
 import Trips from "@/pages/Trips";
 import WalletPage from "@/pages/WalletPage";
+import Passes from "@/pages/Passes";
 import Profile from "@/pages/Profile";
 import SavedRoutes from "@/pages/SavedRoutes";
 import History from "@/pages/History";
@@ -66,6 +67,7 @@ function Router() {
           <Route path="/dashboard/notifications">{() => <ProtectedRoute component={Notifications} />}</Route>
           <Route path="/dashboard/refunds">{() => <ProtectedRoute component={Refunds} />}</Route>
           <Route path="/dashboard/wallet">{() => <ProtectedRoute component={WalletPage} />}</Route>
+          <Route path="/dashboard/passes">{() => <ProtectedRoute component={Passes} />}</Route>
           <Route path="/dashboard/profile">{() => <ProtectedRoute component={Profile} />}</Route>
           <Route path="/admin">{() => <AdminLayout><AdminDashboard /></AdminLayout>}</Route>
           <Route path="/admin/pos">{() => <AdminLayout><AdminPOS /></AdminLayout>}</Route>

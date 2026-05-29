@@ -40,6 +40,9 @@ import type {
   ListBookingsParams,
   ListRoutesParams,
   Notification,
+  Pass,
+  PassProduct,
+  PassPurchaseInput,
   Passenger,
   PassengerInput,
   PassengerUpdate,
@@ -47,6 +50,7 @@ import type {
   RebookingSuggestion,
   Refund,
   RevenueAnalytics,
+  RewardRedeemInput,
   Route,
   SavedRoute,
   SavedRouteInput,
@@ -55,7 +59,8 @@ import type {
   Seat,
   UserPreferences,
   UserPreferencesInput,
-  Wallet
+  Wallet,
+  WalletTopUpInput
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -1382,6 +1387,376 @@ export function useGetWallet<TData = Awaited<ReturnType<typeof getWallet>>, TErr
 
 
 
+
+export const getTopUpWalletUrl = (id: number,) => {
+
+
+
+
+  return `/api/passengers/${id}/wallet/topup`
+}
+
+/**
+ * @summary Add money to the wallet (simulated payment)
+ */
+export const topUpWallet = async (id: number,
+    walletTopUpInput: WalletTopUpInput, options?: RequestInit): Promise<Wallet> => {
+
+  return customFetch<Wallet>(getTopUpWalletUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      walletTopUpInput,)
+  }
+);}
+
+
+
+
+export const getTopUpWalletMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof topUpWallet>>, TError,{id: number;data: BodyType<WalletTopUpInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof topUpWallet>>, TError,{id: number;data: BodyType<WalletTopUpInput>}, TContext> => {
+
+const mutationKey = ['topUpWallet'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof topUpWallet>>, {id: number;data: BodyType<WalletTopUpInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  topUpWallet(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type TopUpWalletMutationResult = NonNullable<Awaited<ReturnType<typeof topUpWallet>>>
+    export type TopUpWalletMutationBody = BodyType<WalletTopUpInput>
+    export type TopUpWalletMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Add money to the wallet (simulated payment)
+ */
+export const useTopUpWallet = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof topUpWallet>>, TError,{id: number;data: BodyType<WalletTopUpInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof topUpWallet>>,
+        TError,
+        {id: number;data: BodyType<WalletTopUpInput>},
+        TContext
+      > => {
+      return useMutation(getTopUpWalletMutationOptions(options));
+    }
+
+export const getRedeemRewardPointsUrl = (id: number,) => {
+
+
+
+
+  return `/api/passengers/${id}/rewards/redeem`
+}
+
+/**
+ * @summary Redeem reward points for wallet credit
+ */
+export const redeemRewardPoints = async (id: number,
+    rewardRedeemInput: RewardRedeemInput, options?: RequestInit): Promise<Wallet> => {
+
+  return customFetch<Wallet>(getRedeemRewardPointsUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      rewardRedeemInput,)
+  }
+);}
+
+
+
+
+export const getRedeemRewardPointsMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof redeemRewardPoints>>, TError,{id: number;data: BodyType<RewardRedeemInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof redeemRewardPoints>>, TError,{id: number;data: BodyType<RewardRedeemInput>}, TContext> => {
+
+const mutationKey = ['redeemRewardPoints'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof redeemRewardPoints>>, {id: number;data: BodyType<RewardRedeemInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  redeemRewardPoints(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RedeemRewardPointsMutationResult = NonNullable<Awaited<ReturnType<typeof redeemRewardPoints>>>
+    export type RedeemRewardPointsMutationBody = BodyType<RewardRedeemInput>
+    export type RedeemRewardPointsMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Redeem reward points for wallet credit
+ */
+export const useRedeemRewardPoints = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof redeemRewardPoints>>, TError,{id: number;data: BodyType<RewardRedeemInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof redeemRewardPoints>>,
+        TError,
+        {id: number;data: BodyType<RewardRedeemInput>},
+        TContext
+      > => {
+      return useMutation(getRedeemRewardPointsMutationOptions(options));
+    }
+
+export const getListPassProductsUrl = () => {
+
+
+
+
+  return `/api/pass-products`
+}
+
+/**
+ * @summary List available pass products with subsidy details
+ */
+export const listPassProducts = async ( options?: RequestInit): Promise<PassProduct[]> => {
+
+  return customFetch<PassProduct[]>(getListPassProductsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPassProductsQueryKey = () => {
+    return [
+    `/api/pass-products`
+    ] as const;
+    }
+
+
+export const getListPassProductsQueryOptions = <TData = Awaited<ReturnType<typeof listPassProducts>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPassProducts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPassProductsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPassProducts>>> = ({ signal }) => listPassProducts({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPassProducts>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListPassProductsQueryResult = NonNullable<Awaited<ReturnType<typeof listPassProducts>>>
+export type ListPassProductsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List available pass products with subsidy details
+ */
+
+export function useListPassProducts<TData = Awaited<ReturnType<typeof listPassProducts>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPassProducts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListPassProductsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getListPassesUrl = (id: number,) => {
+
+
+
+
+  return `/api/passengers/${id}/passes`
+}
+
+/**
+ * @summary List a passenger's purchased passes
+ */
+export const listPasses = async (id: number, options?: RequestInit): Promise<Pass[]> => {
+
+  return customFetch<Pass[]>(getListPassesUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPassesQueryKey = (id: number,) => {
+    return [
+    `/api/passengers/${id}/passes`
+    ] as const;
+    }
+
+
+export const getListPassesQueryOptions = <TData = Awaited<ReturnType<typeof listPasses>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPasses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPassesQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPasses>>> = ({ signal }) => listPasses(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPasses>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListPassesQueryResult = NonNullable<Awaited<ReturnType<typeof listPasses>>>
+export type ListPassesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List a passenger's purchased passes
+ */
+
+export function useListPasses<TData = Awaited<ReturnType<typeof listPasses>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPasses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListPassesQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getPurchasePassUrl = (id: number,) => {
+
+
+
+
+  return `/api/passengers/${id}/passes`
+}
+
+/**
+ * @summary Purchase a pass (paid from wallet, simulated)
+ */
+export const purchasePass = async (id: number,
+    passPurchaseInput: PassPurchaseInput, options?: RequestInit): Promise<Pass> => {
+
+  return customFetch<Pass>(getPurchasePassUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      passPurchaseInput,)
+  }
+);}
+
+
+
+
+export const getPurchasePassMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof purchasePass>>, TError,{id: number;data: BodyType<PassPurchaseInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof purchasePass>>, TError,{id: number;data: BodyType<PassPurchaseInput>}, TContext> => {
+
+const mutationKey = ['purchasePass'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof purchasePass>>, {id: number;data: BodyType<PassPurchaseInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  purchasePass(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PurchasePassMutationResult = NonNullable<Awaited<ReturnType<typeof purchasePass>>>
+    export type PurchasePassMutationBody = BodyType<PassPurchaseInput>
+    export type PurchasePassMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Purchase a pass (paid from wallet, simulated)
+ */
+export const usePurchasePass = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof purchasePass>>, TError,{id: number;data: BodyType<PassPurchaseInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof purchasePass>>,
+        TError,
+        {id: number;data: BodyType<PassPurchaseInput>},
+        TContext
+      > => {
+      return useMutation(getPurchasePassMutationOptions(options));
+    }
 
 export const getGetBusLocationUrl = (busId: number,) => {
 

@@ -130,6 +130,9 @@ export default function Navbar() {
                 <DropdownMenuItem onClick={() => setLocation("/dashboard/refunds")} className="cursor-pointer">
                   <RefreshCcw className="w-4 h-4 mr-2 text-blue-500" /> Refunds
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLocation("/dashboard/passes")} className="cursor-pointer">
+                  <Ticket className="w-4 h-4 mr-2 text-violet-500" /> Travel Passes
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setLocation("/dashboard/wallet")} className="cursor-pointer">
                   <Wallet className="w-4 h-4 mr-2 text-orange-500" />
                   Wallet · ₹{Number(user.walletBalance).toFixed(0)}

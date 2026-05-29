@@ -202,7 +202,8 @@ export const ListBookingsResponseItem = zod.object({
   "passengerName": zod.string(),
   "passengerPhone": zod.string(),
   "createdAt": zod.string(),
-  "qrCode": zod.string().nullish()
+  "qrCode": zod.string().nullish(),
+  "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking. Only present on the create-booking response.')
 })
 export const ListBookingsResponse = zod.array(ListBookingsResponseItem)
 
@@ -244,7 +245,8 @@ export const GetBookingResponse = zod.object({
   "passengerName": zod.string(),
   "passengerPhone": zod.string(),
   "createdAt": zod.string(),
-  "qrCode": zod.string().nullish()
+  "qrCode": zod.string().nullish(),
+  "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking. Only present on the create-booking response.')
 })
 
 
@@ -272,7 +274,8 @@ export const CancelBookingResponse = zod.object({
   "passengerName": zod.string(),
   "passengerPhone": zod.string(),
   "createdAt": zod.string(),
-  "qrCode": zod.string().nullish()
+  "qrCode": zod.string().nullish(),
+  "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking. Only present on the create-booking response.')
 })
 
 
@@ -300,7 +303,8 @@ export const GetPnrStatusResponse = zod.object({
   "passengerName": zod.string(),
   "passengerPhone": zod.string(),
   "createdAt": zod.string(),
-  "qrCode": zod.string().nullish()
+  "qrCode": zod.string().nullish(),
+  "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking. Only present on the create-booking response.')
 })
 
 
@@ -374,6 +378,108 @@ export const GetWalletResponse = zod.object({
   "description": zod.string(),
   "createdAt": zod.string()
 }))
+})
+
+
+/**
+ * @summary Add money to the wallet (simulated payment)
+ */
+export const TopUpWalletParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const TopUpWalletBody = zod.object({
+  "amount": zod.number(),
+  "method": zod.string().optional()
+})
+
+export const TopUpWalletResponse = zod.object({
+  "balance": zod.number(),
+  "rewardPoints": zod.number(),
+  "transactions": zod.array(zod.object({
+  "id": zod.number(),
+  "amount": zod.number(),
+  "type": zod.string(),
+  "description": zod.string(),
+  "createdAt": zod.string()
+}))
+})
+
+
+/**
+ * @summary Redeem reward points for wallet credit
+ */
+export const RedeemRewardPointsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const RedeemRewardPointsBody = zod.object({
+  "points": zod.number()
+})
+
+export const RedeemRewardPointsResponse = zod.object({
+  "balance": zod.number(),
+  "rewardPoints": zod.number(),
+  "transactions": zod.array(zod.object({
+  "id": zod.number(),
+  "amount": zod.number(),
+  "type": zod.string(),
+  "description": zod.string(),
+  "createdAt": zod.string()
+}))
+})
+
+
+/**
+ * @summary List available pass products with subsidy details
+ */
+export const ListPassProductsResponseItem = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "category": zod.string(),
+  "description": zod.string(),
+  "durationDays": zod.number(),
+  "price": zod.number(),
+  "subsidyAmount": zod.number(),
+  "netPrice": zod.number(),
+  "benefits": zod.array(zod.string())
+})
+export const ListPassProductsResponse = zod.array(ListPassProductsResponseItem)
+
+
+/**
+ * @summary List a passenger's purchased passes
+ */
+export const ListPassesParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ListPassesResponseItem = zod.object({
+  "id": zod.number(),
+  "passengerId": zod.number(),
+  "productId": zod.string(),
+  "name": zod.string(),
+  "category": zod.string(),
+  "price": zod.number(),
+  "subsidyAmount": zod.number(),
+  "amountPaid": zod.number(),
+  "validFrom": zod.string(),
+  "validUntil": zod.string(),
+  "status": zod.string(),
+  "createdAt": zod.string()
+})
+export const ListPassesResponse = zod.array(ListPassesResponseItem)
+
+
+/**
+ * @summary Purchase a pass (paid from wallet, simulated)
+ */
+export const PurchasePassParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const PurchasePassBody = zod.object({
+  "productId": zod.string()
 })
 
 
@@ -452,7 +558,8 @@ export const GetUpcomingTripsResponseItem = zod.object({
   "passengerName": zod.string(),
   "passengerPhone": zod.string(),
   "createdAt": zod.string(),
-  "qrCode": zod.string().nullish()
+  "qrCode": zod.string().nullish(),
+  "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking. Only present on the create-booking response.')
 })
 export const GetUpcomingTripsResponse = zod.array(GetUpcomingTripsResponseItem)
 
@@ -515,7 +622,8 @@ export const AdminListBookingsResponseItem = zod.object({
   "passengerName": zod.string(),
   "passengerPhone": zod.string(),
   "createdAt": zod.string(),
-  "qrCode": zod.string().nullish()
+  "qrCode": zod.string().nullish(),
+  "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking. Only present on the create-booking response.')
 })
 export const AdminListBookingsResponse = zod.array(AdminListBookingsResponseItem)
 

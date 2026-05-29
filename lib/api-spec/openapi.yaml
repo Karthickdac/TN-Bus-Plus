@@ -17,6 +17,8 @@ tags:
     description: Booking operations
   - name: passengers
     description: Passenger operations
+  - name: passes
+    description: Travel passes and pass products
   - name: tracking
     description: Live GPS tracking
   - name: dashboard
@@ -436,6 +438,116 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Wallet"
+
+  /passengers/{id}/wallet/topup:
+    post:
+      operationId: topUpWallet
+      tags: [passengers]
+      summary: Add money to the wallet (simulated payment)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WalletTopUpInput"
+      responses:
+        "200":
+          description: Updated wallet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Wallet"
+
+  /passengers/{id}/rewards/redeem:
+    post:
+      operationId: redeemRewardPoints
+      tags: [passengers]
+      summary: Redeem reward points for wallet credit
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RewardRedeemInput"
+      responses:
+        "200":
+          description: Updated wallet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Wallet"
+
+  # Passes
+  /pass-products:
+    get:
+      operationId: listPassProducts
+      tags: [passes]
+      summary: List available pass products with subsidy details
+      responses:
+        "200":
+          description: Pass products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PassProduct"
+
+  /passengers/{id}/passes:
+    get:
+      operationId: listPasses
+      tags: [passes]
+      summary: List a passenger's purchased passes
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Purchased passes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Pass"
+    post:
+      operationId: purchasePass
+      tags: [passes]
+      summary: Purchase a pass (paid from wallet, simulated)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PassPurchaseInput"
+      responses:
+        "201":
+          description: Pass purchased
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pass"
 
   # Tracking
   /tracking/{busId}:
@@ -1128,6 +1240,9 @@ components:
           type: string
         qrCode:
           type: ["string", "null"]
+        rewardPointsEarned:
+          type: integer
+          description: Reward points credited for this booking. Only present on the create-booking response.
       required:
         - id
         - pnr
@@ -1258,6 +1373,107 @@ components:
         - type
         - description
         - createdAt
+
+    WalletTopUpInput:
+      type: object
+      properties:
+        amount:
+          type: number
+        method:
+          type: string
+      required:
+        - amount
+
+    RewardRedeemInput:
+      type: object
+      properties:
+        points:
+          type: integer
+      required:
+        - points
+
+    PassProduct:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        durationDays:
+          type: integer
+        price:
+          type: number
+        subsidyAmount:
+          type: number
+        netPrice:
+          type: number
+        benefits:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - name
+        - category
+        - description
+        - durationDays
+        - price
+        - subsidyAmount
+        - netPrice
+        - benefits
+
+    Pass:
+      type: object
+      properties:
+        id:
+          type: integer
+        passengerId:
+          type: integer
+        productId:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+        price:
+          type: number
+        subsidyAmount:
+          type: number
+        amountPaid:
+          type: number
+        validFrom:
+          type: string
+        validUntil:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - passengerId
+        - productId
+        - name
+        - category
+        - price
+        - subsidyAmount
+        - amountPaid
+        - validFrom
+        - validUntil
+        - status
+        - createdAt
+
+    PassPurchaseInput:
+      type: object
+      properties:
+        productId:
+          type: string
+      required:
+        - productId
 
     BusLocation:
       type: object
