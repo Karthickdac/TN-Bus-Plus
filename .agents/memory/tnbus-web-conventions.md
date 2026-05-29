@@ -60,3 +60,14 @@ itself still trusts client `totalFare` (pre-existing, app-wide) — separate
 follow-up. Wallet/pass mutations (topup/redeem/purchase in `passes.ts`) use
 `db.transaction` + `.for("update")` row locks; post-commit notifications are
 best-effort (try/catch) so a notify failure never returns a false 500.
+
+## Money-moving endpoints DO enforce session ownership (rest of app does not)
+App-wide most `/passengers/:id/*` routes trust the path id with no authz. EXCEPTION:
+the wallet/pass financial endpoints (`POST /passengers/:id/wallet/topup`,
+`/rewards/redeem`, `POST`+`GET /passengers/:id/passes`) call `requireOwner()` in
+`passes.ts` — 401 if no `req.session.passengerId`, 403 if it != `:id`. Session is
+set on login/signup (`auth.ts`). Wallet-paid bookings (`paymentMethod:"wallet"`)
+debit the TRUSTED schedule fare, not client `totalFare`. The booking endpoint
+itself still trusts the body `passengerId` (POS walk-ins send 0), so the *web*
+Book.tsx must send the logged-in `user.id` for rewards to credit the right person.
+**Why:** these move real stored value; IDOR there is directly exploitable.

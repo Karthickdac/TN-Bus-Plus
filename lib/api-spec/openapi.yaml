@@ -1277,6 +1277,9 @@ components:
           type: string
         totalFare:
           type: number
+        paymentMethod:
+          type: string
+          description: How the fare is paid. When "wallet", the trusted server-side fare is debited from the passenger's wallet balance (this is how redeemed reward points are spent against fares). Any other value is treated as a simulated external payment.
       required:
         - passengerId
         - scheduleId

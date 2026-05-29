@@ -155,6 +155,8 @@ export interface BookingInput {
   passengerName: string;
   passengerPhone: string;
   totalFare: number;
+  /** How the fare is paid. When "wallet", the trusted server-side fare is debited from the passenger's wallet balance (this is how redeemed reward points are spent against fares). Any other value is treated as a simulated external payment. */
+  paymentMethod?: string;
 }
 
 export interface Passenger {

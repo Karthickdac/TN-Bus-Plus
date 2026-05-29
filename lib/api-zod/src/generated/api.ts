@@ -217,7 +217,8 @@ export const CreateBookingBody = zod.object({
   "seatNumbers": zod.array(zod.string()),
   "passengerName": zod.string(),
   "passengerPhone": zod.string(),
-  "totalFare": zod.number()
+  "totalFare": zod.number(),
+  "paymentMethod": zod.string().optional().describe('How the fare is paid. When \"wallet\", the trusted server-side fare is debited from the passenger\'s wallet balance (this is how redeemed reward points are spent against fares). Any other value is treated as a simulated external payment.')
 })
 
 

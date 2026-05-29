@@ -10,6 +10,23 @@ const router: IRouter = Router();
 // Reward points convert to wallet credit at a fixed rate (1 point = ₹1).
 const POINT_VALUE_RUPEES = 1;
 
+// These endpoints move real stored value (wallet balance, reward points,
+// pass purchases), so they must be locked to the signed-in owner. Without
+// this a caller could top up, drain, or buy passes against another
+// passenger's wallet just by changing the :id in the URL (IDOR).
+function requireOwner(req: { session?: { passengerId?: number } }, res: import("express").Response, id: number): boolean {
+  const sessionId = req.session?.passengerId;
+  if (!sessionId) {
+    res.status(401).json({ error: "Please sign in to continue." });
+    return false;
+  }
+  if (sessionId !== id) {
+    res.status(403).json({ error: "You can only manage your own wallet and passes." });
+    return false;
+  }
+  return true;
+}
+
 // Static pass catalogue. Government bus passes are heavily subsidised, so each
 // product carries a real subsidy that reduces what the passenger actually pays.
 interface PassProductDef {
@@ -111,6 +128,7 @@ async function buildWalletResponse(passengerId: number) {
 // gateway; here we treat the top-up as already paid and just credit the wallet.
 router.post("/passengers/:id/wallet/topup", async (req, res) => {
   const id = parseInt(req.params.id);
+  if (!requireOwner(req, res, id)) return;
   const parsed = TopUpWalletBody.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input" });
   const amount = Number(parsed.data.amount);
@@ -143,6 +161,7 @@ router.post("/passengers/:id/wallet/topup", async (req, res) => {
 // Redeem reward points for wallet credit, which can then be spent on fares.
 router.post("/passengers/:id/rewards/redeem", async (req, res) => {
   const id = parseInt(req.params.id);
+  if (!requireOwner(req, res, id)) return;
   const parsed = RedeemRewardPointsBody.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input" });
   const points = Math.floor(Number(parsed.data.points));
@@ -182,6 +201,7 @@ router.get("/pass-products", async (_req, res) => {
 
 router.get("/passengers/:id/passes", async (req, res) => {
   const id = parseInt(req.params.id);
+  if (!requireOwner(req, res, id)) return;
   const rows = await db.select().from(passesTable)
     .where(eq(passesTable.passengerId, id))
     .orderBy(desc(passesTable.createdAt));
@@ -193,6 +213,7 @@ router.get("/passengers/:id/passes", async (req, res) => {
 // the transaction record and the pass row are created atomically.
 router.post("/passengers/:id/passes", async (req, res) => {
   const id = parseInt(req.params.id);
+  if (!requireOwner(req, res, id)) return;
   const parsed = PurchasePassBody.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input" });
 

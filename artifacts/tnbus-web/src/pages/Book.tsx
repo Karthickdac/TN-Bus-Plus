@@ -5,6 +5,7 @@ import { MapPin, Phone, User, Loader2, XCircle, ShieldCheck, Star } from "lucide
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCreateBooking } from "@workspace/api-client-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Step = "details" | "payment" | "processing" | "failed";
 
@@ -18,15 +19,17 @@ const PAYMENT_METHODS = [
 export default function Book() {
   const [, setLocation] = useLocation();
   const search = useSearch();
+  const { user } = useAuth();
   const p = new URLSearchParams(search);
   const scheduleId = parseInt(p.get("scheduleId") ?? "1");
   const seats = (p.get("seats") ?? "").split(",").filter(Boolean);
   const fare = parseFloat(p.get("fare") ?? "0");
 
-  const [name, setName] = useState("Arun Kumar");
-  const [phone, setPhone] = useState("9876543210");
+  const [name, setName] = useState(user?.name ?? "");
+  const [phone, setPhone] = useState(user?.phone ?? "");
   const [method, setMethod] = useState("UPI");
   const [step, setStep] = useState<Step>("details");
+  const [error, setError] = useState<string | null>(null);
 
   const createBooking = useCreateBooking();
 
@@ -35,21 +38,31 @@ export default function Book() {
       setStep("payment");
       return;
     }
+    // Loyalty and wallet actions are tied to the signed-in account, so a
+    // booking must be made by a logged-in passenger.
+    if (!user) {
+      setLocation("/login");
+      return;
+    }
+    setError(null);
     setStep("processing");
     try {
       const result = await createBooking.mutateAsync({
         data: {
-          passengerId: 1,
+          passengerId: user.id,
           scheduleId,
           seatNumbers: seats,
           passengerName: name,
           passengerPhone: phone,
           totalFare: fare,
+          paymentMethod: method.toLowerCase().includes("wallet") ? "wallet" : method,
         },
       });
       // Brief simulated settle delay, then move to the e-ticket.
       setTimeout(() => setLocation(`/booking/${result.id}`), 600);
-    } catch {
+    } catch (err) {
+      const data = (err as { data?: { error?: string } } | undefined)?.data;
+      setError(data?.error ?? "Your payment couldn't be completed and you have not been charged. Please try again.");
       setStep("failed");
     }
   };
@@ -78,7 +91,7 @@ export default function Book() {
           </div>
           <h2 className="text-xl font-bold mb-2">Payment Failed</h2>
           <p className="text-muted-foreground mb-6">
-            Your payment couldn't be completed and you have not been charged. Please try again.
+            {error ?? "Your payment couldn't be completed and you have not been charged. Please try again."}
           </p>
           <div className="flex gap-3">
             <Button variant="outline" className="flex-1" onClick={() => setLocation("/")}>
@@ -197,7 +210,11 @@ export default function Book() {
                 >
                   <div className="text-xl mb-1">{opt.icon}</div>
                   <div className="font-medium text-sm">{opt.label}</div>
-                  <div className="text-xs text-muted-foreground">{opt.desc}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {opt.label === "Wallet" && user
+                      ? `Balance ₹${Number(user.walletBalance).toFixed(2)}`
+                      : opt.desc}
+                  </div>
                 </button>
               );
             })}

@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
-import { bookingsTable, schedulesTable, busesTable, routesTable, refundsTable, passengersTable } from "@workspace/db";
+import { bookingsTable, schedulesTable, busesTable, routesTable, refundsTable, passengersTable, walletTransactionsTable } from "@workspace/db";
 import { eq, and, gt, sql } from "drizzle-orm";
 import { CreateBookingBody } from "@workspace/api-zod";
 import { createNotification } from "../lib/notify";
@@ -63,6 +63,26 @@ router.post("/bookings", async (req, res) => {
   const departureTime = schedule?.departureTime.toISOString() ?? new Date().toISOString();
   const arrivalTime = schedule?.arrivalTime.toISOString() ?? new Date().toISOString();
   const busNumber = bus?.busNumber ?? "TN-XXX";
+
+  // The amount we actually charge / record. For wallet payments we charge the
+  // AUTHORITATIVE server-side fare (schedule price × seats) so a client can
+  // never under- or over-debit their own wallet by tampering with `totalFare`.
+  // Other (simulated external) payments keep the existing client-supplied
+  // amount. Reward value is always derived from the trusted fare.
+  const trustedFare = schedule ? Number(schedule.fare) * data.seatNumbers.length : 0;
+  const payByWallet = (data.paymentMethod ?? "").toLowerCase() === "wallet";
+  const chargedFare = payByWallet ? trustedFare : data.totalFare;
+  const rewardPointsEarned = Math.floor(trustedFare / 10);
+
+  // Wallet payment needs a real account; walk-in/counter bookings (id 0) and
+  // schedules with no known fare cannot be settled from a wallet.
+  if (payByWallet && !(data.passengerId > 0)) {
+    return res.status(400).json({ error: "Please sign in to pay from your wallet." });
+  }
+  if (payByWallet && !(trustedFare > 0)) {
+    return res.status(400).json({ error: "This fare cannot be paid from the wallet." });
+  }
+
   const qrCode = generateQrPayload({
     pnr,
     origin,
@@ -71,61 +91,84 @@ router.post("/bookings", async (req, res) => {
     busNumber,
     seatNumbers: data.seatNumbers,
     passengerName: data.passengerName,
-    totalFare: data.totalFare,
+    totalFare: chargedFare,
   });
 
-  const [booking] = await db.insert(bookingsTable).values({
-    pnr,
-    passengerId: data.passengerId,
-    scheduleId: data.scheduleId,
-    busNumber,
-    origin,
-    destination,
-    departureTime,
-    arrivalTime,
-    seatNumbers: data.seatNumbers,
-    totalFare: String(data.totalFare),
-    status: "confirmed",
-    paymentStatus: "paid",
-    passengerName: data.passengerName,
-    passengerPhone: data.passengerPhone,
-    qrCode,
-  }).returning();
+  // Settle the wallet debit, the booking row and the loyalty credit atomically
+  // so a partial failure can never leave a paid booking without its wallet
+  // movement (or vice versa). A row-level lock serialises concurrent debits.
+  const result = await db.transaction(async (tx) => {
+    if (payByWallet) {
+      const [passenger] = await tx.select().from(passengersTable)
+        .where(eq(passengersTable.id, data.passengerId)).for("update");
+      if (!passenger) return { error: "no_passenger" as const };
+      if (Number(passenger.walletBalance) < trustedFare) return { error: "insufficient" as const };
+      await tx.update(passengersTable)
+        .set({ walletBalance: sql`${passengersTable.walletBalance} - ${trustedFare}` })
+        .where(eq(passengersTable.id, data.passengerId));
+      await tx.insert(walletTransactionsTable).values({
+        passengerId: data.passengerId,
+        amount: String(trustedFare),
+        type: "debit",
+        description: `Bus fare ${origin} → ${destination}`,
+      });
+    }
 
-  await createNotification({
-    passengerId: booking.passengerId,
-    type: "booking",
-    title: `Booking confirmed: ${origin} → ${destination}`,
-    body: `Your ticket is confirmed. PNR ${pnr}, seats ${data.seatNumbers.join(", ")} on bus ${busNumber}.`,
+    const [booking] = await tx.insert(bookingsTable).values({
+      pnr,
+      passengerId: data.passengerId,
+      scheduleId: data.scheduleId,
+      busNumber,
+      origin,
+      destination,
+      departureTime,
+      arrivalTime,
+      seatNumbers: data.seatNumbers,
+      totalFare: String(chargedFare),
+      status: "confirmed",
+      paymentStatus: "paid",
+      passengerName: data.passengerName,
+      passengerPhone: data.passengerPhone,
+      qrCode,
+    }).returning();
+
+    // Loyalty: registered passengers earn 1 reward point per ₹10 of the
+    // trusted fare. Walk-in/counter bookings (sentinel id 0) have no account
+    // to credit and are skipped.
+    if (booking.passengerId > 0 && rewardPointsEarned > 0) {
+      await tx.update(passengersTable)
+        .set({ rewardPoints: sql`${passengersTable.rewardPoints} + ${rewardPointsEarned}` })
+        .where(eq(passengersTable.id, booking.passengerId));
+    }
+
+    return { ok: true as const, booking };
   });
 
-  // Loyalty: registered passengers earn 1 reward point per ₹10 of fare on a
-  // confirmed booking. Walk-in/counter bookings use the sentinel id 0 and are
-  // skipped since they have no passenger account to credit.
-  //
-  // Reward value is derived from the AUTHORITATIVE server-side fare
-  // (schedule price × seats), never the client-supplied `totalFare`. Since
-  // points redeem into real wallet credit, trusting client input here would
-  // let a caller mint arbitrary balance by inflating the fare. When no
-  // schedule is found we award nothing rather than trust the client.
-  const trustedFare = schedule ? Number(schedule.fare) * data.seatNumbers.length : 0;
-  const rewardPointsEarned = Math.floor(trustedFare / 10);
-  if (booking.passengerId > 0 && rewardPointsEarned > 0) {
-    await db.update(passengersTable)
-      .set({ rewardPoints: sql`${passengersTable.rewardPoints} + ${rewardPointsEarned}` })
-      .where(eq(passengersTable.id, booking.passengerId));
-    // Best-effort: the points are already committed, so a failed
-    // notification must not turn a successful booking into a 500.
-    try {
+  if (result.error === "no_passenger") return res.status(404).json({ error: "Passenger not found" });
+  if (result.error === "insufficient")
+    return res.status(400).json({ error: "Insufficient wallet balance. Please top up your wallet." });
+
+  const booking = result.booking;
+
+  // Best-effort notifications: the booking, payment and points have already
+  // committed, so a failed notification must not turn success into a 500.
+  try {
+    await createNotification({
+      passengerId: booking.passengerId,
+      type: "booking",
+      title: `Booking confirmed: ${origin} → ${destination}`,
+      body: `Your ticket is confirmed. PNR ${pnr}, seats ${data.seatNumbers.join(", ")} on bus ${busNumber}.`,
+    });
+    if (booking.passengerId > 0 && rewardPointsEarned > 0) {
       await createNotification({
         passengerId: booking.passengerId,
         type: "reward",
         title: `You earned ${rewardPointsEarned} reward points`,
         body: `${rewardPointsEarned} points were added for your ${origin} → ${destination} booking. Redeem them for wallet credit anytime.`,
       });
-    } catch (err) {
-      req.log.error({ err }, "failed to send reward notification");
     }
+  } catch (err) {
+    req.log.error({ err }, "failed to send booking notification");
   }
 
   res.status(201).json({
