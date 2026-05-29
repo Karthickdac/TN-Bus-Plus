@@ -68,6 +68,55 @@ export default function Home() {
         </div>
       </div>
 
+      {/* ── Announcement Ticker ───────────────────────────── */}
+      <div className="w-full bg-orange-500 border-b border-orange-600 overflow-hidden">
+        <div className="flex items-center">
+          <div className="shrink-0 bg-orange-700 text-white text-xs font-bold px-4 py-2 uppercase tracking-widest flex items-center gap-1.5 z-10">
+            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            Notice
+          </div>
+          <div className="overflow-hidden flex-1 relative">
+            <div
+              className="flex gap-12 whitespace-nowrap text-white text-xs font-medium py-2"
+              style={{ animation: "ticker 40s linear infinite" }}
+            >
+              {[
+                "🚌 New express route launched: Chennai ↔ Coimbatore via Salem — Book now!",
+                "🎉 Special fare: 20% off on all AC Sleeper bookings this weekend",
+                "📢 Pongal Special buses: Extra services from Chennai to all major districts",
+                "✅ Online booking now available for SETC Deluxe buses on all routes",
+                "🛡️ Safety update: All buses equipped with GPS tracking & CCTV cameras",
+                "⏰ Revised timings: Chennai–Madurai night service now departs at 10:30 PM",
+                "💳 Pay with UPI, Net Banking or Cards — zero convenience fee",
+                "🆕 New route: Trichy ↔ Tirunelveli Super Deluxe — starting June 1st",
+              ].map((msg, i) => (
+                <span key={i} className="inline-block">{msg}</span>
+              ))}
+              {/* duplicate for seamless loop */}
+              {[
+                "🚌 New express route launched: Chennai ↔ Coimbatore via Salem — Book now!",
+                "🎉 Special fare: 20% off on all AC Sleeper bookings this weekend",
+                "📢 Pongal Special buses: Extra services from Chennai to all major districts",
+                "✅ Online booking now available for SETC Deluxe buses on all routes",
+                "🛡️ Safety update: All buses equipped with GPS tracking & CCTV cameras",
+                "⏰ Revised timings: Chennai–Madurai night service now departs at 10:30 PM",
+                "💳 Pay with UPI, Net Banking or Cards — zero convenience fee",
+                "🆕 New route: Trichy ↔ Tirunelveli Super Deluxe — starting June 1st",
+              ].map((msg, i) => (
+                <span key={`b-${i}`} className="inline-block">{msg}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes ticker {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
+
       {/* ── Hero Section ──────────────────────────────────── */}
       <div className="relative" style={{ background: "linear-gradient(135deg, #3730a3 0%, #6d28d9 40%, #0891b2 75%, #0e7490 100%)" }}>
         <div className="w-full px-8 md:px-16 py-10 flex flex-col md:flex-row items-center gap-10">
