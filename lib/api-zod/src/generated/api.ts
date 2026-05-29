@@ -629,3 +629,172 @@ export const AssistantChatResponse = zod.object({
 })
 
 
+/**
+ * @summary List a passenger's saved routes
+ */
+export const ListSavedRoutesParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ListSavedRoutesResponseItem = zod.object({
+  "id": zod.number(),
+  "passengerId": zod.number(),
+  "origin": zod.string(),
+  "destination": zod.string(),
+  "createdAt": zod.string()
+})
+export const ListSavedRoutesResponse = zod.array(ListSavedRoutesResponseItem)
+
+
+/**
+ * @summary Save a favorite route
+ */
+export const CreateSavedRouteBody = zod.object({
+  "passengerId": zod.number(),
+  "origin": zod.string(),
+  "destination": zod.string()
+})
+
+
+/**
+ * @summary Remove a saved route
+ */
+export const DeleteSavedRouteParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary List a passenger's notifications (seeds festival/special alerts)
+ */
+export const ListNotificationsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ListNotificationsResponseItem = zod.object({
+  "id": zod.number(),
+  "passengerId": zod.number(),
+  "type": zod.string(),
+  "title": zod.string(),
+  "body": zod.string(),
+  "isRead": zod.boolean(),
+  "createdAt": zod.string()
+})
+export const ListNotificationsResponse = zod.array(ListNotificationsResponseItem)
+
+
+/**
+ * @summary Mark all of a passenger's notifications as read
+ */
+export const MarkAllNotificationsReadParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const MarkAllNotificationsReadResponseItem = zod.object({
+  "id": zod.number(),
+  "passengerId": zod.number(),
+  "type": zod.string(),
+  "title": zod.string(),
+  "body": zod.string(),
+  "isRead": zod.boolean(),
+  "createdAt": zod.string()
+})
+export const MarkAllNotificationsReadResponse = zod.array(MarkAllNotificationsReadResponseItem)
+
+
+/**
+ * @summary Mark a notification as read
+ */
+export const MarkNotificationReadParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const MarkNotificationReadResponse = zod.object({
+  "id": zod.number(),
+  "passengerId": zod.number(),
+  "type": zod.string(),
+  "title": zod.string(),
+  "body": zod.string(),
+  "isRead": zod.boolean(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary List a passenger's refund requests
+ */
+export const ListRefundsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ListRefundsResponseItem = zod.object({
+  "id": zod.number(),
+  "bookingId": zod.number(),
+  "passengerId": zod.number(),
+  "amount": zod.number(),
+  "status": zod.string(),
+  "reason": zod.string().nullish(),
+  "estimatedDate": zod.string(),
+  "createdAt": zod.string(),
+  "pnr": zod.string().nullish(),
+  "origin": zod.string().nullish(),
+  "destination": zod.string().nullish()
+})
+export const ListRefundsResponse = zod.array(ListRefundsResponseItem)
+
+
+/**
+ * @summary Get smart rebooking suggestions for the same route as a booking
+ */
+export const GetRebookingSuggestionsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetRebookingSuggestionsResponseItem = zod.object({
+  "scheduleId": zod.number(),
+  "busId": zod.number(),
+  "busNumber": zod.string(),
+  "busType": zod.string(),
+  "origin": zod.string(),
+  "destination": zod.string(),
+  "departureTime": zod.string(),
+  "arrivalTime": zod.string(),
+  "fare": zod.number(),
+  "availableSeats": zod.number()
+})
+export const GetRebookingSuggestionsResponse = zod.array(GetRebookingSuggestionsResponseItem)
+
+
+/**
+ * @summary Get a passenger's booking preferences
+ */
+export const GetPreferencesParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetPreferencesResponse = zod.object({
+  "passengerId": zod.number(),
+  "preferredSeatType": zod.string().nullish(),
+  "preferredBusType": zod.string().nullish()
+})
+
+
+/**
+ * @summary Update a passenger's booking preferences
+ */
+export const UpdatePreferencesParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdatePreferencesBody = zod.object({
+  "preferredSeatType": zod.string().nullish(),
+  "preferredBusType": zod.string().nullish()
+})
+
+export const UpdatePreferencesResponse = zod.object({
+  "passengerId": zod.number(),
+  "preferredSeatType": zod.string().nullish(),
+  "preferredBusType": zod.string().nullish()
+})
+
+

@@ -1,22 +1,33 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, XCircle, Clock } from "lucide-react";
+import { useLocation } from "wouter";
+import { ArrowRight, XCircle, Clock, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useListBookings, useCancelBooking, getListBookingsQueryKey } from "@workspace/api-client-react";
+import {
+  useListBookings, useCancelBooking, getListBookingsQueryKey,
+  getRebookingSuggestions, getListNotificationsQueryKey,
+} from "@workspace/api-client-react";
+import type { RebookingSuggestion } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import TicketQR from "@/components/TicketQR";
 
 export default function Trips() {
   const [filter, setFilter] = useState<string>("all");
+  const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { toast } = useToast();
   const passengerId = user?.id ?? 0;
 
   const { data: bookings, isLoading } = useListBookings({ passengerId });
   const cancelBooking = useCancelBooking();
+
+  const [suggestionsFor, setSuggestionsFor] = useState<number | null>(null);
+  const [suggestions, setSuggestions] = useState<RebookingSuggestion[]>([]);
 
   const filtered = (bookings ?? []).filter(b => filter === "all" || b.status === filter);
 
@@ -27,11 +38,27 @@ export default function Trips() {
   };
 
   const fmtDt = (iso: string) => new Date(iso).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+  const fmtTime = (iso: string) => new Date(iso).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
 
   const handleCancel = async (id: number) => {
-    if (!confirm("Cancel this booking? You will receive a refund.")) return;
-    await cancelBooking.mutateAsync({ id });
+    if (!confirm("Cancel this booking? A refund will be initiated and you can track it under Refunds.")) return;
+    try {
+      await cancelBooking.mutateAsync({ id });
+    } catch {
+      toast({ title: "Could not cancel booking", description: "Please try again.", variant: "destructive" });
+      return;
+    }
     queryClient.invalidateQueries({ queryKey: getListBookingsQueryKey({ passengerId }) });
+    queryClient.invalidateQueries({ queryKey: getListNotificationsQueryKey(passengerId) });
+    toast({ title: "Booking cancelled", description: "Your refund is being processed — track it under Refunds." });
+    try {
+      const sugg = await getRebookingSuggestions(id);
+      setSuggestions(sugg);
+      setSuggestionsFor(id);
+    } catch {
+      setSuggestions([]);
+      setSuggestionsFor(null);
+    }
   };
 
   return (
@@ -98,7 +125,7 @@ export default function Trips() {
                 </div>
               )}
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
                 {b.status === "confirmed" && (
                   <Button size="sm" variant="destructive" className="text-xs"
                     onClick={() => handleCancel(b.id)}
@@ -106,10 +133,41 @@ export default function Trips() {
                     <XCircle className="w-3.5 h-3.5 mr-1" /> Cancel
                   </Button>
                 )}
-                <Badge variant="outline" className={`text-xs ml-auto ${b.paymentStatus === "paid" ? "border-emerald-500/30 text-emerald-400" : b.paymentStatus === "refunded" ? "border-blue-500/30 text-blue-400" : "border-amber-500/30 text-amber-400"}`}>
-                  {b.paymentStatus}
+                <Badge variant="outline" className={`text-xs ml-auto ${b.paymentStatus === "paid" ? "border-emerald-500/30 text-emerald-400" : b.paymentStatus === "refunded" ? "border-blue-500/30 text-blue-400" : b.paymentStatus === "refund_pending" ? "border-amber-500/30 text-amber-400" : "border-amber-500/30 text-amber-400"}`}>
+                  {b.paymentStatus === "refund_pending" ? "refund processing" : b.paymentStatus}
                 </Badge>
               </div>
+
+              {suggestionsFor === b.id && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
+                  className="mt-4 border-t border-border/40 pt-4 overflow-hidden">
+                  <div className="flex items-center gap-2 mb-3 text-sm font-semibold">
+                    <Sparkles className="w-4 h-4 text-violet-400" /> Rebook this route
+                  </div>
+                  {suggestions.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No other upcoming departures found for {b.origin} → {b.destination} right now.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {suggestions.slice(0, 4).map(s => (
+                        <div key={s.scheduleId} className="flex items-center justify-between gap-3 bg-background/50 rounded-xl p-3">
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold">{fmtTime(s.departureTime)} · {s.busType}</p>
+                            <p className="text-xs text-muted-foreground truncate">{s.busNumber} · {s.availableSeats} seats left</p>
+                          </div>
+                          <div className="flex items-center gap-3 shrink-0">
+                            <span className="text-sm font-bold text-primary">₹{s.fare}</span>
+                            <Button size="sm" className="h-8 text-xs bg-primary"
+                              onClick={() => setLocation(`/bus/${s.busId}?scheduleId=${s.scheduleId}`)}>
+                              Select
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <button onClick={() => setSuggestionsFor(null)} className="text-xs text-muted-foreground hover:text-foreground mt-3">Dismiss</button>
+                </motion.div>
+              )}
             </motion.div>
           ))}
         </div>

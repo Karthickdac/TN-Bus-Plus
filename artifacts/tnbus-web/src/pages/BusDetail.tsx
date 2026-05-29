@@ -1,11 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useSearch } from "wouter";
 import { motion } from "framer-motion";
-import { MapPin, Star, ChevronRight, Shield, Wifi, Zap, Sofa, ShieldCheck, Smile } from "lucide-react";
+import { MapPin, Star, ChevronRight, Shield, Wifi, Zap, Sofa, ShieldCheck, Smile, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useGetBus, useGetSeats } from "@workspace/api-client-react";
+import {
+  useGetBus, useGetSeats,
+  useGetPreferences, useUpdatePreferences, getGetPreferencesQueryKey,
+} from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface Props { params: { id: string } }
 
@@ -22,14 +28,58 @@ export default function BusDetail({ params }: Props) {
   const [, setLocation] = useLocation();
   const search = useSearch();
   const scheduleId = parseInt(new URLSearchParams(search).get("scheduleId") ?? "1");
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const passengerId = user?.id ?? 0;
 
   const { data: bus, isLoading: busLoading } = useGetBus(busId, { query: { enabled: !!busId } });
   const { data: seats, isLoading: seatsLoading } = useGetSeats(scheduleId, { query: { enabled: !!scheduleId } });
 
+  const { data: prefs } = useGetPreferences(passengerId, {
+    query: { enabled: passengerId > 0, queryKey: getGetPreferencesQueryKey(passengerId) },
+  });
+  const updatePrefs = useUpdatePreferences();
+
   const [selected, setSelected] = useState<string[]>([]);
+  const [autoApplied, setAutoApplied] = useState(false);
 
   const maxRows = seats ? Math.max(...seats.map(s => s.row)) : 0;
   const maxCols = seats ? Math.max(...seats.map(s => s.column)) : 4;
+
+  const seatPref = prefs?.preferredSeatType ?? null;
+  const isWindow = (col: number) => col === 1 || col === maxCols;
+  const seatMatchesPref = (col: number) =>
+    seatPref === "window" ? isWindow(col) : seatPref === "aisle" ? !isWindow(col) : false;
+
+  // Auto-suggest a seat matching the saved preference once seats load.
+  useEffect(() => {
+    if (autoApplied || !seats?.length || !seatPref || selected.length > 0) return;
+    const match = seats.find(s => s.isAvailable && seatMatchesPref(s.column));
+    if (match) {
+      setSelected([match.seatNumber]);
+      setAutoApplied(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seats, seatPref]);
+
+  const savePreference = async (type: "window" | "aisle") => {
+    if (passengerId <= 0) {
+      toast({ title: "Sign in to save preferences", description: "Log in to remember your preferred seat type." });
+      return;
+    }
+    const next = seatPref === type ? null : type;
+    try {
+      await updatePrefs.mutateAsync({ id: passengerId, data: { preferredSeatType: next } });
+      queryClient.invalidateQueries({ queryKey: getGetPreferencesQueryKey(passengerId) });
+      toast({
+        title: next ? `${next === "window" ? "Window" : "Aisle"} seats preferred` : "Seat preference cleared",
+        description: next ? "We'll highlight and pre-select these seats next time." : undefined,
+      });
+    } catch {
+      toast({ title: "Could not save preference", description: "Please try again.", variant: "destructive" });
+    }
+  };
 
   const toggleSeat = (num: string, avail: boolean) => {
     if (!avail) return;
@@ -106,7 +156,27 @@ export default function BusDetail({ params }: Props) {
       {/* Seat Layout */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
         className="bg-card border border-border/50 rounded-2xl p-6 mb-6">
-        <h2 className="text-lg font-semibold mb-4">Select Seats</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <h2 className="text-lg font-semibold">Select Seats</h2>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground hidden sm:inline">Preferred:</span>
+            {(["window", "aisle"] as const).map(type => (
+              <button key={type} onClick={() => savePreference(type)} disabled={updatePrefs.isPending}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors capitalize ${
+                  seatPref === type
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "border-border/60 text-muted-foreground hover:border-primary/40"
+                }`}>
+                {seatPref === type && <Check className="w-3 h-3" />} {type}
+              </button>
+            ))}
+          </div>
+        </div>
+        {seatPref && (
+          <p className="text-xs text-primary mb-3">
+            Showing your preferred <span className="font-semibold">{seatPref}</span> seats highlighted below{autoApplied ? " — we pre-selected one for you." : "."}
+          </p>
+        )}
         <div className="flex gap-3 mb-4 flex-wrap text-xs">
           <div className="flex items-center gap-1.5"><div className="w-5 h-5 rounded bg-primary/30 border border-primary/50" />Available</div>
           <div className="flex items-center gap-1.5"><div className="w-5 h-5 rounded bg-muted border border-border" />Taken</div>
@@ -120,14 +190,16 @@ export default function BusDetail({ params }: Props) {
               const row = seats?.filter(s => s.row === ri + 1) ?? [];
               return row.map(seat => {
                 const isSelected = selected.includes(seat.seatNumber);
+                const prefMatch = seat.isAvailable && !isSelected && seatMatchesPref(seat.column);
                 const base = "w-10 h-10 rounded-lg flex items-center justify-center text-xs font-medium transition-all cursor-pointer select-none ";
-                const style = !seat.isAvailable
+                const ring = prefMatch ? " ring-2 ring-amber-400/70" : "";
+                const style = (!seat.isAvailable
                   ? base + "bg-muted border border-border cursor-not-allowed opacity-50"
                   : isSelected
                   ? base + "bg-emerald-500 border border-emerald-400 text-white scale-105"
                   : seat.isWomenOnly
                   ? base + "bg-rose-500/30 border border-rose-500/50 hover:bg-rose-500/50 text-rose-300"
-                  : base + "bg-primary/20 border border-primary/40 hover:bg-primary/40 text-primary-foreground";
+                  : base + "bg-primary/20 border border-primary/40 hover:bg-primary/40 text-primary-foreground") + ring;
                 return (
                   <div key={seat.seatNumber} className={style} onClick={() => toggleSeat(seat.seatNumber, seat.isAvailable)} title={seat.seatNumber}>
                     {seat.seatNumber}

@@ -20,6 +20,10 @@ import Dashboard from "@/pages/Dashboard";
 import Trips from "@/pages/Trips";
 import WalletPage from "@/pages/WalletPage";
 import Profile from "@/pages/Profile";
+import SavedRoutes from "@/pages/SavedRoutes";
+import History from "@/pages/History";
+import Notifications from "@/pages/Notifications";
+import Refunds from "@/pages/Refunds";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminFleet from "@/pages/admin/AdminFleet";
 import AdminBookings from "@/pages/admin/AdminBookings";
@@ -57,6 +61,10 @@ function Router() {
           <Route path="/track/:busId" component={Track} />
           <Route path="/dashboard">{() => <ProtectedRoute component={Dashboard} />}</Route>
           <Route path="/dashboard/trips">{() => <ProtectedRoute component={Trips} />}</Route>
+          <Route path="/dashboard/saved">{() => <ProtectedRoute component={SavedRoutes} />}</Route>
+          <Route path="/dashboard/history">{() => <ProtectedRoute component={History} />}</Route>
+          <Route path="/dashboard/notifications">{() => <ProtectedRoute component={Notifications} />}</Route>
+          <Route path="/dashboard/refunds">{() => <ProtectedRoute component={Refunds} />}</Route>
           <Route path="/dashboard/wallet">{() => <ProtectedRoute component={WalletPage} />}</Route>
           <Route path="/dashboard/profile">{() => <ProtectedRoute component={Profile} />}</Route>
           <Route path="/admin">{() => <AdminLayout><AdminDashboard /></AdminLayout>}</Route>

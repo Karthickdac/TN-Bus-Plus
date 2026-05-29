@@ -277,6 +277,76 @@ export interface ComplaintInput {
   description: string;
 }
 
+export interface SavedRoute {
+  id: number;
+  passengerId: number;
+  origin: string;
+  destination: string;
+  createdAt: string;
+}
+
+export interface SavedRouteInput {
+  passengerId: number;
+  origin: string;
+  destination: string;
+}
+
+export interface Notification {
+  id: number;
+  passengerId: number;
+  type: string;
+  title: string;
+  body: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface Refund {
+  id: number;
+  bookingId: number;
+  passengerId: number;
+  amount: number;
+  status: string;
+  /** @nullable */
+  reason?: string | null;
+  estimatedDate: string;
+  createdAt: string;
+  /** @nullable */
+  pnr?: string | null;
+  /** @nullable */
+  origin?: string | null;
+  /** @nullable */
+  destination?: string | null;
+}
+
+export interface RebookingSuggestion {
+  scheduleId: number;
+  busId: number;
+  busNumber: string;
+  busType: string;
+  origin: string;
+  destination: string;
+  departureTime: string;
+  arrivalTime: string;
+  fare: number;
+  availableSeats: number;
+}
+
+export interface UserPreferences {
+  passengerId: number;
+  /** @nullable */
+  preferredSeatType?: string | null;
+  /** @nullable */
+  preferredBusType?: string | null;
+}
+
+export interface UserPreferencesInput {
+  /** @nullable */
+  preferredSeatType?: string | null;
+  /** @nullable */
+  preferredBusType?: string | null;
+}
+
 export type ListRoutesParams = {
 origin?: string;
 destination?: string;

@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
-import { bookingsTable, routesTable, passengersTable } from "@workspace/db";
+import { bookingsTable, routesTable, passengersTable, savedRoutesTable } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
 
 const router: IRouter = Router();
@@ -13,6 +13,7 @@ router.get("/dashboard/stats", async (req, res) => {
     const allBookings = await db.select().from(bookingsTable).where(eq(bookingsTable.passengerId, passengerId));
     const totalSpent = allBookings.reduce((sum, b) => sum + Number(b.totalFare), 0);
     const upcomingTrips = allBookings.filter(b => b.status === "confirmed").length;
+    const savedRoutesRows = await db.select().from(savedRoutesTable).where(eq(savedRoutesTable.passengerId, passengerId));
 
     res.json({
       totalTrips: allBookings.length,
@@ -20,7 +21,7 @@ router.get("/dashboard/stats", async (req, res) => {
       walletBalance: Number(passenger?.walletBalance ?? 0),
       rewardPoints: passenger?.rewardPoints ?? 0,
       upcomingTrips,
-      savedRoutes: 3,
+      savedRoutes: savedRoutesRows.length,
     });
   } else {
     res.json({

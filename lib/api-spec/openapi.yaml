@@ -640,6 +640,211 @@ paths:
               schema:
                 $ref: "#/components/schemas/AssistantChatResult"
 
+  # Saved / favorite routes
+  /passengers/{id}/saved-routes:
+    get:
+      operationId: listSavedRoutes
+      tags: [passengers]
+      summary: List a passenger's saved routes
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Saved routes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SavedRoute"
+
+  /saved-routes:
+    post:
+      operationId: createSavedRoute
+      tags: [passengers]
+      summary: Save a favorite route
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SavedRouteInput"
+      responses:
+        "201":
+          description: Saved route created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedRoute"
+
+  /saved-routes/{id}:
+    delete:
+      operationId: deleteSavedRoute
+      tags: [passengers]
+      summary: Remove a saved route
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Saved route removed
+
+  # Notifications
+  /passengers/{id}/notifications:
+    get:
+      operationId: listNotifications
+      tags: [passengers]
+      summary: List a passenger's notifications (seeds festival/special alerts)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+
+  /passengers/{id}/notifications/read-all:
+    post:
+      operationId: markAllNotificationsRead
+      tags: [passengers]
+      summary: Mark all of a passenger's notifications as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+
+  /notifications/{id}/read:
+    post:
+      operationId: markNotificationRead
+      tags: [passengers]
+      summary: Mark a notification as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated notification
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+
+  # Refunds
+  /passengers/{id}/refunds:
+    get:
+      operationId: listRefunds
+      tags: [passengers]
+      summary: List a passenger's refund requests
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Refunds
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Refund"
+
+  # Smart rebooking suggestions for a cancelled booking
+  /bookings/{id}/rebooking-suggestions:
+    get:
+      operationId: getRebookingSuggestions
+      tags: [bookings]
+      summary: Get smart rebooking suggestions for the same route as a booking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Rebooking suggestions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RebookingSuggestion"
+
+  # Passenger booking preferences (seat / bus type memory)
+  /passengers/{id}/preferences:
+    get:
+      operationId: getPreferences
+      tags: [passengers]
+      summary: Get a passenger's booking preferences
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Preferences
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserPreferences"
+    put:
+      operationId: updatePreferences
+      tags: [passengers]
+      summary: Update a passenger's booking preferences
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserPreferencesInput"
+      responses:
+        "200":
+          description: Updated preferences
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserPreferences"
+
 components:
   schemas:
     HealthStatus:
@@ -1266,3 +1471,152 @@ components:
         - passengerId
         - category
         - description
+
+    SavedRoute:
+      type: object
+      properties:
+        id:
+          type: integer
+        passengerId:
+          type: integer
+        origin:
+          type: string
+        destination:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - passengerId
+        - origin
+        - destination
+        - createdAt
+
+    SavedRouteInput:
+      type: object
+      properties:
+        passengerId:
+          type: integer
+        origin:
+          type: string
+        destination:
+          type: string
+      required:
+        - passengerId
+        - origin
+        - destination
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+        passengerId:
+          type: integer
+        type:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        isRead:
+          type: boolean
+        createdAt:
+          type: string
+      required:
+        - id
+        - passengerId
+        - type
+        - title
+        - body
+        - isRead
+        - createdAt
+
+    Refund:
+      type: object
+      properties:
+        id:
+          type: integer
+        bookingId:
+          type: integer
+        passengerId:
+          type: integer
+        amount:
+          type: number
+        status:
+          type: string
+        reason:
+          type: ["string", "null"]
+        estimatedDate:
+          type: string
+        createdAt:
+          type: string
+        pnr:
+          type: ["string", "null"]
+        origin:
+          type: ["string", "null"]
+        destination:
+          type: ["string", "null"]
+      required:
+        - id
+        - bookingId
+        - passengerId
+        - amount
+        - status
+        - estimatedDate
+        - createdAt
+
+    RebookingSuggestion:
+      type: object
+      properties:
+        scheduleId:
+          type: integer
+        busId:
+          type: integer
+        busNumber:
+          type: string
+        busType:
+          type: string
+        origin:
+          type: string
+        destination:
+          type: string
+        departureTime:
+          type: string
+        arrivalTime:
+          type: string
+        fare:
+          type: number
+        availableSeats:
+          type: integer
+      required:
+        - scheduleId
+        - busId
+        - busNumber
+        - busType
+        - origin
+        - destination
+        - departureTime
+        - arrivalTime
+        - fare
+        - availableSeats
+
+    UserPreferences:
+      type: object
+      properties:
+        passengerId:
+          type: integer
+        preferredSeatType:
+          type: ["string", "null"]
+        preferredBusType:
+          type: ["string", "null"]
+      required:
+        - passengerId
+
+    UserPreferencesInput:
+      type: object
+      properties:
+        preferredSeatType:
+          type: ["string", "null"]
+        preferredBusType:
+          type: ["string", "null"]

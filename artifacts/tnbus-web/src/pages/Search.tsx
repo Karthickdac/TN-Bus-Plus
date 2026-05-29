@@ -3,13 +3,19 @@ import { useLocation, useSearch } from "wouter";
 import { motion } from "framer-motion";
 import {
   MapPin, Clock, Zap, Users, Star, ChevronRight, SlidersHorizontal, ArrowUpDown,
-  Wifi, Plug, Navigation, Bath, ShieldCheck, Moon, CalendarDays, Sofa, Smile, TrendingUp, TrendingDown, Minus,
+  Wifi, Plug, Navigation, Bath, ShieldCheck, Moon, CalendarDays, Sofa, Smile, TrendingUp, TrendingDown, Minus, Heart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useSearchBuses, useGetFareCalendar, getGetFareCalendarQueryKey } from "@workspace/api-client-react";
+import {
+  useSearchBuses, useGetFareCalendar, getGetFareCalendarQueryKey,
+  useListSavedRoutes, useCreateSavedRoute, useDeleteSavedRoute, getListSavedRoutesQueryKey,
+} from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 type FilterKey =
   | "ac" | "sleeper" | "chargingPort" | "liveGps" | "toilet"
@@ -29,6 +35,10 @@ const FILTERS: { key: FilterKey; label: string; icon: typeof Wifi }[] = [
 export default function Search() {
   const [, setLocation] = useLocation();
   const search = useSearch();
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const passengerId = user?.id ?? 0;
   const params = new URLSearchParams(search);
   const [origin, setOrigin] = useState(params.get("origin") ?? "");
   const [destination, setDestination] = useState(params.get("destination") ?? "");
@@ -61,6 +71,35 @@ export default function Search() {
     fareParams,
     { query: { enabled: showCalendar && !!origin && !!destination, queryKey: getGetFareCalendarQueryKey(fareParams) } },
   );
+
+  const { data: savedRoutes } = useListSavedRoutes(passengerId, {
+    query: { enabled: passengerId > 0, queryKey: getListSavedRoutesQueryKey(passengerId) },
+  });
+  const createSavedRoute = useCreateSavedRoute();
+  const deleteSavedRoute = useDeleteSavedRoute();
+
+  const savedFor = (o: string, d: string) =>
+    (savedRoutes ?? []).find(r => r.origin === o && r.destination === d);
+
+  const toggleFavorite = async (o: string, d: string) => {
+    if (passengerId <= 0) {
+      toast({ title: "Sign in to save routes", description: "Log in to favorite routes for quick access." });
+      return;
+    }
+    const existing = savedFor(o, d);
+    try {
+      if (existing) {
+        await deleteSavedRoute.mutateAsync({ id: existing.id });
+        toast({ title: "Route removed", description: `${o} → ${d} removed from saved routes.` });
+      } else {
+        await createSavedRoute.mutateAsync({ data: { passengerId, origin: o, destination: d } });
+        toast({ title: "Route saved", description: `${o} → ${d} added to saved routes.` });
+      }
+      queryClient.invalidateQueries({ queryKey: getListSavedRoutesQueryKey(passengerId) });
+    } catch {
+      toast({ title: "Something went wrong", description: "Could not update saved routes. Please try again.", variant: "destructive" });
+    }
+  };
 
   const sorted = [...(buses ?? [])].sort((a, b) => {
     if (sortBy === "fare") return a.fare - b.fare;
@@ -262,7 +301,21 @@ export default function Search() {
                   </div>
 
                   <div className="text-right space-y-1.5">
-                    <div className="text-2xl font-bold text-primary">₹{bus.fare}</div>
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => toggleFavorite(bus.origin, bus.destination)}
+                        className={`flex items-center justify-center w-8 h-8 rounded-lg border transition-colors ${
+                          savedFor(bus.origin, bus.destination)
+                            ? "border-rose-500/50 bg-rose-500/10 text-rose-500"
+                            : "border-border/60 text-muted-foreground hover:text-rose-500 hover:border-rose-500/40"
+                        }`}
+                        title={savedFor(bus.origin, bus.destination) ? "Remove from saved routes" : "Save this route"}
+                        aria-label="Toggle saved route"
+                      >
+                        <Heart className={`w-4 h-4 ${savedFor(bus.origin, bus.destination) ? "fill-rose-500" : ""}`} />
+                      </button>
+                      <div className="text-2xl font-bold text-primary">₹{bus.fare}</div>
+                    </div>
                     <div className="text-xs text-muted-foreground" title="Predicted fare trend">
                       {trendIcon(bus.fareTrend)} <span className="capitalize">{bus.fareTrend ?? "stable"}</span>
                     </div>

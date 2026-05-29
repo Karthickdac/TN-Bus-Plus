@@ -10,6 +10,10 @@ import dashboardRouter from "./dashboard";
 import adminRouter from "./admin";
 import authRouter from "./auth";
 import assistantRouter from "./assistant";
+import savedRoutesRouter from "./savedRoutes";
+import notificationsRouter from "./notifications";
+import refundsRouter from "./refunds";
+import preferencesRouter from "./preferences";
 
 const router: IRouter = Router();
 
@@ -21,6 +25,10 @@ router.use(busesRouter);
 router.use(searchRouter);
 router.use(bookingsRouter);
 router.use(passengersRouter);
+router.use(savedRoutesRouter);
+router.use(notificationsRouter);
+router.use(refundsRouter);
+router.use(preferencesRouter);
 router.use(trackingRouter);
 router.use(dashboardRouter);
 router.use(adminRouter);
