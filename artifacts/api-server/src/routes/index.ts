@@ -8,9 +8,11 @@ import passengersRouter from "./passengers";
 import trackingRouter from "./tracking";
 import dashboardRouter from "./dashboard";
 import adminRouter from "./admin";
+import authRouter from "./auth";
 
 const router: IRouter = Router();
 
+router.use(authRouter);
 router.use(healthRouter);
 router.use(routesRouter);
 router.use(busesRouter);

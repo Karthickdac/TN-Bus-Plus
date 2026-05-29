@@ -1,11 +1,20 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, LogOut, User, Wallet } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Navbar() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const { lang, setLang, t } = useLang();
+  const { user, logout } = useAuth();
 
   const navLink = (href: string, label: string) => {
     const active = location === href || location.startsWith(href + "/");
@@ -15,6 +24,11 @@ export default function Navbar() {
         {label}
       </Link>
     );
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    setLocation("/");
   };
 
   return (
@@ -32,7 +46,7 @@ export default function Navbar() {
         <nav className="flex items-center gap-5">
           {navLink("/search", t.routes)}
           {navLink("/pnr", t.pnrStatus)}
-          {navLink("/dashboard", t.dashboard)}
+          {user && navLink("/dashboard", t.dashboard)}
 
           {/* Language Toggle */}
           <button
@@ -47,11 +61,53 @@ export default function Navbar() {
             )}
           </button>
 
-          <Link href="/admin">
-            <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs h-8 px-3 shadow-sm">
-              <ShieldCheck className="w-3.5 h-3.5 mr-1" /> {t.admin}
-            </Button>
-          </Link>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full border border-indigo-200 hover:bg-indigo-50 transition-colors">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white text-xs font-bold">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-sm font-semibold text-slate-700 hidden sm:block max-w-[100px] truncate">{user.name.split(" ")[0]}</span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <div className="px-3 py-2">
+                  <p className="font-bold text-sm text-slate-800 truncate">{user.name}</p>
+                  <p className="text-xs text-slate-400 truncate">{user.email}</p>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setLocation("/dashboard")} className="cursor-pointer">
+                  <User className="w-4 h-4 mr-2 text-indigo-500" /> My Dashboard
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLocation("/dashboard/wallet")} className="cursor-pointer">
+                  <Wallet className="w-4 h-4 mr-2 text-orange-500" />
+                  Wallet · ₹{Number(user.walletBalance).toFixed(0)}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setLocation("/admin")} className="cursor-pointer">
+                  <ShieldCheck className="w-4 h-4 mr-2 text-slate-400" /> {t.admin}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-600">
+                  <LogOut className="w-4 h-4 mr-2" /> Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link href="/login">
+                <Button variant="outline" size="sm" className="h-8 text-xs border-indigo-200 text-indigo-600 hover:bg-indigo-50">
+                  Sign In
+                </Button>
+              </Link>
+              <Link href="/admin">
+                <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs h-8 px-3 shadow-sm">
+                  <ShieldCheck className="w-3.5 h-3.5 mr-1" /> {t.admin}
+                </Button>
+              </Link>
+            </div>
+          )}
         </nav>
       </div>
     </header>

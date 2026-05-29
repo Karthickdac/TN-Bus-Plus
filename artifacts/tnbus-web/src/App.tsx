@@ -4,7 +4,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "next-themes";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import NotFound from "@/pages/not-found";
+import Login from "@/pages/Login";
 import Navbar from "@/components/layout/Navbar";
 import Home from "@/pages/Home";
 import Search from "@/pages/Search";
@@ -38,6 +40,7 @@ function Router() {
       <main className="flex-1 w-full">
         <Switch>
           <Route path="/" component={Home} />
+          <Route path="/login" component={Login} />
           <Route path="/search" component={Search} />
           <Route path="/bus/:id" component={BusDetail} />
           <Route path="/book" component={Book} />
@@ -63,14 +66,16 @@ function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
       <LanguageProvider>
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-              <Router />
-            </WouterRouter>
-            <Toaster />
-          </TooltipProvider>
-        </QueryClientProvider>
+        <AuthProvider>
+          <QueryClientProvider client={queryClient}>
+            <TooltipProvider>
+              <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+                <Router />
+              </WouterRouter>
+              <Toaster />
+            </TooltipProvider>
+          </QueryClientProvider>
+        </AuthProvider>
       </LanguageProvider>
     </ThemeProvider>
   );
