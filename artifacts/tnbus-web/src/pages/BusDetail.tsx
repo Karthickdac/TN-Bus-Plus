@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { useLocation, useSearch } from "wouter";
 import { motion } from "framer-motion";
-import { MapPin, Star, Clock, Users, ChevronRight, Shield, Wifi, Zap } from "lucide-react";
+import { MapPin, Star, ChevronRight, Shield, Wifi, Zap, Sofa, ShieldCheck, Smile } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -38,6 +39,20 @@ export default function BusDetail({ params }: Props) {
   const selectedSeatData = seats?.filter(s => selected.includes(s.seatNumber)) ?? [];
   const total = selectedSeatData.reduce((sum, s) => sum + s.price, 0);
 
+  const seeded = (n: number) => {
+    const x = Math.sin(n * 12.9898) * 43758.5453;
+    return x - Math.floor(x);
+  };
+  const amen = bus?.amenities ?? [];
+  const isAc = (bus?.busType ?? "").toLowerCase().includes("ac");
+  const isSleeper = (bus?.busType ?? "").toLowerCase().includes("sleeper");
+  const hasGps = amen.some(a => /gps|track/i.test(a));
+  const isWomenFriendly = amen.some(a => /women|cctv|ladies/i.test(a));
+  const punct = Number(bus?.punctualityScore ?? 85);
+  const comfortScore = Math.min(5, 2.5 + (isAc ? 0.7 : 0) + (isSleeper ? 0.8 : 0) + Math.min(amen.length, 5) * 0.2);
+  const safetyRating = Math.min(5, 2.8 + (punct / 100) * 1.2 + (hasGps ? 0.4 : 0) + (isWomenFriendly ? 0.4 : 0));
+  const driverRating = 3.6 + seeded((bus?.id ?? 1) * 3 + 11) * 1.4;
+
   if (busLoading || seatsLoading) return (
     <div className="container mx-auto px-4 py-8 space-y-4">
       <Skeleton className="h-24 rounded-2xl" />
@@ -66,6 +81,17 @@ export default function BusDetail({ params }: Props) {
                 {bus.status}
               </Badge>
             </div>
+          </div>
+          <div className="flex flex-wrap gap-4 mt-4 text-xs">
+            <span className="flex items-center gap-1 text-sky-300" title="Comfort score">
+              <Sofa className="w-3.5 h-3.5" /> {comfortScore.toFixed(1)} comfort
+            </span>
+            <span className="flex items-center gap-1 text-emerald-300" title="Safety rating">
+              <ShieldCheck className="w-3.5 h-3.5" /> {safetyRating.toFixed(1)} safety
+            </span>
+            <span className="flex items-center gap-1 text-violet-300" title="Driver rating">
+              <Smile className="w-3.5 h-3.5" /> {driverRating.toFixed(1)} driver
+            </span>
           </div>
           <div className="flex flex-wrap gap-2 mt-4">
             {bus.amenities?.map(a => (
@@ -130,5 +156,3 @@ export default function BusDetail({ params }: Props) {
     </div>
   );
 }
-
-import { useState } from "react";

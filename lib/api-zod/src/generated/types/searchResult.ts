@@ -22,4 +22,12 @@ export interface SearchResult {
   punctualityScore?: number;
   crowdDensity?: string;
   estimatedDelay?: number;
+  comfortScore?: number;
+  safetyRating?: number;
+  driverRating?: number;
+  /** @nullable */
+  driverName?: string | null;
+  fareTrend?: string;
+  isNightBus?: boolean;
+  nearbyBoardingPoints?: string[];
 }

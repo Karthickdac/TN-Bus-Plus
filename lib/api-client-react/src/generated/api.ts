@@ -29,7 +29,9 @@ import type {
   Complaint,
   ComplaintInput,
   DashboardStats,
+  FareCalendarDay,
   GetDashboardStatsParams,
+  GetFareCalendarParams,
   GetRevenueAnalyticsParams,
   GetUpcomingTripsParams,
   HealthStatus,
@@ -523,6 +525,90 @@ export function useSearchBuses<TData = Awaited<ReturnType<typeof searchBuses>>, 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getSearchBusesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetFareCalendarUrl = (params: GetFareCalendarParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/search/fare-calendar?${stringifiedParams}` : `/api/search/fare-calendar`
+}
+
+/**
+ * @summary Fare across a range of dates for a route
+ */
+export const getFareCalendar = async (params: GetFareCalendarParams, options?: RequestInit): Promise<FareCalendarDay[]> => {
+
+  return customFetch<FareCalendarDay[]>(getGetFareCalendarUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetFareCalendarQueryKey = (params?: GetFareCalendarParams,) => {
+    return [
+    `/api/search/fare-calendar`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetFareCalendarQueryOptions = <TData = Awaited<ReturnType<typeof getFareCalendar>>, TError = ErrorType<unknown>>(params: GetFareCalendarParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFareCalendar>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFareCalendarQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFareCalendar>>> = ({ signal }) => getFareCalendar(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFareCalendar>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetFareCalendarQueryResult = NonNullable<Awaited<ReturnType<typeof getFareCalendar>>>
+export type GetFareCalendarQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Fare across a range of dates for a route
+ */
+
+export function useGetFareCalendar<TData = Awaited<ReturnType<typeof getFareCalendar>>, TError = ErrorType<unknown>>(
+ params: GetFareCalendarParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFareCalendar>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetFareCalendarQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

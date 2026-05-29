@@ -104,7 +104,13 @@ export const SearchBusesQueryParams = zod.object({
   "date": zod.coerce.string(),
   "busType": zod.coerce.string().optional(),
   "ac": zod.coerce.boolean().optional(),
-  "sleeper": zod.coerce.boolean().optional()
+  "sleeper": zod.coerce.boolean().optional(),
+  "chargingPort": zod.coerce.boolean().optional(),
+  "liveGps": zod.coerce.boolean().optional(),
+  "toilet": zod.coerce.boolean().optional(),
+  "womenFriendly": zod.coerce.boolean().optional(),
+  "lowCrowd": zod.coerce.boolean().optional(),
+  "nightBus": zod.coerce.boolean().optional()
 })
 
 export const SearchBusesResponseItem = zod.object({
@@ -122,9 +128,34 @@ export const SearchBusesResponseItem = zod.object({
   "amenities": zod.array(zod.string()).optional(),
   "punctualityScore": zod.number().optional(),
   "crowdDensity": zod.string().optional(),
-  "estimatedDelay": zod.number().optional()
+  "estimatedDelay": zod.number().optional(),
+  "comfortScore": zod.number().optional(),
+  "safetyRating": zod.number().optional(),
+  "driverRating": zod.number().optional(),
+  "driverName": zod.string().nullish(),
+  "fareTrend": zod.string().optional(),
+  "isNightBus": zod.boolean().optional(),
+  "nearbyBoardingPoints": zod.array(zod.string()).optional()
 })
 export const SearchBusesResponse = zod.array(SearchBusesResponseItem)
+
+
+/**
+ * @summary Fare across a range of dates for a route
+ */
+export const GetFareCalendarQueryParams = zod.object({
+  "origin": zod.coerce.string(),
+  "destination": zod.coerce.string(),
+  "days": zod.coerce.number().optional()
+})
+
+export const GetFareCalendarResponseItem = zod.object({
+  "date": zod.string(),
+  "fare": zod.number(),
+  "isCheapest": zod.boolean(),
+  "available": zod.boolean()
+})
+export const GetFareCalendarResponse = zod.array(GetFareCalendarResponseItem)
 
 
 /**

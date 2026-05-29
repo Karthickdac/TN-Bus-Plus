@@ -51,6 +51,21 @@ export interface SearchResult {
   punctualityScore?: number;
   crowdDensity?: string;
   estimatedDelay?: number;
+  comfortScore?: number;
+  safetyRating?: number;
+  driverRating?: number;
+  /** @nullable */
+  driverName?: string | null;
+  fareTrend?: string;
+  isNightBus?: boolean;
+  nearbyBoardingPoints?: string[];
+}
+
+export interface FareCalendarDay {
+  date: string;
+  fare: number;
+  isCheapest: boolean;
+  available: boolean;
 }
 
 export interface Seat {
@@ -229,6 +244,18 @@ date: string;
 busType?: string;
 ac?: boolean;
 sleeper?: boolean;
+chargingPort?: boolean;
+liveGps?: boolean;
+toilet?: boolean;
+womenFriendly?: boolean;
+lowCrowd?: boolean;
+nightBus?: boolean;
+};
+
+export type GetFareCalendarParams = {
+origin: string;
+destination: string;
+days?: number;
 };
 
 export type ListBookingsParams = {

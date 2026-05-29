@@ -163,6 +163,30 @@ paths:
           in: query
           schema:
             type: boolean
+        - name: chargingPort
+          in: query
+          schema:
+            type: boolean
+        - name: liveGps
+          in: query
+          schema:
+            type: boolean
+        - name: toilet
+          in: query
+          schema:
+            type: boolean
+        - name: womenFriendly
+          in: query
+          schema:
+            type: boolean
+        - name: lowCrowd
+          in: query
+          schema:
+            type: boolean
+        - name: nightBus
+          in: query
+          schema:
+            type: boolean
       responses:
         "200":
           description: Search results
@@ -172,6 +196,37 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/SearchResult"
+
+  # Fare calendar
+  /search/fare-calendar:
+    get:
+      operationId: getFareCalendar
+      tags: [routes]
+      summary: Fare across a range of dates for a route
+      parameters:
+        - name: origin
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: destination
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: days
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Fare per date
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FareCalendarDay"
 
   # Seats
   /schedules/{scheduleId}/seats:
@@ -670,6 +725,22 @@ components:
           type: string
         estimatedDelay:
           type: integer
+        comfortScore:
+          type: number
+        safetyRating:
+          type: number
+        driverRating:
+          type: number
+        driverName:
+          type: ["string", "null"]
+        fareTrend:
+          type: string
+        isNightBus:
+          type: boolean
+        nearbyBoardingPoints:
+          type: array
+          items:
+            type: string
       required:
         - scheduleId
         - busId
@@ -682,6 +753,23 @@ components:
         - fare
         - availableSeats
         - totalSeats
+
+    FareCalendarDay:
+      type: object
+      properties:
+        date:
+          type: string
+        fare:
+          type: number
+        isCheapest:
+          type: boolean
+        available:
+          type: boolean
+      required:
+        - date
+        - fare
+        - isCheapest
+        - available
 
     Seat:
       type: object
