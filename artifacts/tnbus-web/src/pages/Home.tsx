@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { Calendar, MapPin, Search, ArrowRight, Bus, Clock, Shield, Star, Wifi, Zap, ArrowLeftRight } from "lucide-react";
+import { Calendar, MapPin, Search, ArrowRight, Bus, Clock, Shield, Star, Wifi, Zap, ArrowLeftRight, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useListRoutes } from "@workspace/api-client-react";
@@ -11,6 +11,7 @@ export default function Home() {
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [date, setDate] = useState("");
+  const [womenOnly, setWomenOnly] = useState(false);
   const { data: routes } = useListRoutes();
 
   const handleSearch = (e: React.FormEvent) => {
@@ -19,6 +20,7 @@ export default function Home() {
     if (origin) p.append("origin", origin);
     if (destination) p.append("destination", destination);
     if (date) p.append("date", date);
+    if (womenOnly) p.append("women", "1");
     setLocation(`/search?${p.toString()}`);
   };
 
@@ -234,6 +236,29 @@ export default function Home() {
                     />
                   </div>
                 </div>
+
+                {/* Women's Safety Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setWomenOnly(w => !w)}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all ${
+                    womenOnly
+                      ? "bg-pink-50 border-pink-400 text-pink-700"
+                      : "bg-slate-50 border-slate-200 text-slate-500"
+                  }`}
+                >
+                  <span className="flex items-center gap-2 text-sm font-semibold">
+                    <UserRound className={`w-4 h-4 ${womenOnly ? "text-pink-500" : "text-slate-400"}`} />
+                    Booking for Women
+                    {womenOnly && (
+                      <span className="text-xs bg-pink-100 text-pink-600 px-2 py-0.5 rounded-full font-bold">Ladies Only</span>
+                    )}
+                  </span>
+                  {/* Toggle pill */}
+                  <div className={`relative w-10 h-5 rounded-full transition-colors ${womenOnly ? "bg-pink-500" : "bg-slate-300"}`}>
+                    <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${womenOnly ? "translate-x-5" : "translate-x-0.5"}`} />
+                  </div>
+                </button>
 
                 <Button type="submit" className="w-full h-11 text-sm font-bold bg-orange-500 hover:bg-orange-600 text-white rounded-xl shadow-md shadow-orange-200 transition-all">
                   <Search className="mr-2 w-4 h-4" /> Search Buses

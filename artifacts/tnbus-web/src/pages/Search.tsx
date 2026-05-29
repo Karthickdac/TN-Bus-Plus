@@ -17,6 +17,7 @@ export default function Search() {
   const [date, setDate] = useState(params.get("date") ?? "");
   const [filterAc, setFilterAc] = useState(false);
   const [filterSleeper, setFilterSleeper] = useState(false);
+  const [filterWomen, setFilterWomen] = useState(params.get("women") === "1");
   const [sortBy, setSortBy] = useState<"fare" | "departure" | "seats">("departure");
 
   const { data: buses, isLoading } = useSearchBuses({
@@ -27,11 +28,12 @@ export default function Search() {
     sleeper: filterSleeper ? true : undefined,
   });
 
-  const sorted = [...(buses ?? [])].sort((a, b) => {
-    if (sortBy === "fare") return a.fare - b.fare;
-    if (sortBy === "seats") return b.availableSeats - a.availableSeats;
-    return new Date(a.departureTime).getTime() - new Date(b.departureTime).getTime();
-  });
+  const sorted = [...(buses ?? [])]
+    .sort((a, b) => {
+      if (sortBy === "fare") return a.fare - b.fare;
+      if (sortBy === "seats") return b.availableSeats - a.availableSeats;
+      return new Date(a.departureTime).getTime() - new Date(b.departureTime).getTime();
+    });
 
   const crowdColor = (density: string | undefined) => {
     if (density === "low") return "text-emerald-400";
@@ -79,6 +81,12 @@ export default function Search() {
             className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${filterSleeper ? "bg-primary text-primary-foreground border-primary" : "border-border/60 text-muted-foreground hover:border-primary/40"}`}
           >
             Sleeper
+          </button>
+          <button
+            onClick={() => setFilterWomen(!filterWomen)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors flex items-center gap-1.5 ${filterWomen ? "bg-pink-500 text-white border-pink-500" : "border-border/60 text-muted-foreground hover:border-pink-400"}`}
+          >
+            👩 Ladies Seats
           </button>
           <div className="ml-auto flex items-center gap-2">
             <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
