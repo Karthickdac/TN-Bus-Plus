@@ -575,3 +575,57 @@ export const CreateComplaintBody = zod.object({
 })
 
 
+/**
+ * @summary Conversational AI travel assistant (Tamil + English)
+ */
+export const AssistantChatBody = zod.object({
+  "message": zod.string(),
+  "lang": zod.enum(['en', 'ta']).optional(),
+  "history": zod.array(zod.object({
+  "role": zod.enum(['user', 'assistant']),
+  "content": zod.string()
+})).optional()
+})
+
+export const AssistantChatResponse = zod.object({
+  "reply": zod.string(),
+  "trips": zod.array(zod.object({
+  "scheduleId": zod.number(),
+  "busId": zod.number(),
+  "busNumber": zod.string(),
+  "busType": zod.string(),
+  "origin": zod.string(),
+  "destination": zod.string(),
+  "departureTime": zod.string(),
+  "arrivalTime": zod.string(),
+  "fare": zod.number(),
+  "availableSeats": zod.number(),
+  "totalSeats": zod.number(),
+  "amenities": zod.array(zod.string()).optional(),
+  "punctualityScore": zod.number().optional(),
+  "crowdDensity": zod.string().optional(),
+  "estimatedDelay": zod.number().optional(),
+  "comfortScore": zod.number().optional(),
+  "safetyRating": zod.number().optional(),
+  "driverRating": zod.number().optional(),
+  "driverName": zod.string().nullish(),
+  "fareTrend": zod.string().optional(),
+  "isNightBus": zod.boolean().optional(),
+  "nearbyBoardingPoints": zod.array(zod.string()).optional()
+})),
+  "intent": zod.object({
+  "origin": zod.string().optional(),
+  "destination": zod.string().optional(),
+  "ac": zod.boolean().optional(),
+  "sleeper": zod.boolean().optional(),
+  "chargingPort": zod.boolean().optional(),
+  "liveGps": zod.boolean().optional(),
+  "toilet": zod.boolean().optional(),
+  "womenFriendly": zod.boolean().optional(),
+  "lowCrowd": zod.boolean().optional(),
+  "nightBus": zod.boolean().optional(),
+  "sort": zod.string().optional()
+}).optional()
+})
+
+

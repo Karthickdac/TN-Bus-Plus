@@ -61,6 +61,53 @@ export interface SearchResult {
   nearbyBoardingPoints?: string[];
 }
 
+export type AssistantChatMessageRole = typeof AssistantChatMessageRole[keyof typeof AssistantChatMessageRole];
+
+
+export const AssistantChatMessageRole = {
+  user: 'user',
+  assistant: 'assistant',
+} as const;
+
+export interface AssistantChatMessage {
+  role: AssistantChatMessageRole;
+  content: string;
+}
+
+export interface AssistantIntent {
+  origin?: string;
+  destination?: string;
+  ac?: boolean;
+  sleeper?: boolean;
+  chargingPort?: boolean;
+  liveGps?: boolean;
+  toilet?: boolean;
+  womenFriendly?: boolean;
+  lowCrowd?: boolean;
+  nightBus?: boolean;
+  sort?: string;
+}
+
+export type AssistantChatInputLang = typeof AssistantChatInputLang[keyof typeof AssistantChatInputLang];
+
+
+export const AssistantChatInputLang = {
+  en: 'en',
+  ta: 'ta',
+} as const;
+
+export interface AssistantChatInput {
+  message: string;
+  lang?: AssistantChatInputLang;
+  history?: AssistantChatMessage[];
+}
+
+export interface AssistantChatResult {
+  reply: string;
+  trips: SearchResult[];
+  intent?: AssistantIntent;
+}
+
 export interface FareCalendarDay {
   date: string;
   fare: number;

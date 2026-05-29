@@ -27,79 +27,15 @@ function Counter({ to, suffix = "", duration = 1500 }: { to: number; suffix?: st
   return <span ref={ref}>{val.toLocaleString("en-IN")}{suffix}</span>;
 }
 
-function BusGraphic({ wheelSpin = "0.6s" }: { wheelSpin?: string }) {
-  const wheel = {
-    transformBox: "fill-box" as const,
-    transformOrigin: "center" as const,
-    animation: `spin ${wheelSpin} linear infinite`,
-  };
+function SetcBus({ className = "" }: { className?: string }) {
   return (
-    <svg width="150" height="60" viewBox="0 0 150 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: "drop-shadow(0 6px 8px rgba(0,0,0,.35))" }}>
-      <defs>
-        <linearGradient id="busBody" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#fdba74" />
-          <stop offset="0.5" stopColor="#fb923c" />
-          <stop offset="1" stopColor="#ea580c" />
-        </linearGradient>
-        <linearGradient id="busGlass" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#e0f2fe" />
-          <stop offset="1" stopColor="#7dd3fc" />
-        </linearGradient>
-        <radialGradient id="beam" cx="0" cy="0.5" r="1">
-          <stop offset="0" stopColor="#fde68a" stopOpacity="0.9" />
-          <stop offset="1" stopColor="#fde68a" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-
-      {/* headlight beam */}
-      <polygon points="138,34 150,28 150,44 138,40" fill="url(#beam)" style={{ animation: "headlight 0.9s ease-in-out infinite" }} />
-
-      {/* body */}
-      <rect x="6" y="12" width="128" height="30" rx="7" fill="url(#busBody)" stroke="#c2410c" strokeWidth="1" />
-      {/* roof highlight */}
-      <rect x="10" y="13.5" width="120" height="3" rx="1.5" fill="#ffffff" opacity="0.35" />
-      {/* lower accent stripe */}
-      <rect x="6" y="35" width="128" height="4" rx="2" fill="#1e3a8a" opacity="0.85" />
-
-      {/* window band */}
-      <rect x="13" y="17" width="92" height="12" rx="2.5" fill="url(#busGlass)" />
-      {/* window dividers */}
-      {[26, 39, 52, 65, 78, 91].map((x) => (
-        <rect key={x} x={x} y="17" width="1.6" height="12" fill="#bae6fd" />
-      ))}
-      {/* windshield */}
-      <path d="M112 17 H128 a3 3 0 0 1 3 3 V29 H112 Z" fill="url(#busGlass)" />
-
-      {/* door */}
-      <rect x="13" y="30.5" width="9" height="9.5" rx="1" fill="#0c4a6e" opacity="0.55" />
-
-      {/* TN brand badge */}
-      <text x="59" y="40" textAnchor="middle" fontSize="6.5" fontWeight="700" fill="#ffffff" fontFamily="sans-serif" letterSpacing="0.5">TN BUS+</text>
-
-      {/* headlight + taillight */}
-      <circle cx="132" cy="37" r="2" fill="#fde047" />
-      <circle cx="8.5" cy="37" r="1.6" fill="#ef4444" />
-
-      {/* wheels */}
-      <g>
-        <circle cx="38" cy="44" r="9" fill="#0f172a" />
-        <g style={wheel}>
-          <circle cx="38" cy="44" r="9" fill="none" stroke="#1f2937" strokeWidth="2" />
-          <circle cx="38" cy="44" r="3.2" fill="#94a3b8" />
-          <rect x="37" y="36" width="2" height="16" fill="#475569" />
-          <rect x="30" y="43" width="16" height="2" fill="#475569" />
-        </g>
-      </g>
-      <g>
-        <circle cx="104" cy="44" r="9" fill="#0f172a" />
-        <g style={wheel}>
-          <circle cx="104" cy="44" r="9" fill="none" stroke="#1f2937" strokeWidth="2" />
-          <circle cx="104" cy="44" r="3.2" fill="#94a3b8" />
-          <rect x="103" y="36" width="2" height="16" fill="#475569" />
-          <rect x="96" y="43" width="16" height="2" fill="#475569" />
-        </g>
-      </g>
-    </svg>
+    <img
+      src="/images/setc-bus.png"
+      alt="SETC government bus"
+      draggable={false}
+      className={`h-16 w-auto max-w-none select-none ${className}`}
+      style={{ filter: "drop-shadow(0 8px 12px rgba(15,23,42,.22))" }}
+    />
   );
 }
 
@@ -137,50 +73,50 @@ export default function Home() {
     <div className="flex flex-col min-h-[calc(100vh-3.5rem)] bg-[#f4f6fb]">
 
       {/* ── Government Banner ─────────────────────────────── */}
-      <div className="relative w-full overflow-hidden" style={{ background: "linear-gradient(110deg, #0b1437 0%, #15235c 45%, #1e2a6b 100%)" }}>
+      <div className="relative w-full overflow-hidden border-b border-slate-200" style={{ background: "linear-gradient(110deg, #ffffff 0%, #eef2ff 50%, #ffffff 100%)" }}>
         {/* subtle decorative glow */}
-        <div className="pointer-events-none absolute inset-0 opacity-60" style={{ backgroundImage: "radial-gradient(circle at 12% 50%, rgba(99,102,241,.25) 0, transparent 45%), radial-gradient(circle at 88% 50%, rgba(245,158,11,.18) 0, transparent 45%)" }} />
+        <div className="pointer-events-none absolute inset-0 opacity-70" style={{ backgroundImage: "radial-gradient(circle at 12% 50%, rgba(99,102,241,.12) 0, transparent 45%), radial-gradient(circle at 88% 50%, rgba(245,158,11,.10) 0, transparent 45%)" }} />
         <div className="relative container mx-auto px-6 py-3.5 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3.5 shrink-0">
             <motion.div
               initial={{ scale: 0.6, opacity: 0, rotate: -20 }}
               animate={{ scale: 1, opacity: 1, rotate: 0 }}
               transition={{ type: "spring", stiffness: 200, damping: 14 }}
-              className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden ring-1 ring-white/20 shadow-lg bg-white/95 p-1 shrink-0"
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden ring-1 ring-slate-200 shadow-md bg-white p-1 shrink-0"
             >
               <img src="/images/tn-emblem-fitted.png" alt="Tamil Nadu Government Emblem" className="w-full h-full object-contain" />
             </motion.div>
             <div className="hidden sm:block">
-              <p className="text-amber-300/90 text-[11px] font-semibold tracking-wide">தமிழ்நாடு அரசு</p>
-              <p className="text-white text-sm font-bold tracking-tight">Government of Tamil Nadu</p>
-              <p className="text-indigo-200/70 text-[11px] tracking-wide">வாய்மையே வெல்லும்</p>
+              <p className="text-amber-600 text-[11px] font-semibold tracking-wide">தமிழ்நாடு அரசு</p>
+              <p className="text-slate-900 text-sm font-bold tracking-tight">Government of Tamil Nadu</p>
+              <p className="text-slate-500 text-[11px] tracking-wide">வாய்மையே வெல்லும்</p>
             </div>
           </div>
 
           <div className="text-center flex-1 px-2">
-            <p className="text-white text-sm sm:text-lg md:text-xl font-bold tracking-tight leading-tight">
+            <p className="text-slate-900 text-sm sm:text-lg md:text-xl font-bold tracking-tight leading-tight">
               Tamil Nadu State Transport Corporation
             </p>
             <div className="flex items-center justify-center gap-2 mt-1.5">
-              <span className="h-px w-8 bg-gradient-to-r from-transparent to-amber-300/60" />
-              <p className="text-indigo-100/80 text-[11px] sm:text-xs font-medium tracking-[0.18em] uppercase">
+              <span className="h-px w-8 bg-gradient-to-r from-transparent to-amber-400/70" />
+              <p className="text-indigo-600/80 text-[11px] sm:text-xs font-semibold tracking-[0.18em] uppercase">
                 TN Bus+ · Official Booking System
               </p>
-              <span className="h-px w-8 bg-gradient-to-l from-transparent to-amber-300/60" />
+              <span className="h-px w-8 bg-gradient-to-l from-transparent to-amber-400/70" />
             </div>
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
             <div className="hidden sm:block text-right">
-              <p className="text-indigo-200/70 text-[11px] tracking-wide">Hon'ble Chief Minister</p>
-              <p className="text-white text-sm font-bold tracking-tight">Thiru. C. Joseph Vijay</p>
-              <p className="text-amber-300/90 text-[11px] tracking-wide">Tamil Nadu</p>
+              <p className="text-slate-500 text-[11px] tracking-wide">Hon'ble Chief Minister</p>
+              <p className="text-slate-900 text-sm font-bold tracking-tight">Thiru. C. Joseph Vijay</p>
+              <p className="text-amber-600 text-[11px] tracking-wide">Tamil Nadu</p>
             </div>
             <motion.div
               initial={{ scale: 0.6, opacity: 0, rotate: 20 }}
               animate={{ scale: 1, opacity: 1, rotate: 0 }}
               transition={{ type: "spring", stiffness: 200, damping: 14, delay: 0.05 }}
-              className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden ring-1 ring-white/20 shadow-lg shrink-0"
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden ring-1 ring-slate-200 shadow-md shrink-0"
             >
               <img src="/images/cm-vijay-fitted.png" alt="Thiru. C. Joseph Vijay, Chief Minister" className="w-full h-full object-cover object-center" />
             </motion.div>
@@ -195,14 +131,14 @@ export default function Home() {
       </div>
 
       {/* ── Announcement Ticker ───────────────────────────── */}
-      <div className="w-full bg-orange-500 border-b border-orange-600 overflow-hidden">
+      <div className="w-full bg-amber-50 border-b border-amber-200 overflow-hidden">
         <div className="flex items-center">
-          <div className="shrink-0 bg-orange-700 text-white text-xs font-bold px-4 py-2 uppercase tracking-widest flex items-center gap-1.5 z-10">
+          <div className="shrink-0 bg-orange-600 text-white text-xs font-bold px-4 py-2 uppercase tracking-widest flex items-center gap-1.5 z-10">
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
             {t.notice}
           </div>
           <div className="overflow-hidden flex-1 relative">
-            <div className="flex gap-12 whitespace-nowrap text-white text-xs font-medium py-2" style={{ animation: "ticker 40s linear infinite" }}>
+            <div className="flex gap-12 whitespace-nowrap text-amber-900 text-xs font-medium py-2" style={{ animation: "ticker 40s linear infinite" }}>
               {tickerMessages.map((msg, i) => <span key={i} className="inline-block">{msg}</span>)}
               {tickerMessages.map((msg, i) => <span key={`b-${i}`} className="inline-block">{msg}</span>)}
             </div>
@@ -227,22 +163,22 @@ export default function Home() {
       `}</style>
 
       {/* ── Hero Section ──────────────────────────────────── */}
-      <div className="relative overflow-hidden" style={{ background: "linear-gradient(135deg, #312e81 0%, #4338ca 30%, #6d28d9 55%, #0891b2 85%, #0e7490 100%)" }}>
+      <div className="relative overflow-hidden border-b border-slate-200" style={{ background: "linear-gradient(135deg, #ffffff 0%, #eef2ff 36%, #e0e7ff 66%, #eaf5ff 100%)" }}>
         {/* Animated decorative backdrop */}
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -top-24 -left-16 w-80 h-80 rounded-full bg-violet-500/30 blur-3xl" style={{ animation: "floatY 9s ease-in-out infinite" }} />
-          <div className="absolute top-10 right-10 w-72 h-72 rounded-full bg-cyan-400/25 blur-3xl" style={{ animation: "floatY 11s ease-in-out infinite", animationDelay: "1.5s" }} />
-          <div className="absolute -bottom-20 left-1/3 w-72 h-72 rounded-full bg-orange-400/20 blur-3xl" style={{ animation: "floatY 13s ease-in-out infinite", animationDelay: "0.8s" }} />
+          <div className="absolute -top-24 -left-16 w-80 h-80 rounded-full bg-indigo-300/40 blur-3xl" style={{ animation: "floatY 9s ease-in-out infinite" }} />
+          <div className="absolute top-10 right-10 w-72 h-72 rounded-full bg-cyan-300/35 blur-3xl" style={{ animation: "floatY 11s ease-in-out infinite", animationDelay: "1.5s" }} />
+          <div className="absolute -bottom-20 left-1/3 w-72 h-72 rounded-full bg-amber-300/30 blur-3xl" style={{ animation: "floatY 13s ease-in-out infinite", animationDelay: "0.8s" }} />
           {/* subtle grid */}
-          <div className="absolute inset-0 opacity-[0.12]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)", backgroundSize: "44px 44px" }} />
+          <div className="absolute inset-0 opacity-[0.6]" style={{ backgroundImage: "linear-gradient(rgba(79,70,229,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(79,70,229,.06) 1px, transparent 1px)", backgroundSize: "44px 44px" }} />
         </div>
 
-        <div className="relative w-full px-8 md:px-16 py-12 flex flex-col md:flex-row items-center gap-10">
+        <div className="relative w-full px-8 md:px-16 pt-8 pb-12 flex flex-col md:flex-row items-start gap-10">
           {/* Left — Tagline */}
           <div className="flex-1 text-left flex flex-col justify-center">
             <motion.span
               initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
-              className="inline-flex w-fit items-center gap-1.5 bg-white/15 text-orange-200 text-xs font-bold px-3 py-1 rounded-full border border-white/20 mb-4 uppercase tracking-wider backdrop-blur-sm"
+              className="inline-flex w-fit items-center gap-1.5 bg-indigo-50 text-indigo-700 text-xs font-bold px-3 py-1 rounded-full border border-indigo-200 mb-4 uppercase tracking-wider shadow-sm"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
               {t.heroTag}
@@ -250,10 +186,10 @@ export default function Home() {
 
             <motion.h1
               initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.05 }}
-              className="text-4xl md:text-6xl font-extrabold text-white leading-[1.05] mb-4"
+              className="text-4xl md:text-5xl font-extrabold text-slate-900 leading-[1.05] mb-3"
             >
               {t.heroTitle1}{" "}
-              <span className="relative inline-block text-orange-300">
+              <span className="relative inline-block text-orange-500">
                 {t.heroHighlight}
                 <motion.span
                   initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.6, delay: 0.5 }}
@@ -265,7 +201,7 @@ export default function Home() {
 
             <motion.p
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}
-              className="text-indigo-100 text-base md:text-lg mb-6 max-w-md"
+              className="text-slate-600 text-base md:text-lg mb-5 max-w-md"
             >
               {t.heroSub}
             </motion.p>
@@ -285,12 +221,36 @@ export default function Home() {
                   key={b.label}
                   variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}
                   whileHover={{ y: -3, scale: 1.04 }}
-                  className="flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full border border-white/20 backdrop-blur-sm cursor-default"
+                  className="flex items-center gap-1.5 bg-white text-slate-700 text-xs px-3 py-1.5 rounded-full border border-slate-200 shadow-sm cursor-default"
                 >
                   {b.icon} {b.label}
                 </motion.span>
               ))}
             </motion.div>
+
+            {/* Animated road + driving SETC bus scene */}
+            <div className="relative h-28 mt-6 w-full overflow-hidden pointer-events-none">
+              {/* distant glow horizon */}
+              <div className="absolute bottom-9 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
+              {/* faded background bus (depth) */}
+              <div className="absolute bottom-[40px] opacity-30 blur-[1.5px] scale-[0.7]" style={{ animation: "driveSlow 22s linear infinite" }}>
+                <SetcBus />
+              </div>
+              {/* road surface */}
+              <div className="absolute bottom-0 left-0 right-0 h-7 bg-gradient-to-b from-slate-300/70 to-slate-100/20" />
+              {/* lane dashes */}
+              <div className="absolute bottom-[12px] left-0 right-0 h-[3px] opacity-80" style={{ backgroundImage: "repeating-linear-gradient(90deg, rgba(100,116,139,.7) 0 30px, transparent 30px 60px)", backgroundSize: "84px 100%", animation: "roadDash 0.85s linear infinite" }} />
+              {/* foreground driving bus */}
+              <div className="absolute bottom-[16px]" style={{ animation: "drive 12s linear infinite" }}>
+                <div style={{ animation: "busBob 0.55s ease-in-out infinite" }} className="relative">
+                  {/* speed lines */}
+                  <span className="absolute top-4 -left-5 h-[2px] w-5 rounded-full bg-slate-400/70" style={{ animation: "speedline 0.5s linear infinite" }} />
+                  <span className="absolute top-8 -left-7 h-[2px] w-6 rounded-full bg-slate-400/55" style={{ animation: "speedline 0.5s linear infinite", animationDelay: "0.15s" }} />
+                  <span className="absolute top-12 -left-4 h-[2px] w-4 rounded-full bg-slate-400/40" style={{ animation: "speedline 0.5s linear infinite", animationDelay: "0.3s" }} />
+                  <SetcBus />
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Right — Search Card */}
@@ -376,30 +336,6 @@ export default function Home() {
               </form>
             </div>
           </motion.div>
-        </div>
-
-        {/* Animated road + driving bus scene */}
-        <div className="relative h-24 mt-1 overflow-hidden">
-          {/* distant glow horizon */}
-          <div className="absolute bottom-8 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/35 to-transparent" />
-          {/* faded background bus (depth) */}
-          <div className="absolute bottom-[34px] opacity-25 blur-[1px] scale-75" style={{ animation: "driveSlow 22s linear infinite" }}>
-            <BusGraphic wheelSpin="1.1s" />
-          </div>
-          {/* road surface */}
-          <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-b from-white/[0.12] to-white/[0.02]" />
-          {/* lane dashes */}
-          <div className="absolute bottom-[10px] left-0 right-0 h-[3px] opacity-90" style={{ backgroundImage: "repeating-linear-gradient(90deg, rgba(255,255,255,.85) 0 30px, transparent 30px 60px)", backgroundSize: "84px 100%", animation: "roadDash 0.85s linear infinite" }} />
-          {/* foreground driving bus */}
-          <div className="absolute bottom-[14px]" style={{ animation: "drive 12s linear infinite" }}>
-            <div style={{ animation: "busBob 0.55s ease-in-out infinite" }} className="relative">
-              {/* speed lines */}
-              <span className="absolute top-3 -left-5 h-[2px] w-5 rounded-full bg-white/70" style={{ animation: "speedline 0.5s linear infinite" }} />
-              <span className="absolute top-6 -left-7 h-[2px] w-6 rounded-full bg-white/50" style={{ animation: "speedline 0.5s linear infinite", animationDelay: "0.15s" }} />
-              <span className="absolute top-9 -left-4 h-[2px] w-4 rounded-full bg-white/40" style={{ animation: "speedline 0.5s linear infinite", animationDelay: "0.3s" }} />
-              <BusGraphic wheelSpin="0.55s" />
-            </div>
-          </div>
         </div>
       </div>
 
@@ -508,8 +444,8 @@ export default function Home() {
                 <div className={`w-14 h-14 rounded-2xl ${f.bg} flex items-center justify-center border border-slate-100 shadow-sm`}>
                   {f.icon}
                 </div>
-                <p className="font-bold text-sm text-slate-800">{f.title}</p>
-                <p className="text-xs text-slate-500 max-w-[180px]">{f.desc}</p>
+                <p className="font-extrabold text-sm text-slate-900">{f.title}</p>
+                <p className="text-xs text-slate-600 max-w-[180px]">{f.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -517,18 +453,18 @@ export default function Home() {
       </section>
 
       {/* ── CTA Band ────────────────────────────────────────── */}
-      <section className="relative overflow-hidden" style={{ background: "linear-gradient(120deg, #4338ca 0%, #6d28d9 60%, #0e7490 100%)" }}>
-        <div className="pointer-events-none absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(circle at 20% 30%, rgba(255,255,255,.6) 0, transparent 40%), radial-gradient(circle at 80% 70%, rgba(255,255,255,.4) 0, transparent 40%)" }} />
+      <section className="relative overflow-hidden border-t border-slate-200" style={{ background: "linear-gradient(120deg, #eef2ff 0%, #f5f3ff 55%, #ecfeff 100%)" }}>
+        <div className="pointer-events-none absolute inset-0 opacity-70" style={{ backgroundImage: "radial-gradient(circle at 20% 30%, rgba(99,102,241,.12) 0, transparent 40%), radial-gradient(circle at 80% 70%, rgba(245,158,11,.10) 0, transparent 40%)" }} />
         <motion.div
           initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           className="relative container mx-auto px-4 py-12 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left"
         >
           <div>
-            <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-2">{t.heroTitle1} <span className="text-orange-300">{t.heroHighlight}</span> {t.heroTitle2}</h3>
-            <p className="text-indigo-100 text-sm max-w-lg">{t.heroSub}</p>
+            <h3 className="text-2xl md:text-3xl font-extrabold text-slate-900 mb-2">{t.heroTitle1} <span className="text-orange-500">{t.heroHighlight}</span> {t.heroTitle2}</h3>
+            <p className="text-slate-600 text-sm max-w-lg">{t.heroSub}</p>
           </div>
           <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} className="shrink-0">
-            <Button onClick={() => setLocation("/search")} className="h-12 px-8 text-sm font-bold bg-orange-500 hover:bg-orange-600 text-white rounded-xl shadow-lg shadow-black/20">
+            <Button onClick={() => setLocation("/search")} className="h-12 px-8 text-sm font-bold bg-orange-500 hover:bg-orange-600 text-white rounded-xl shadow-lg shadow-orange-200">
               <Search className="mr-2 w-4 h-4" /> {t.searchBuses}
             </Button>
           </motion.div>

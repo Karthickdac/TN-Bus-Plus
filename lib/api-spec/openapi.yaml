@@ -621,6 +621,25 @@ paths:
               schema:
                 $ref: "#/components/schemas/Complaint"
 
+  /assistant/chat:
+    post:
+      operationId: assistantChat
+      tags: [assistant]
+      summary: Conversational AI travel assistant (Tamil + English)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssistantChatInput"
+      responses:
+        "200":
+          description: Assistant reply with matching trips
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssistantChatResult"
+
 components:
   schemas:
     HealthStatus:
@@ -753,6 +772,74 @@ components:
         - fare
         - availableSeats
         - totalSeats
+
+    AssistantChatMessage:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+      required:
+        - role
+        - content
+
+    AssistantIntent:
+      type: object
+      properties:
+        origin:
+          type: string
+        destination:
+          type: string
+        ac:
+          type: boolean
+        sleeper:
+          type: boolean
+        chargingPort:
+          type: boolean
+        liveGps:
+          type: boolean
+        toilet:
+          type: boolean
+        womenFriendly:
+          type: boolean
+        lowCrowd:
+          type: boolean
+        nightBus:
+          type: boolean
+        sort:
+          type: string
+
+    AssistantChatInput:
+      type: object
+      properties:
+        message:
+          type: string
+        lang:
+          type: string
+          enum: [en, ta]
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssistantChatMessage"
+      required:
+        - message
+
+    AssistantChatResult:
+      type: object
+      properties:
+        reply:
+          type: string
+        trips:
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchResult"
+        intent:
+          $ref: "#/components/schemas/AssistantIntent"
+      required:
+        - reply
+        - trips
 
     FareCalendarDay:
       type: object

@@ -9,6 +9,7 @@ import NotFound from "@/pages/not-found";
 import Login from "@/pages/Login";
 import Navbar from "@/components/layout/Navbar";
 import Home from "@/pages/Home";
+import Assistant from "@/pages/Assistant";
 import Search from "@/pages/Search";
 import BusDetail from "@/pages/BusDetail";
 import Book from "@/pages/Book";
@@ -41,6 +42,7 @@ function Router() {
       <main className="flex-1 w-full">
         <Switch>
           <Route path="/" component={Home} />
+          <Route path="/assistant" component={Assistant} />
           <Route path="/login" component={Login} />
           <Route path="/search" component={Search} />
           <Route path="/bus/:id" component={BusDetail} />

@@ -8,6 +8,12 @@
 
 export * from './adminListBookingsParams';
 export * from './adminStats';
+export * from './assistantChatInput';
+export * from './assistantChatInputLang';
+export * from './assistantChatMessage';
+export * from './assistantChatMessageRole';
+export * from './assistantChatResult';
+export * from './assistantIntent';
 export * from './booking';
 export * from './bookingInput';
 export * from './bus';

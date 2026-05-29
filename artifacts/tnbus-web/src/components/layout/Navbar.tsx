@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, LogOut, User, Wallet } from "lucide-react";
+import { ShieldCheck, LogOut, User, Wallet, Sparkles } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -45,6 +45,10 @@ export default function Navbar() {
 
         <nav className="flex items-center gap-5">
           {navLink("/search", t.routes)}
+          <Link href="/assistant"
+            className={`hidden sm:inline-flex items-center gap-1 text-sm font-medium transition-colors px-1 py-0.5 ${location === "/assistant" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-slate-600 hover:text-indigo-600"}`}>
+            <Sparkles className="w-3.5 h-3.5 text-violet-500" /> {t.assistant}
+          </Link>
           {navLink("/pnr", t.pnrStatus)}
           {user && navLink("/dashboard", t.dashboard)}
 

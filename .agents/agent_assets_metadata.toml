@@ -12,3 +12,9 @@ id = "qja-cXt6WYDiQj-8NkDMn"
 uri = "file://attached_assets/generated_images/tamil_nadu_government_official_995a.png"
 type = "image"
 title = "generated_image"
+
+[[generated]]
+id = "ns-s1eC_smqgUq4qFSe4f"
+uri = "file://artifacts/tnbus-web/public/images/setc-bus.png"
+type = "image"
+title = "setc bus side profile"
