@@ -24,6 +24,10 @@ import AdminFleet from "@/pages/admin/AdminFleet";
 import AdminBookings from "@/pages/admin/AdminBookings";
 import AdminRevenue from "@/pages/admin/AdminRevenue";
 import AdminComplaints from "@/pages/admin/AdminComplaints";
+import AdminPOS from "@/pages/admin/AdminPOS";
+import ComingSoon from "@/pages/admin/ComingSoon";
+import AdminLayout from "@/components/admin/AdminLayout";
+import { Users, Settings, ScrollText } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient({
@@ -53,11 +57,45 @@ function Router() {
           <Route path="/dashboard/trips">{() => <ProtectedRoute component={Trips} />}</Route>
           <Route path="/dashboard/wallet">{() => <ProtectedRoute component={WalletPage} />}</Route>
           <Route path="/dashboard/profile">{() => <ProtectedRoute component={Profile} />}</Route>
-          <Route path="/admin" component={AdminDashboard} />
-          <Route path="/admin/fleet" component={AdminFleet} />
-          <Route path="/admin/bookings" component={AdminBookings} />
-          <Route path="/admin/revenue" component={AdminRevenue} />
-          <Route path="/admin/complaints" component={AdminComplaints} />
+          <Route path="/admin">{() => <AdminLayout><AdminDashboard /></AdminLayout>}</Route>
+          <Route path="/admin/pos">{() => <AdminLayout><AdminPOS /></AdminLayout>}</Route>
+          <Route path="/admin/fleet">{() => <AdminLayout><AdminFleet /></AdminLayout>}</Route>
+          <Route path="/admin/bookings">{() => <AdminLayout><AdminBookings /></AdminLayout>}</Route>
+          <Route path="/admin/revenue">{() => <AdminLayout><AdminRevenue /></AdminLayout>}</Route>
+          <Route path="/admin/complaints">{() => <AdminLayout><AdminComplaints /></AdminLayout>}</Route>
+          <Route path="/admin/users">
+            {() => (
+              <AdminLayout>
+                <ComingSoon
+                  title="Users & Roles"
+                  description="Manage staff accounts, assign roles, and control access permissions across the platform."
+                  icon={Users}
+                />
+              </AdminLayout>
+            )}
+          </Route>
+          <Route path="/admin/settings">
+            {() => (
+              <AdminLayout>
+                <ComingSoon
+                  title="System Settings"
+                  description="Configure platform-wide settings, fares, booking rules, and operational defaults."
+                  icon={Settings}
+                />
+              </AdminLayout>
+            )}
+          </Route>
+          <Route path="/admin/audit">
+            {() => (
+              <AdminLayout>
+                <ComingSoon
+                  title="Audit Logs"
+                  description="Review a complete history of administrative actions and system events for compliance."
+                  icon={ScrollText}
+                />
+              </AdminLayout>
+            )}
+          </Route>
           <Route component={NotFound} />
         </Switch>
       </main>

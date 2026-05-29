@@ -1,1 +1,1 @@
-- [Auth system](auth-system.md) — bcrypt+express-session auth; `zod/v4` cannot be used in api-server routes (esbuild can't resolve it); use manual validation or import from `@workspace/api-zod` instead.
+- [TN Bus+ conventions](tnbus-web-conventions.md) — query-hook queryKey gotcha, walk-in passengerId=0 sentinel, real endpoint paths, known systemic limits (non-transactional bookings, random seats, no admin authz).
