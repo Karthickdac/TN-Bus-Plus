@@ -27,6 +27,82 @@ function Counter({ to, suffix = "", duration = 1500 }: { to: number; suffix?: st
   return <span ref={ref}>{val.toLocaleString("en-IN")}{suffix}</span>;
 }
 
+function BusGraphic({ wheelSpin = "0.6s" }: { wheelSpin?: string }) {
+  const wheel = {
+    transformBox: "fill-box" as const,
+    transformOrigin: "center" as const,
+    animation: `spin ${wheelSpin} linear infinite`,
+  };
+  return (
+    <svg width="150" height="60" viewBox="0 0 150 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: "drop-shadow(0 6px 8px rgba(0,0,0,.35))" }}>
+      <defs>
+        <linearGradient id="busBody" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fdba74" />
+          <stop offset="0.5" stopColor="#fb923c" />
+          <stop offset="1" stopColor="#ea580c" />
+        </linearGradient>
+        <linearGradient id="busGlass" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#e0f2fe" />
+          <stop offset="1" stopColor="#7dd3fc" />
+        </linearGradient>
+        <radialGradient id="beam" cx="0" cy="0.5" r="1">
+          <stop offset="0" stopColor="#fde68a" stopOpacity="0.9" />
+          <stop offset="1" stopColor="#fde68a" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+
+      {/* headlight beam */}
+      <polygon points="138,34 150,28 150,44 138,40" fill="url(#beam)" style={{ animation: "headlight 0.9s ease-in-out infinite" }} />
+
+      {/* body */}
+      <rect x="6" y="12" width="128" height="30" rx="7" fill="url(#busBody)" stroke="#c2410c" strokeWidth="1" />
+      {/* roof highlight */}
+      <rect x="10" y="13.5" width="120" height="3" rx="1.5" fill="#ffffff" opacity="0.35" />
+      {/* lower accent stripe */}
+      <rect x="6" y="35" width="128" height="4" rx="2" fill="#1e3a8a" opacity="0.85" />
+
+      {/* window band */}
+      <rect x="13" y="17" width="92" height="12" rx="2.5" fill="url(#busGlass)" />
+      {/* window dividers */}
+      {[26, 39, 52, 65, 78, 91].map((x) => (
+        <rect key={x} x={x} y="17" width="1.6" height="12" fill="#bae6fd" />
+      ))}
+      {/* windshield */}
+      <path d="M112 17 H128 a3 3 0 0 1 3 3 V29 H112 Z" fill="url(#busGlass)" />
+
+      {/* door */}
+      <rect x="13" y="30.5" width="9" height="9.5" rx="1" fill="#0c4a6e" opacity="0.55" />
+
+      {/* TN brand badge */}
+      <text x="59" y="40" textAnchor="middle" fontSize="6.5" fontWeight="700" fill="#ffffff" fontFamily="sans-serif" letterSpacing="0.5">TN BUS+</text>
+
+      {/* headlight + taillight */}
+      <circle cx="132" cy="37" r="2" fill="#fde047" />
+      <circle cx="8.5" cy="37" r="1.6" fill="#ef4444" />
+
+      {/* wheels */}
+      <g>
+        <circle cx="38" cy="44" r="9" fill="#0f172a" />
+        <g style={wheel}>
+          <circle cx="38" cy="44" r="9" fill="none" stroke="#1f2937" strokeWidth="2" />
+          <circle cx="38" cy="44" r="3.2" fill="#94a3b8" />
+          <rect x="37" y="36" width="2" height="16" fill="#475569" />
+          <rect x="30" y="43" width="16" height="2" fill="#475569" />
+        </g>
+      </g>
+      <g>
+        <circle cx="104" cy="44" r="9" fill="#0f172a" />
+        <g style={wheel}>
+          <circle cx="104" cy="44" r="9" fill="none" stroke="#1f2937" strokeWidth="2" />
+          <circle cx="104" cy="44" r="3.2" fill="#94a3b8" />
+          <rect x="103" y="36" width="2" height="16" fill="#475569" />
+          <rect x="96" y="43" width="16" height="2" fill="#475569" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
 export default function Home() {
   const [, setLocation] = useLocation();
   const [origin, setOrigin] = useState("");
@@ -72,7 +148,7 @@ export default function Home() {
               transition={{ type: "spring", stiffness: 200, damping: 14 }}
               className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden ring-1 ring-white/20 shadow-lg bg-white/95 p-1 shrink-0"
             >
-              <img src="/images/tn-emblem.png" alt="Tamil Nadu Government Emblem" className="w-full h-full object-contain" />
+              <img src="/images/tn-emblem-fitted.png" alt="Tamil Nadu Government Emblem" className="w-full h-full object-contain" />
             </motion.div>
             <div className="hidden sm:block">
               <p className="text-amber-300/90 text-[11px] font-semibold tracking-wide">தமிழ்நாடு அரசு</p>
@@ -106,7 +182,7 @@ export default function Home() {
               transition={{ type: "spring", stiffness: 200, damping: 14, delay: 0.05 }}
               className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden ring-1 ring-white/20 shadow-lg shrink-0"
             >
-              <img src="/images/cm-vijay.png" alt="Thiru. C. Joseph Vijay, Chief Minister" className="w-full h-full object-cover object-center" />
+              <img src="/images/cm-vijay-fitted.png" alt="Thiru. C. Joseph Vijay, Chief Minister" className="w-full h-full object-cover object-center" />
             </motion.div>
           </div>
         </div>
@@ -137,11 +213,16 @@ export default function Home() {
       <style>{`
         @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         @keyframes floatY { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-22px); } }
-        @keyframes drive { 0% { transform: translateX(-12vw); } 100% { transform: translateX(112vw); } }
-        @keyframes roadDash { 0% { background-position: 0 0; } 100% { background-position: -80px 0; } }
+        @keyframes drive { 0% { transform: translateX(-18vw); } 100% { transform: translateX(118vw); } }
+        @keyframes driveSlow { 0% { transform: translateX(-26vw); } 100% { transform: translateX(126vw); } }
+        @keyframes roadDash { 0% { background-position: 0 0; } 100% { background-position: -84px 0; } }
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes busBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
+        @keyframes headlight { 0%,100% { opacity: .5; } 50% { opacity: 1; } }
+        @keyframes speedline { 0% { opacity: 0; transform: translateX(6px) scaleX(.6); } 40% { opacity: 1; } 100% { opacity: 0; transform: translateX(-22px) scaleX(1.4); } }
         @media (prefers-reduced-motion: reduce) {
-          [style*="ticker"], [style*="floatY"], [style*="drive"], [style*="roadDash"], [style*="shimmer"] { animation: none !important; }
+          [style*="ticker"], [style*="floatY"], [style*="drive"], [style*="driveSlow"], [style*="roadDash"], [style*="shimmer"], [style*="spin"], [style*="busBob"], [style*="headlight"], [style*="speedline"] { animation: none !important; }
         }
       `}</style>
 
@@ -297,10 +378,28 @@ export default function Home() {
           </motion.div>
         </div>
 
-        {/* Animated road + driving bus */}
-        <div className="relative h-12 mt-2">
-          <div className="absolute bottom-3 left-0 right-0 h-2 bg-white/15" style={{ backgroundImage: "repeating-linear-gradient(90deg, rgba(255,255,255,.7) 0 24px, transparent 24px 48px)", backgroundSize: "80px 100%", animation: "roadDash 1.2s linear infinite" }} />
-          <div className="absolute bottom-4 text-3xl" style={{ animation: "drive 14s linear infinite" }}>🚌</div>
+        {/* Animated road + driving bus scene */}
+        <div className="relative h-24 mt-1 overflow-hidden">
+          {/* distant glow horizon */}
+          <div className="absolute bottom-8 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/35 to-transparent" />
+          {/* faded background bus (depth) */}
+          <div className="absolute bottom-[34px] opacity-25 blur-[1px] scale-75" style={{ animation: "driveSlow 22s linear infinite" }}>
+            <BusGraphic wheelSpin="1.1s" />
+          </div>
+          {/* road surface */}
+          <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-b from-white/[0.12] to-white/[0.02]" />
+          {/* lane dashes */}
+          <div className="absolute bottom-[10px] left-0 right-0 h-[3px] opacity-90" style={{ backgroundImage: "repeating-linear-gradient(90deg, rgba(255,255,255,.85) 0 30px, transparent 30px 60px)", backgroundSize: "84px 100%", animation: "roadDash 0.85s linear infinite" }} />
+          {/* foreground driving bus */}
+          <div className="absolute bottom-[14px]" style={{ animation: "drive 12s linear infinite" }}>
+            <div style={{ animation: "busBob 0.55s ease-in-out infinite" }} className="relative">
+              {/* speed lines */}
+              <span className="absolute top-3 -left-5 h-[2px] w-5 rounded-full bg-white/70" style={{ animation: "speedline 0.5s linear infinite" }} />
+              <span className="absolute top-6 -left-7 h-[2px] w-6 rounded-full bg-white/50" style={{ animation: "speedline 0.5s linear infinite", animationDelay: "0.15s" }} />
+              <span className="absolute top-9 -left-4 h-[2px] w-4 rounded-full bg-white/40" style={{ animation: "speedline 0.5s linear infinite", animationDelay: "0.3s" }} />
+              <BusGraphic wheelSpin="0.55s" />
+            </div>
+          </div>
         </div>
       </div>
 
