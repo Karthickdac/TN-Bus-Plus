@@ -5,6 +5,7 @@ import { Calendar, MapPin, Search, ArrowRight, Bus, Clock, Shield, Star, Wifi, Z
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useListRoutes } from "@workspace/api-client-react";
+import { useLang } from "@/contexts/LanguageContext";
 
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -13,6 +14,7 @@ export default function Home() {
   const [date, setDate] = useState("");
   const [womenOnly, setWomenOnly] = useState(false);
   const { data: routes } = useListRoutes();
+  const { t } = useLang();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,7 +77,7 @@ export default function Home() {
         <div className="flex items-center">
           <div className="shrink-0 bg-orange-700 text-white text-xs font-bold px-4 py-2 uppercase tracking-widest flex items-center gap-1.5 z-10">
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-            Notice
+            {t.notice}
           </div>
           <div className="overflow-hidden flex-1 relative">
             <div
@@ -132,13 +134,13 @@ export default function Home() {
             >
               <span className="inline-flex items-center gap-1.5 bg-white/15 text-orange-200 text-xs font-bold px-3 py-1 rounded-full border border-white/20 mb-4 uppercase tracking-wider">
                 <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
-                Live Booking Open
+                {t.heroTag}
               </span>
               <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-3">
-                Tamil Nadu's <span className="text-orange-300">#1 Official</span><br />Bus Booking Portal
+                {t.heroTitle1} <span className="text-orange-300">{t.heroHighlight}</span><br />{t.heroTitle2}
               </h1>
               <p className="text-indigo-100 text-base md:text-lg mb-6 max-w-sm">
-                Book government AC buses, track live location, and travel safely across Tamil Nadu.
+                {t.heroSub}
               </p>
             </motion.div>
 
@@ -149,10 +151,10 @@ export default function Home() {
               className="flex flex-wrap gap-2"
             >
               {[
-                { icon: <Bus className="w-3.5 h-3.5" />, label: "10+ Bus Types" },
-                { icon: <Shield className="w-3.5 h-3.5" />, label: "Govt. Certified" },
-                { icon: <Star className="w-3.5 h-3.5" />, label: "87% On-time" },
-                { icon: <Wifi className="w-3.5 h-3.5" />, label: "AC & WiFi" },
+                { icon: <Bus className="w-3.5 h-3.5" />, label: t.badge1 },
+                { icon: <Shield className="w-3.5 h-3.5" />, label: t.badge2 },
+                { icon: <Star className="w-3.5 h-3.5" />, label: t.badge3 },
+                { icon: <Wifi className="w-3.5 h-3.5" />, label: t.badge4 },
               ].map(b => (
                 <span key={b.label} className="flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full border border-white/20">
                   {b.icon} {b.label}
@@ -175,8 +177,8 @@ export default function Home() {
                   <Bus className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <p className="text-white font-bold text-base leading-tight">Search Buses</p>
-                  <p className="text-indigo-200 text-xs">Find your perfect journey</p>
+                  <p className="text-white font-bold text-base leading-tight">{t.searchTitle}</p>
+                  <p className="text-indigo-200 text-xs">{t.searchSub}</p>
                 </div>
               </div>
 
@@ -184,11 +186,11 @@ export default function Home() {
               <form onSubmit={handleSearch} className="px-6 py-5 space-y-4">
                 {/* From */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">From</label>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">{t.from}</label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 w-4 h-4" />
                     <Input
-                      placeholder="Departure city"
+                      placeholder={t.departurePlaceholder}
                       className="pl-9 h-11 border-slate-200 focus-visible:ring-indigo-500 bg-slate-50 text-sm"
                       value={origin}
                       onChange={e => setOrigin(e.target.value)}
@@ -211,11 +213,11 @@ export default function Home() {
 
                 {/* To */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">To</label>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">{t.to}</label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-400 w-4 h-4" />
                     <Input
-                      placeholder="Arrival city"
+                      placeholder={t.arrivalPlaceholder}
                       className="pl-9 h-11 border-slate-200 focus-visible:ring-indigo-500 bg-slate-50 text-sm"
                       value={destination}
                       onChange={e => setDestination(e.target.value)}
@@ -225,7 +227,7 @@ export default function Home() {
 
                 {/* Date */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Date of Journey</label>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">{t.dateOfJourney}</label>
                   <div className="relative">
                     <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 w-4 h-4 pointer-events-none" />
                     <Input
@@ -249,9 +251,9 @@ export default function Home() {
                 >
                   <span className="flex items-center gap-2 text-sm font-semibold">
                     <UserRound className={`w-4 h-4 ${womenOnly ? "text-pink-500" : "text-slate-400"}`} />
-                    Booking for Women
+                    {t.bookingForWomen}
                     {womenOnly && (
-                      <span className="text-xs bg-pink-100 text-pink-600 px-2 py-0.5 rounded-full font-bold">Ladies Only</span>
+                      <span className="text-xs bg-pink-100 text-pink-600 px-2 py-0.5 rounded-full font-bold">{t.ladiesOnly}</span>
                     )}
                   </span>
                   {/* Toggle pill */}
@@ -261,13 +263,13 @@ export default function Home() {
                 </button>
 
                 <Button type="submit" className="w-full h-11 text-sm font-bold bg-orange-500 hover:bg-orange-600 text-white rounded-xl shadow-md shadow-orange-200 transition-all">
-                  <Search className="mr-2 w-4 h-4" /> Search Buses
+                  <Search className="mr-2 w-4 h-4" /> {t.searchBuses}
                 </Button>
 
                 <p className="text-center text-xs text-slate-400">
-                  <span className="text-indigo-600 font-semibold cursor-pointer hover:underline" onClick={() => setLocation("/pnr")}>Check PNR Status</span>
+                  <span className="text-indigo-600 font-semibold cursor-pointer hover:underline" onClick={() => setLocation("/pnr")}>{t.checkPNR}</span>
                   {" · "}
-                  <span className="text-indigo-600 font-semibold cursor-pointer hover:underline" onClick={() => setLocation("/dashboard")}>My Trips</span>
+                  <span className="text-indigo-600 font-semibold cursor-pointer hover:underline" onClick={() => setLocation("/dashboard")}>{t.myTrips}</span>
                 </p>
               </form>
             </div>
@@ -280,11 +282,11 @@ export default function Home() {
       <section className="container mx-auto px-4 py-10">
         <div className="flex items-end justify-between mb-5">
           <div>
-            <p className="text-indigo-600 text-xs font-bold uppercase tracking-widest mb-0.5">Most Booked</p>
-            <h2 className="text-2xl font-extrabold text-slate-800">Popular Routes</h2>
+            <p className="text-indigo-600 text-xs font-bold uppercase tracking-widest mb-0.5">{t.mostBooked}</p>
+            <h2 className="text-2xl font-extrabold text-slate-800">{t.popularRoutes}</h2>
           </div>
           <button onClick={() => setLocation("/search")} className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
-            View all <ArrowRight className="w-4 h-4" />
+            {t.viewAll} <ArrowRight className="w-4 h-4" />
           </button>
         </div>
 
@@ -312,7 +314,7 @@ export default function Home() {
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-extrabold text-indigo-600">₹{route.basefare}</p>
-                  <p className="text-xs text-slate-400">onwards</p>
+                  <p className="text-xs text-slate-400">{t.onwards}</p>
                 </div>
               </div>
               <div className="flex items-center justify-between pt-3 border-t border-slate-100">
@@ -325,7 +327,7 @@ export default function Home() {
                   {Number(route.distanceKm)} km
                 </span>
                 <span className="text-xs font-semibold text-indigo-600 group-hover:underline">
-                  Book now →
+                  {t.bookNow}
                 </span>
               </div>
             </motion.div>
@@ -338,10 +340,10 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             {[
-              { icon: <Shield className="w-6 h-6 text-indigo-500" />, title: "Govt. Certified", desc: "All buses TNSTC approved" },
-              { icon: <Zap className="w-6 h-6 text-orange-500" />, title: "Live Tracking", desc: "Real-time GPS on every bus" },
-              { icon: <Star className="w-6 h-6 text-yellow-500" />, title: "87% On-Time", desc: "Industry-leading punctuality" },
-              { icon: <Wifi className="w-6 h-6 text-emerald-500" />, title: "AC & WiFi", desc: "Premium comfort guaranteed" },
+              { icon: <Shield className="w-6 h-6 text-indigo-500" />, title: t.certTitle, desc: t.certDesc },
+              { icon: <Zap className="w-6 h-6 text-orange-500" />, title: t.trackTitle, desc: t.trackDesc },
+              { icon: <Star className="w-6 h-6 text-yellow-500" />, title: t.ontimeTitle, desc: t.ontimeDesc },
+              { icon: <Wifi className="w-6 h-6 text-emerald-500" />, title: t.wifiTitle, desc: t.wifiDesc },
             ].map(f => (
               <div key={f.title} className="flex flex-col items-center gap-2">
                 <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100">
