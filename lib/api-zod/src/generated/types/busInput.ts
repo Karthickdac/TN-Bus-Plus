@@ -5,17 +5,16 @@
  * TN Bus+ API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { BusInputStatus } from './busInputStatus';
 
-export interface Bus {
-  id: number;
+export interface BusInput {
   busNumber: string;
   busType: string;
   totalSeats: number;
   amenities?: string[];
-  status: string;
+  status?: BusInputStatus;
   /** @nullable */
   currentLocation?: string | null;
-  punctualityScore?: number;
   /** @nullable */
   driverName?: string | null;
   /** @nullable */

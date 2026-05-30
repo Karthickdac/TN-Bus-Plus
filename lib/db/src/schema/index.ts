@@ -21,3 +21,4 @@ export * from "./fuelLogs";
 export * from "./inspections";
 export * from "./emergencyReports";
 export * from "./cargoBookings";
+export * from "./maintenanceRecords";

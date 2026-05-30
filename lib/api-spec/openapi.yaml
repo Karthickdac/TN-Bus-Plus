@@ -724,6 +724,213 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Bus"
+    post:
+      operationId: createBus
+      tags: [admin]
+      summary: Register a new bus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BusInput"
+      responses:
+        "201":
+          description: Bus created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bus"
+        "400":
+          description: Invalid input
+        "409":
+          description: Bus number already exists
+
+  /admin/buses/{id}:
+    patch:
+      operationId: updateBus
+      tags: [admin]
+      summary: Update a bus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BusInput"
+      responses:
+        "200":
+          description: Bus updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bus"
+        "400":
+          description: Invalid input
+        "404":
+          description: Not found
+        "409":
+          description: Bus number already exists
+    delete:
+      operationId: deleteBus
+      tags: [admin]
+      summary: Delete a bus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Bus deleted
+        "404":
+          description: Not found
+        "409":
+          description: Bus still has active schedules
+
+  /admin/buses/{id}/maintenance:
+    get:
+      operationId: listBusMaintenance
+      tags: [admin]
+      summary: Maintenance and service records for a bus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Maintenance records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MaintenanceRecord"
+    post:
+      operationId: createBusMaintenance
+      tags: [admin]
+      summary: Add a maintenance or service record for a bus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MaintenanceInput"
+      responses:
+        "201":
+          description: Maintenance record created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaintenanceRecord"
+        "400":
+          description: Invalid input
+        "404":
+          description: Bus not found
+
+  /admin/maintenance/{id}:
+    patch:
+      operationId: updateMaintenance
+      tags: [admin]
+      summary: Update a maintenance record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MaintenanceInput"
+      responses:
+        "200":
+          description: Maintenance record updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaintenanceRecord"
+        "400":
+          description: Invalid input
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteMaintenance
+      tags: [admin]
+      summary: Delete a maintenance record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Maintenance record deleted
+        "404":
+          description: Not found
+
+  /admin/buses/{id}/fuel-logs:
+    get:
+      operationId: listBusFuelLogs
+      tags: [admin]
+      summary: Fuel logs for a bus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Fuel logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FuelLog"
+        "404":
+          description: Bus not found
+
+  /admin/buses/{id}/inspections:
+    get:
+      operationId: listBusInspections
+      tags: [admin]
+      summary: Inspection records for a bus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Inspections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Inspection"
+        "404":
+          description: Bus not found
 
   /admin/bookings:
     get:
@@ -1773,12 +1980,96 @@ components:
           type: ["string", "null"]
         routeId:
           type: ["integer", "null"]
+        depotId:
+          type: ["integer", "null"]
       required:
         - id
         - busNumber
         - busType
         - totalSeats
         - status
+
+    BusInput:
+      type: object
+      properties:
+        busNumber:
+          type: string
+        busType:
+          type: string
+        totalSeats:
+          type: integer
+        amenities:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [active, maintenance, breakdown]
+        currentLocation:
+          type: ["string", "null"]
+        driverName:
+          type: ["string", "null"]
+        routeId:
+          type: ["integer", "null"]
+        depotId:
+          type: ["integer", "null"]
+      required:
+        - busNumber
+        - busType
+        - totalSeats
+
+    MaintenanceRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        busId:
+          type: integer
+        type:
+          type: string
+        description:
+          type: ["string", "null"]
+        cost:
+          type: number
+        odometer:
+          type: ["integer", "null"]
+        status:
+          type: string
+        serviceDate:
+          type: string
+        nextServiceDue:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - busId
+        - type
+        - cost
+        - status
+        - serviceDate
+        - createdAt
+
+    MaintenanceInput:
+      type: object
+      properties:
+        type:
+          type: string
+        description:
+          type: ["string", "null"]
+        cost:
+          type: number
+        odometer:
+          type: ["integer", "null"]
+        status:
+          type: string
+          enum: [scheduled, in-progress, completed]
+        serviceDate:
+          type: ["string", "null"]
+        nextServiceDue:
+          type: ["string", "null"]
+      required:
+        - type
 
     SearchResult:
       type: object

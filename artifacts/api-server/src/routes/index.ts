@@ -10,6 +10,7 @@ import dashboardRouter from "./dashboard";
 import adminRouter from "./admin";
 import adminAnalyticsRouter from "./adminAnalytics";
 import adminCrewRouter from "./adminCrew";
+import adminFleetRouter from "./adminFleet";
 import authRouter from "./auth";
 import assistantRouter from "./assistant";
 import savedRoutesRouter from "./savedRoutes";
@@ -46,5 +47,6 @@ router.use(dashboardRouter);
 router.use(adminRouter);
 router.use(adminAnalyticsRouter);
 router.use(adminCrewRouter);
+router.use(adminFleetRouter);
 
 export default router;

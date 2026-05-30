@@ -33,6 +33,72 @@ export interface Bus {
   driverName?: string | null;
   /** @nullable */
   routeId?: number | null;
+  /** @nullable */
+  depotId?: number | null;
+}
+
+export type BusInputStatus = typeof BusInputStatus[keyof typeof BusInputStatus];
+
+
+export const BusInputStatus = {
+  active: 'active',
+  maintenance: 'maintenance',
+  breakdown: 'breakdown',
+} as const;
+
+export interface BusInput {
+  busNumber: string;
+  busType: string;
+  totalSeats: number;
+  amenities?: string[];
+  status?: BusInputStatus;
+  /** @nullable */
+  currentLocation?: string | null;
+  /** @nullable */
+  driverName?: string | null;
+  /** @nullable */
+  routeId?: number | null;
+  /** @nullable */
+  depotId?: number | null;
+}
+
+export interface MaintenanceRecord {
+  id: number;
+  busId: number;
+  type: string;
+  /** @nullable */
+  description?: string | null;
+  cost: number;
+  /** @nullable */
+  odometer?: number | null;
+  status: string;
+  serviceDate: string;
+  /** @nullable */
+  nextServiceDue?: string | null;
+  createdAt: string;
+}
+
+export type MaintenanceInputStatus = typeof MaintenanceInputStatus[keyof typeof MaintenanceInputStatus];
+
+
+export const MaintenanceInputStatus = {
+  scheduled: 'scheduled',
+  'in-progress': 'in-progress',
+  completed: 'completed',
+} as const;
+
+export interface MaintenanceInput {
+  type: string;
+  /** @nullable */
+  description?: string | null;
+  cost?: number;
+  /** @nullable */
+  odometer?: number | null;
+  status?: MaintenanceInputStatus;
+  /** @nullable */
+  serviceDate?: string | null;
+  /** @nullable */
+  nextServiceDue?: string | null;
 }
 
 export interface SearchResult {

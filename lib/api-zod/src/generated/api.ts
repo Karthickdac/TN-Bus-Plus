@@ -69,7 +69,8 @@ export const ListBusesResponseItem = zod.object({
   "currentLocation": zod.string().nullish(),
   "punctualityScore": zod.number().optional(),
   "driverName": zod.string().nullish(),
-  "routeId": zod.number().nullish()
+  "routeId": zod.number().nullish(),
+  "depotId": zod.number().nullish()
 })
 export const ListBusesResponse = zod.array(ListBusesResponseItem)
 
@@ -91,7 +92,8 @@ export const GetBusResponse = zod.object({
   "currentLocation": zod.string().nullish(),
   "punctualityScore": zod.number().optional(),
   "driverName": zod.string().nullish(),
-  "routeId": zod.number().nullish()
+  "routeId": zod.number().nullish(),
+  "depotId": zod.number().nullish()
 })
 
 
@@ -756,9 +758,190 @@ export const AdminListBusesResponseItem = zod.object({
   "currentLocation": zod.string().nullish(),
   "punctualityScore": zod.number().optional(),
   "driverName": zod.string().nullish(),
-  "routeId": zod.number().nullish()
+  "routeId": zod.number().nullish(),
+  "depotId": zod.number().nullish()
 })
 export const AdminListBusesResponse = zod.array(AdminListBusesResponseItem)
+
+
+/**
+ * @summary Register a new bus
+ */
+export const CreateBusBody = zod.object({
+  "busNumber": zod.string(),
+  "busType": zod.string(),
+  "totalSeats": zod.number(),
+  "amenities": zod.array(zod.string()).optional(),
+  "status": zod.enum(['active', 'maintenance', 'breakdown']).optional(),
+  "currentLocation": zod.string().nullish(),
+  "driverName": zod.string().nullish(),
+  "routeId": zod.number().nullish(),
+  "depotId": zod.number().nullish()
+})
+
+
+/**
+ * @summary Update a bus
+ */
+export const UpdateBusParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateBusBody = zod.object({
+  "busNumber": zod.string(),
+  "busType": zod.string(),
+  "totalSeats": zod.number(),
+  "amenities": zod.array(zod.string()).optional(),
+  "status": zod.enum(['active', 'maintenance', 'breakdown']).optional(),
+  "currentLocation": zod.string().nullish(),
+  "driverName": zod.string().nullish(),
+  "routeId": zod.number().nullish(),
+  "depotId": zod.number().nullish()
+})
+
+export const UpdateBusResponse = zod.object({
+  "id": zod.number(),
+  "busNumber": zod.string(),
+  "busType": zod.string(),
+  "totalSeats": zod.number(),
+  "amenities": zod.array(zod.string()).optional(),
+  "status": zod.string(),
+  "currentLocation": zod.string().nullish(),
+  "punctualityScore": zod.number().optional(),
+  "driverName": zod.string().nullish(),
+  "routeId": zod.number().nullish(),
+  "depotId": zod.number().nullish()
+})
+
+
+/**
+ * @summary Delete a bus
+ */
+export const DeleteBusParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Maintenance and service records for a bus
+ */
+export const ListBusMaintenanceParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ListBusMaintenanceResponseItem = zod.object({
+  "id": zod.number(),
+  "busId": zod.number(),
+  "type": zod.string(),
+  "description": zod.string().nullish(),
+  "cost": zod.number(),
+  "odometer": zod.number().nullish(),
+  "status": zod.string(),
+  "serviceDate": zod.string(),
+  "nextServiceDue": zod.string().nullish(),
+  "createdAt": zod.string()
+})
+export const ListBusMaintenanceResponse = zod.array(ListBusMaintenanceResponseItem)
+
+
+/**
+ * @summary Add a maintenance or service record for a bus
+ */
+export const CreateBusMaintenanceParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const CreateBusMaintenanceBody = zod.object({
+  "type": zod.string(),
+  "description": zod.string().nullish(),
+  "cost": zod.number().optional(),
+  "odometer": zod.number().nullish(),
+  "status": zod.enum(['scheduled', 'in-progress', 'completed']).optional(),
+  "serviceDate": zod.string().nullish(),
+  "nextServiceDue": zod.string().nullish()
+})
+
+
+/**
+ * @summary Update a maintenance record
+ */
+export const UpdateMaintenanceParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateMaintenanceBody = zod.object({
+  "type": zod.string(),
+  "description": zod.string().nullish(),
+  "cost": zod.number().optional(),
+  "odometer": zod.number().nullish(),
+  "status": zod.enum(['scheduled', 'in-progress', 'completed']).optional(),
+  "serviceDate": zod.string().nullish(),
+  "nextServiceDue": zod.string().nullish()
+})
+
+export const UpdateMaintenanceResponse = zod.object({
+  "id": zod.number(),
+  "busId": zod.number(),
+  "type": zod.string(),
+  "description": zod.string().nullish(),
+  "cost": zod.number(),
+  "odometer": zod.number().nullish(),
+  "status": zod.string(),
+  "serviceDate": zod.string(),
+  "nextServiceDue": zod.string().nullish(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Delete a maintenance record
+ */
+export const DeleteMaintenanceParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Fuel logs for a bus
+ */
+export const ListBusFuelLogsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ListBusFuelLogsResponseItem = zod.object({
+  "id": zod.number(),
+  "crewId": zod.number().nullish(),
+  "busNumber": zod.string(),
+  "liters": zod.number(),
+  "cost": zod.number(),
+  "odometer": zod.number().nullish(),
+  "fuelType": zod.string(),
+  "notes": zod.string().nullish(),
+  "loggedAt": zod.string()
+})
+export const ListBusFuelLogsResponse = zod.array(ListBusFuelLogsResponseItem)
+
+
+/**
+ * @summary Inspection records for a bus
+ */
+export const ListBusInspectionsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ListBusInspectionsResponseItem = zod.object({
+  "id": zod.number(),
+  "crewId": zod.number().nullish(),
+  "busNumber": zod.string(),
+  "items": zod.array(zod.object({
+  "label": zod.string(),
+  "ok": zod.boolean()
+})),
+  "passed": zod.boolean(),
+  "notes": zod.string().nullish(),
+  "inspectedAt": zod.string()
+})
+export const ListBusInspectionsResponse = zod.array(ListBusInspectionsResponseItem)
 
 
 /**

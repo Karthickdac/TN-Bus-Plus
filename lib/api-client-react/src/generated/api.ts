@@ -30,6 +30,7 @@ import type {
   Booking,
   BookingInput,
   Bus,
+  BusInput,
   BusTracking,
   CargoBooking,
   CargoInput,
@@ -60,6 +61,8 @@ import type {
   InspectionInput,
   ListBookingsParams,
   ListRoutesParams,
+  MaintenanceInput,
+  MaintenanceRecord,
   ManifestEntry,
   Notification,
   OccupancyReport,
@@ -2473,6 +2476,664 @@ export function useAdminListBuses<TData = Awaited<ReturnType<typeof adminListBus
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getAdminListBusesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateBusUrl = () => {
+
+
+
+
+  return `/api/admin/buses`
+}
+
+/**
+ * @summary Register a new bus
+ */
+export const createBus = async (busInput: BusInput, options?: RequestInit): Promise<Bus> => {
+
+  return customFetch<Bus>(getCreateBusUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      busInput,)
+  }
+);}
+
+
+
+
+export const getCreateBusMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBus>>, TError,{data: BodyType<BusInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createBus>>, TError,{data: BodyType<BusInput>}, TContext> => {
+
+const mutationKey = ['createBus'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createBus>>, {data: BodyType<BusInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createBus(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateBusMutationResult = NonNullable<Awaited<ReturnType<typeof createBus>>>
+    export type CreateBusMutationBody = BodyType<BusInput>
+    export type CreateBusMutationError = ErrorType<void>
+
+    /**
+ * @summary Register a new bus
+ */
+export const useCreateBus = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBus>>, TError,{data: BodyType<BusInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createBus>>,
+        TError,
+        {data: BodyType<BusInput>},
+        TContext
+      > => {
+      return useMutation(getCreateBusMutationOptions(options));
+    }
+
+export const getUpdateBusUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/buses/${id}`
+}
+
+/**
+ * @summary Update a bus
+ */
+export const updateBus = async (id: number,
+    busInput: BusInput, options?: RequestInit): Promise<Bus> => {
+
+  return customFetch<Bus>(getUpdateBusUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      busInput,)
+  }
+);}
+
+
+
+
+export const getUpdateBusMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBus>>, TError,{id: number;data: BodyType<BusInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateBus>>, TError,{id: number;data: BodyType<BusInput>}, TContext> => {
+
+const mutationKey = ['updateBus'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateBus>>, {id: number;data: BodyType<BusInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateBus(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateBusMutationResult = NonNullable<Awaited<ReturnType<typeof updateBus>>>
+    export type UpdateBusMutationBody = BodyType<BusInput>
+    export type UpdateBusMutationError = ErrorType<void>
+
+    /**
+ * @summary Update a bus
+ */
+export const useUpdateBus = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBus>>, TError,{id: number;data: BodyType<BusInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateBus>>,
+        TError,
+        {id: number;data: BodyType<BusInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateBusMutationOptions(options));
+    }
+
+export const getDeleteBusUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/buses/${id}`
+}
+
+/**
+ * @summary Delete a bus
+ */
+export const deleteBus = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteBusUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteBusMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBus>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteBus>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteBus'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteBus>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteBus(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteBusMutationResult = NonNullable<Awaited<ReturnType<typeof deleteBus>>>
+
+    export type DeleteBusMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a bus
+ */
+export const useDeleteBus = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBus>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteBus>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteBusMutationOptions(options));
+    }
+
+export const getListBusMaintenanceUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/buses/${id}/maintenance`
+}
+
+/**
+ * @summary Maintenance and service records for a bus
+ */
+export const listBusMaintenance = async (id: number, options?: RequestInit): Promise<MaintenanceRecord[]> => {
+
+  return customFetch<MaintenanceRecord[]>(getListBusMaintenanceUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListBusMaintenanceQueryKey = (id: number,) => {
+    return [
+    `/api/admin/buses/${id}/maintenance`
+    ] as const;
+    }
+
+
+export const getListBusMaintenanceQueryOptions = <TData = Awaited<ReturnType<typeof listBusMaintenance>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBusMaintenance>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListBusMaintenanceQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBusMaintenance>>> = ({ signal }) => listBusMaintenance(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBusMaintenance>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListBusMaintenanceQueryResult = NonNullable<Awaited<ReturnType<typeof listBusMaintenance>>>
+export type ListBusMaintenanceQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Maintenance and service records for a bus
+ */
+
+export function useListBusMaintenance<TData = Awaited<ReturnType<typeof listBusMaintenance>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBusMaintenance>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListBusMaintenanceQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateBusMaintenanceUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/buses/${id}/maintenance`
+}
+
+/**
+ * @summary Add a maintenance or service record for a bus
+ */
+export const createBusMaintenance = async (id: number,
+    maintenanceInput: MaintenanceInput, options?: RequestInit): Promise<MaintenanceRecord> => {
+
+  return customFetch<MaintenanceRecord>(getCreateBusMaintenanceUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      maintenanceInput,)
+  }
+);}
+
+
+
+
+export const getCreateBusMaintenanceMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBusMaintenance>>, TError,{id: number;data: BodyType<MaintenanceInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createBusMaintenance>>, TError,{id: number;data: BodyType<MaintenanceInput>}, TContext> => {
+
+const mutationKey = ['createBusMaintenance'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createBusMaintenance>>, {id: number;data: BodyType<MaintenanceInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  createBusMaintenance(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateBusMaintenanceMutationResult = NonNullable<Awaited<ReturnType<typeof createBusMaintenance>>>
+    export type CreateBusMaintenanceMutationBody = BodyType<MaintenanceInput>
+    export type CreateBusMaintenanceMutationError = ErrorType<void>
+
+    /**
+ * @summary Add a maintenance or service record for a bus
+ */
+export const useCreateBusMaintenance = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBusMaintenance>>, TError,{id: number;data: BodyType<MaintenanceInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createBusMaintenance>>,
+        TError,
+        {id: number;data: BodyType<MaintenanceInput>},
+        TContext
+      > => {
+      return useMutation(getCreateBusMaintenanceMutationOptions(options));
+    }
+
+export const getUpdateMaintenanceUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/maintenance/${id}`
+}
+
+/**
+ * @summary Update a maintenance record
+ */
+export const updateMaintenance = async (id: number,
+    maintenanceInput: MaintenanceInput, options?: RequestInit): Promise<MaintenanceRecord> => {
+
+  return customFetch<MaintenanceRecord>(getUpdateMaintenanceUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      maintenanceInput,)
+  }
+);}
+
+
+
+
+export const getUpdateMaintenanceMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMaintenance>>, TError,{id: number;data: BodyType<MaintenanceInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateMaintenance>>, TError,{id: number;data: BodyType<MaintenanceInput>}, TContext> => {
+
+const mutationKey = ['updateMaintenance'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateMaintenance>>, {id: number;data: BodyType<MaintenanceInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateMaintenance(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateMaintenanceMutationResult = NonNullable<Awaited<ReturnType<typeof updateMaintenance>>>
+    export type UpdateMaintenanceMutationBody = BodyType<MaintenanceInput>
+    export type UpdateMaintenanceMutationError = ErrorType<void>
+
+    /**
+ * @summary Update a maintenance record
+ */
+export const useUpdateMaintenance = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMaintenance>>, TError,{id: number;data: BodyType<MaintenanceInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateMaintenance>>,
+        TError,
+        {id: number;data: BodyType<MaintenanceInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateMaintenanceMutationOptions(options));
+    }
+
+export const getDeleteMaintenanceUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/maintenance/${id}`
+}
+
+/**
+ * @summary Delete a maintenance record
+ */
+export const deleteMaintenance = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteMaintenanceUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteMaintenanceMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMaintenance>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteMaintenance>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteMaintenance'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteMaintenance>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteMaintenance(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteMaintenanceMutationResult = NonNullable<Awaited<ReturnType<typeof deleteMaintenance>>>
+
+    export type DeleteMaintenanceMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a maintenance record
+ */
+export const useDeleteMaintenance = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMaintenance>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteMaintenance>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteMaintenanceMutationOptions(options));
+    }
+
+export const getListBusFuelLogsUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/buses/${id}/fuel-logs`
+}
+
+/**
+ * @summary Fuel logs for a bus
+ */
+export const listBusFuelLogs = async (id: number, options?: RequestInit): Promise<FuelLog[]> => {
+
+  return customFetch<FuelLog[]>(getListBusFuelLogsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListBusFuelLogsQueryKey = (id: number,) => {
+    return [
+    `/api/admin/buses/${id}/fuel-logs`
+    ] as const;
+    }
+
+
+export const getListBusFuelLogsQueryOptions = <TData = Awaited<ReturnType<typeof listBusFuelLogs>>, TError = ErrorType<void>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBusFuelLogs>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListBusFuelLogsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBusFuelLogs>>> = ({ signal }) => listBusFuelLogs(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBusFuelLogs>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListBusFuelLogsQueryResult = NonNullable<Awaited<ReturnType<typeof listBusFuelLogs>>>
+export type ListBusFuelLogsQueryError = ErrorType<void>
+
+
+/**
+ * @summary Fuel logs for a bus
+ */
+
+export function useListBusFuelLogs<TData = Awaited<ReturnType<typeof listBusFuelLogs>>, TError = ErrorType<void>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBusFuelLogs>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListBusFuelLogsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getListBusInspectionsUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/buses/${id}/inspections`
+}
+
+/**
+ * @summary Inspection records for a bus
+ */
+export const listBusInspections = async (id: number, options?: RequestInit): Promise<Inspection[]> => {
+
+  return customFetch<Inspection[]>(getListBusInspectionsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListBusInspectionsQueryKey = (id: number,) => {
+    return [
+    `/api/admin/buses/${id}/inspections`
+    ] as const;
+    }
+
+
+export const getListBusInspectionsQueryOptions = <TData = Awaited<ReturnType<typeof listBusInspections>>, TError = ErrorType<void>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBusInspections>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListBusInspectionsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBusInspections>>> = ({ signal }) => listBusInspections(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBusInspections>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListBusInspectionsQueryResult = NonNullable<Awaited<ReturnType<typeof listBusInspections>>>
+export type ListBusInspectionsQueryError = ErrorType<void>
+
+
+/**
+ * @summary Inspection records for a bus
+ */
+
+export function useListBusInspections<TData = Awaited<ReturnType<typeof listBusInspections>>, TError = ErrorType<void>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBusInspections>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListBusInspectionsQueryOptions(id,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

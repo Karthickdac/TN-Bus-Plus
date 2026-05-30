@@ -1,2 +1,3 @@
 - [Staff portal auth & offline queue](staff-portals.md) — conductor/driver endpoints derive bus from session (no client id); offline queue only retries network errors.
 - [Checkout money trust](checkout-money-trust.md) — charge always derives from trusted schedule fare via resolveCheckoutExtras; never from client totalFare when fare is known.
+- [TN Bus+ per-bus history data model](tnbus-fleet-data-model.md) — fuel_logs & inspections keyed by bus_number text (not busId); renaming a bus must cascade in a transaction or history orphans.
