@@ -528,7 +528,7 @@ export const PurchasePassBody = zod.object({
 
 
 /**
- * @summary Get live bus location
+ * @summary Get live bus location with route geometry and safety alerts
  */
 export const GetBusLocationParams = zod.object({
   "busId": zod.coerce.number()
@@ -542,9 +542,29 @@ export const GetBusLocationResponse = zod.object({
   "speed": zod.number(),
   "heading": zod.number(),
   "lastUpdated": zod.string(),
-  "nextStop": zod.string().optional(),
-  "etaMinutes": zod.number().optional(),
-  "status": zod.string()
+  "nextStop": zod.string().nullish(),
+  "etaMinutes": zod.number().nullish(),
+  "etaToDestinationMinutes": zod.number().nullish(),
+  "status": zod.string(),
+  "route": zod.union([zod.object({
+  "origin": zod.string(),
+  "destination": zod.string(),
+  "polyline": zod.array(zod.object({
+  "lat": zod.number(),
+  "lng": zod.number()
+})),
+  "stops": zod.array(zod.object({
+  "name": zod.string(),
+  "lat": zod.number(),
+  "lng": zod.number(),
+  "passed": zod.boolean()
+}))
+}),zod.null()]).optional(),
+  "alerts": zod.array(zod.object({
+  "type": zod.string().describe('overspeed | deviation | geofence | breakdown | stale_signal'),
+  "severity": zod.string().describe('info | warning | critical'),
+  "message": zod.string()
+}))
 })
 
 
@@ -724,6 +744,105 @@ export const CreateComplaintBody = zod.object({
   "busNumber": zod.string().optional(),
   "category": zod.string(),
   "description": zod.string()
+})
+
+
+/**
+ * @summary Live locations and alerts for the active fleet
+ */
+export const GetFleetLocationsResponse = zod.object({
+  "buses": zod.array(zod.object({
+  "busId": zod.number(),
+  "busNumber": zod.string(),
+  "busType": zod.string(),
+  "driverName": zod.string().nullish(),
+  "latitude": zod.number(),
+  "longitude": zod.number(),
+  "speed": zod.number(),
+  "heading": zod.number(),
+  "status": zod.string(),
+  "nextStop": zod.string().nullish(),
+  "etaMinutes": zod.number().nullish(),
+  "lastUpdated": zod.string(),
+  "online": zod.boolean(),
+  "alertCount": zod.number(),
+  "topAlertSeverity": zod.string().nullish(),
+  "alerts": zod.array(zod.object({
+  "type": zod.string().describe('overspeed | deviation | geofence | breakdown | stale_signal'),
+  "severity": zod.string().describe('info | warning | critical'),
+  "message": zod.string()
+}))
+})),
+  "summary": zod.object({
+  "total": zod.number(),
+  "online": zod.number(),
+  "offline": zod.number(),
+  "alerts": zod.number(),
+  "breakdowns": zod.number()
+})
+})
+
+
+/**
+ * @summary List all routes (admin)
+ */
+export const ListAdminRoutesResponseItem = zod.object({
+  "id": zod.number(),
+  "origin": zod.string(),
+  "destination": zod.string(),
+  "distanceKm": zod.number(),
+  "durationMinutes": zod.number(),
+  "basefare": zod.number(),
+  "stops": zod.array(zod.string()).optional()
+})
+export const ListAdminRoutesResponse = zod.array(ListAdminRoutesResponseItem)
+
+
+/**
+ * @summary Create a route
+ */
+export const CreateRouteBody = zod.object({
+  "origin": zod.string(),
+  "destination": zod.string(),
+  "distanceKm": zod.number(),
+  "durationMinutes": zod.number(),
+  "basefare": zod.number(),
+  "stops": zod.array(zod.string()).optional()
+})
+
+
+/**
+ * @summary Update a route
+ */
+export const UpdateRouteParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateRouteBody = zod.object({
+  "origin": zod.string(),
+  "destination": zod.string(),
+  "distanceKm": zod.number(),
+  "durationMinutes": zod.number(),
+  "basefare": zod.number(),
+  "stops": zod.array(zod.string()).optional()
+})
+
+export const UpdateRouteResponse = zod.object({
+  "id": zod.number(),
+  "origin": zod.string(),
+  "destination": zod.string(),
+  "distanceKm": zod.number(),
+  "durationMinutes": zod.number(),
+  "basefare": zod.number(),
+  "stops": zod.array(zod.string()).optional()
+})
+
+
+/**
+ * @summary Delete a route
+ */
+export const DeleteRouteParams = zod.object({
+  "id": zod.coerce.number()
 })
 
 

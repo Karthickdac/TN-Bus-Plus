@@ -281,6 +281,97 @@ export interface BusLocation {
   status: string;
 }
 
+export interface TrackPoint {
+  lat: number;
+  lng: number;
+}
+
+export interface TrackStop {
+  name: string;
+  lat: number;
+  lng: number;
+  passed: boolean;
+}
+
+export interface RouteGeometry {
+  origin: string;
+  destination: string;
+  polyline: TrackPoint[];
+  stops: TrackStop[];
+}
+
+export interface TrackAlert {
+  /** overspeed | deviation | geofence | breakdown | stale_signal */
+  type: string;
+  /** info | warning | critical */
+  severity: string;
+  message: string;
+}
+
+export interface BusTracking {
+  busId: number;
+  busNumber: string;
+  latitude: number;
+  longitude: number;
+  speed: number;
+  heading: number;
+  lastUpdated: string;
+  /** @nullable */
+  nextStop?: string | null;
+  /** @nullable */
+  etaMinutes?: number | null;
+  /** @nullable */
+  etaToDestinationMinutes?: number | null;
+  status: string;
+  route?: RouteGeometry | null;
+  alerts: TrackAlert[];
+}
+
+export interface FleetBus {
+  busId: number;
+  busNumber: string;
+  busType: string;
+  /** @nullable */
+  driverName?: string | null;
+  latitude: number;
+  longitude: number;
+  speed: number;
+  heading: number;
+  status: string;
+  /** @nullable */
+  nextStop?: string | null;
+  /** @nullable */
+  etaMinutes?: number | null;
+  lastUpdated: string;
+  online: boolean;
+  alertCount: number;
+  /** @nullable */
+  topAlertSeverity?: string | null;
+  alerts: TrackAlert[];
+}
+
+export type FleetOverviewSummary = {
+  total: number;
+  online: number;
+  offline: number;
+  alerts: number;
+  breakdowns: number;
+};
+
+export interface FleetOverview {
+  buses: FleetBus[];
+  summary: FleetOverviewSummary;
+}
+
+export interface RouteInput {
+  origin: string;
+  destination: string;
+  distanceKm: number;
+  durationMinutes: number;
+  basefare: number;
+  stops?: string[];
+}
+
 export interface DashboardStats {
   totalTrips: number;
   totalSpent: number;

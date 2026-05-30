@@ -27,6 +27,8 @@ import Notifications from "@/pages/Notifications";
 import Refunds from "@/pages/Refunds";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminFleet from "@/pages/admin/AdminFleet";
+import AdminGPS from "@/pages/admin/AdminGPS";
+import AdminRoutes from "@/pages/admin/AdminRoutes";
 import AdminBookings from "@/pages/admin/AdminBookings";
 import AdminRevenue from "@/pages/admin/AdminRevenue";
 import AdminComplaints from "@/pages/admin/AdminComplaints";
@@ -72,6 +74,8 @@ function Router() {
           <Route path="/admin">{() => <AdminLayout><AdminDashboard /></AdminLayout>}</Route>
           <Route path="/admin/pos">{() => <AdminLayout><AdminPOS /></AdminLayout>}</Route>
           <Route path="/admin/fleet">{() => <AdminLayout><AdminFleet /></AdminLayout>}</Route>
+          <Route path="/admin/gps">{() => <AdminLayout><AdminGPS /></AdminLayout>}</Route>
+          <Route path="/admin/routes">{() => <AdminLayout><AdminRoutes /></AdminLayout>}</Route>
           <Route path="/admin/bookings">{() => <AdminLayout><AdminBookings /></AdminLayout>}</Route>
           <Route path="/admin/revenue">{() => <AdminLayout><AdminRevenue /></AdminLayout>}</Route>
           <Route path="/admin/complaints">{() => <AdminLayout><AdminComplaints /></AdminLayout>}</Route>

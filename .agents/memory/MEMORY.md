@@ -1,1 +1,1 @@
-- [TN Bus+ conventions](tnbus-web-conventions.md) — query-hook queryKey gotcha, walk-in passengerId=0 sentinel, real endpoint paths, client-side e-ticket QR (buildTicketPayload/TicketQR), deterministic-but-not-real seats, systemic limits (non-transactional bookings, no booking/admin authz/IDOR).
+- [React Query hook options](react-query-hook-options.md) — generated hooks require an explicit `queryKey` in query options or TS2741 fires.

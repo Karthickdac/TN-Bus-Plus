@@ -624,7 +624,7 @@ paths:
     get:
       operationId: getBusLocation
       tags: [tracking]
-      summary: Get live bus location
+      summary: Get live bus location with route geometry and safety alerts
       parameters:
         - name: busId
           in: path
@@ -633,11 +633,11 @@ paths:
             type: integer
       responses:
         "200":
-          description: Bus location
+          description: Bus tracking detail
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BusLocation"
+                $ref: "#/components/schemas/BusTracking"
         "404":
           description: Not found
 
@@ -802,6 +802,97 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Complaint"
+
+  /admin/bus-locations:
+    get:
+      operationId: getFleetLocations
+      tags: [admin]
+      summary: Live locations and alerts for the active fleet
+      responses:
+        "200":
+          description: Fleet overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FleetOverview"
+
+  /admin/routes:
+    get:
+      operationId: listAdminRoutes
+      tags: [admin]
+      summary: List all routes (admin)
+      responses:
+        "200":
+          description: Routes list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Route"
+    post:
+      operationId: createRoute
+      tags: [admin]
+      summary: Create a route
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RouteInput"
+      responses:
+        "201":
+          description: Route created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Route"
+        "400":
+          description: Invalid input
+
+  /admin/routes/{id}:
+    patch:
+      operationId: updateRoute
+      tags: [admin]
+      summary: Update a route
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RouteInput"
+      responses:
+        "200":
+          description: Route updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Route"
+        "400":
+          description: Invalid input
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteRoute
+      tags: [admin]
+      summary: Delete a route
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Route deleted
+        "404":
+          description: Not found
 
   /assistant/chat:
     post:
@@ -1638,6 +1729,220 @@ components:
         - heading
         - lastUpdated
         - status
+
+    TrackPoint:
+      type: object
+      properties:
+        lat:
+          type: number
+        lng:
+          type: number
+      required:
+        - lat
+        - lng
+
+    TrackStop:
+      type: object
+      properties:
+        name:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        passed:
+          type: boolean
+      required:
+        - name
+        - lat
+        - lng
+        - passed
+
+    RouteGeometry:
+      type: object
+      properties:
+        origin:
+          type: string
+        destination:
+          type: string
+        polyline:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrackPoint"
+        stops:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrackStop"
+      required:
+        - origin
+        - destination
+        - polyline
+        - stops
+
+    TrackAlert:
+      type: object
+      properties:
+        type:
+          type: string
+          description: overspeed | deviation | geofence | breakdown | stale_signal
+        severity:
+          type: string
+          description: info | warning | critical
+        message:
+          type: string
+      required:
+        - type
+        - severity
+        - message
+
+    BusTracking:
+      type: object
+      properties:
+        busId:
+          type: integer
+        busNumber:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        speed:
+          type: number
+        heading:
+          type: number
+        lastUpdated:
+          type: string
+        nextStop:
+          type: ["string", "null"]
+        etaMinutes:
+          type: ["integer", "null"]
+        etaToDestinationMinutes:
+          type: ["integer", "null"]
+        status:
+          type: string
+        route:
+          oneOf:
+            - $ref: "#/components/schemas/RouteGeometry"
+            - type: "null"
+        alerts:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrackAlert"
+      required:
+        - busId
+        - busNumber
+        - latitude
+        - longitude
+        - speed
+        - heading
+        - lastUpdated
+        - status
+        - alerts
+
+    FleetBus:
+      type: object
+      properties:
+        busId:
+          type: integer
+        busNumber:
+          type: string
+        busType:
+          type: string
+        driverName:
+          type: ["string", "null"]
+        latitude:
+          type: number
+        longitude:
+          type: number
+        speed:
+          type: number
+        heading:
+          type: number
+        status:
+          type: string
+        nextStop:
+          type: ["string", "null"]
+        etaMinutes:
+          type: ["integer", "null"]
+        lastUpdated:
+          type: string
+        online:
+          type: boolean
+        alertCount:
+          type: integer
+        topAlertSeverity:
+          type: ["string", "null"]
+        alerts:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrackAlert"
+      required:
+        - busId
+        - busNumber
+        - busType
+        - latitude
+        - longitude
+        - speed
+        - heading
+        - status
+        - lastUpdated
+        - online
+        - alertCount
+        - alerts
+
+    FleetOverview:
+      type: object
+      properties:
+        buses:
+          type: array
+          items:
+            $ref: "#/components/schemas/FleetBus"
+        summary:
+          type: object
+          properties:
+            total:
+              type: integer
+            online:
+              type: integer
+            offline:
+              type: integer
+            alerts:
+              type: integer
+            breakdowns:
+              type: integer
+          required:
+            - total
+            - online
+            - offline
+            - alerts
+            - breakdowns
+      required:
+        - buses
+        - summary
+
+    RouteInput:
+      type: object
+      properties:
+        origin:
+          type: string
+        destination:
+          type: string
+        distanceKm:
+          type: number
+        durationMinutes:
+          type: integer
+        basefare:
+          type: number
+        stops:
+          type: array
+          items:
+            type: string
+      required:
+        - origin
+        - destination
+        - distanceKm
+        - durationMinutes
+        - basefare
 
     DashboardStats:
       type: object
