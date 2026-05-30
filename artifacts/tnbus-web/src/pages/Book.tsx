@@ -4,8 +4,9 @@ import { motion } from "framer-motion";
 import { MapPin, Phone, User, Loader2, XCircle, ShieldCheck, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useCreateBooking } from "@workspace/api-client-react";
+import { useCreateBooking, useCreateBookingOrder, useVerifyPayment } from "@workspace/api-client-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { loadRazorpay, openRazorpayCheckout, PaymentCancelledError } from "@/lib/razorpay";
 
 type Step = "details" | "payment" | "processing" | "failed";
 
@@ -32,6 +33,13 @@ export default function Book() {
   const [error, setError] = useState<string | null>(null);
 
   const createBooking = useCreateBooking();
+  const createBookingOrder = useCreateBookingOrder();
+  const verifyPayment = useVerifyPayment();
+
+  const apiError = (err: unknown, fallback: string): string => {
+    const data = (err as { data?: { error?: string } } | undefined)?.data;
+    return data?.error ?? fallback;
+  };
 
   const handleConfirm = async () => {
     if (step === "details") {
@@ -45,9 +53,40 @@ export default function Book() {
       return;
     }
     setError(null);
+
+    // Wallet payments settle internally against the passenger's stored balance.
+    if (method.toLowerCase().includes("wallet")) {
+      setStep("processing");
+      try {
+        const result = await createBooking.mutateAsync({
+          data: {
+            passengerId: user.id,
+            scheduleId,
+            seatNumbers: seats,
+            passengerName: name,
+            passengerPhone: phone,
+            totalFare: fare,
+            paymentMethod: "wallet",
+          },
+        });
+        setTimeout(() => setLocation(`/booking/${result.id}`), 600);
+      } catch (err) {
+        setError(apiError(err, "Your payment couldn't be completed and you have not been charged. Please try again."));
+        setStep("failed");
+      }
+      return;
+    }
+
+    // External payments go through Razorpay. We create a pending booking + order
+    // server-side, open the secure checkout, then verify the signed result. If
+    // the modal is dismissed or fails, the booking stays unconfirmed and no seat
+    // is held — and the passenger is not charged.
     setStep("processing");
     try {
-      const result = await createBooking.mutateAsync({
+      const loaded = await loadRazorpay();
+      if (!loaded) throw new Error("Could not load the payment gateway. Please try again.");
+
+      const order = await createBookingOrder.mutateAsync({
         data: {
           passengerId: user.id,
           scheduleId,
@@ -55,14 +94,37 @@ export default function Book() {
           passengerName: name,
           passengerPhone: phone,
           totalFare: fare,
-          paymentMethod: method.toLowerCase().includes("wallet") ? "wallet" : method,
+          paymentMethod: method,
         },
       });
-      // Brief simulated settle delay, then move to the e-ticket.
-      setTimeout(() => setLocation(`/booking/${result.id}`), 600);
+
+      const success = await openRazorpayCheckout({
+        keyId: order.keyId,
+        orderId: order.orderId,
+        amount: order.amount,
+        currency: order.currency,
+        name: order.name ?? "TN Bus+",
+        description: order.description ?? `Seats ${seats.join(", ")}`,
+        prefill: { name, contact: phone },
+      });
+
+      await verifyPayment.mutateAsync({
+        data: {
+          razorpayOrderId: success.razorpay_order_id,
+          razorpayPaymentId: success.razorpay_payment_id,
+          razorpaySignature: success.razorpay_signature,
+        },
+      });
+
+      setTimeout(() => setLocation(`/booking/${order.bookingId}`), 400);
     } catch (err) {
-      const data = (err as { data?: { error?: string } } | undefined)?.data;
-      setError(data?.error ?? "Your payment couldn't be completed and you have not been charged. Please try again.");
+      if (err instanceof PaymentCancelledError) {
+        setError(err.message);
+      } else if (err instanceof Error && !(err as { data?: unknown }).data) {
+        setError(err.message);
+      } else {
+        setError(apiError(err, "Your payment couldn't be completed and you have not been charged. Please try again."));
+      }
       setStep("failed");
     }
   };
@@ -220,7 +282,9 @@ export default function Book() {
             })}
           </div>
           <p className="text-xs text-muted-foreground text-center pt-2">
-            Simulated payment · secured with 256-bit SSL encryption
+            {method.toLowerCase().includes("wallet")
+              ? "Paid instantly from your TN Bus+ wallet balance."
+              : "Secure payment by Razorpay · 256-bit SSL encryption"}
           </p>
         </motion.div>
       )}

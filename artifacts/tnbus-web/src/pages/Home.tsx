@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useListRoutes } from "@workspace/api-client-react";
 import { useLang } from "@/contexts/LanguageContext";
+import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
+import { TN_CITIES } from "@/data/tnCities";
 
 function Counter({ to, suffix = "", duration = 1500 }: { to: number; suffix?: string; duration?: number }) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -47,6 +49,13 @@ export default function Home() {
   const [womenOnly, setWomenOnly] = useState(false);
   const { data: routes } = useListRoutes();
   const { t } = useLang();
+
+  const places = Array.from(
+    new Set([
+      ...TN_CITIES,
+      ...(routes ?? []).flatMap(r => [r.origin, r.destination, ...(r.stops ?? [])]),
+    ]),
+  ).sort((a, b) => a.localeCompare(b));
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -274,10 +283,15 @@ export default function Home() {
               <form onSubmit={handleSearch} className="px-6 py-5 space-y-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">{t.from}</label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 w-4 h-4" />
-                    <Input placeholder={t.departurePlaceholder} className="pl-9 h-11 border-slate-200 focus-visible:ring-indigo-500 bg-slate-50 text-sm" value={origin} onChange={e => setOrigin(e.target.value)} />
-                  </div>
+                  <PlaceAutocomplete
+                    value={origin}
+                    onChange={setOrigin}
+                    options={places}
+                    placeholder={t.departurePlaceholder}
+                    iconClassName="text-indigo-400"
+                    ariaLabel={t.from}
+                    inputClassName="pl-9 h-11 border-slate-200 focus-visible:ring-indigo-500 bg-slate-50 text-sm"
+                  />
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -294,10 +308,15 @@ export default function Home() {
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">{t.to}</label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-400 w-4 h-4" />
-                    <Input placeholder={t.arrivalPlaceholder} className="pl-9 h-11 border-slate-200 focus-visible:ring-indigo-500 bg-slate-50 text-sm" value={destination} onChange={e => setDestination(e.target.value)} />
-                  </div>
+                  <PlaceAutocomplete
+                    value={destination}
+                    onChange={setDestination}
+                    options={places}
+                    placeholder={t.arrivalPlaceholder}
+                    iconClassName="text-orange-400"
+                    ariaLabel={t.to}
+                    inputClassName="pl-9 h-11 border-slate-200 focus-visible:ring-indigo-500 bg-slate-50 text-sm"
+                  />
                 </div>
 
                 <div>

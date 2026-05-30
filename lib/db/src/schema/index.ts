@@ -11,3 +11,4 @@ export * from "./notifications";
 export * from "./refunds";
 export * from "./userPreferences";
 export * from "./passes";
+export * from "./payments";

@@ -12,10 +12,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   useSearchBuses, useGetFareCalendar, getGetFareCalendarQueryKey,
   useListSavedRoutes, useCreateSavedRoute, useDeleteSavedRoute, getListSavedRoutesQueryKey,
+  useListRoutes,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { PlaceAutocomplete } from "@/components/PlaceAutocomplete";
+import { TN_CITIES } from "@/data/tnCities";
 
 type FilterKey =
   | "ac" | "sleeper" | "chargingPort" | "liveGps" | "toilet"
@@ -51,6 +54,14 @@ export default function Search() {
   const [sortBy, setSortBy] = useState<"fare" | "departure" | "seats" | "rating">("departure");
 
   const toggleFilter = (k: FilterKey) => setFilters(f => ({ ...f, [k]: !f[k] }));
+
+  const { data: allRoutes } = useListRoutes();
+  const places = Array.from(
+    new Set([
+      ...TN_CITIES,
+      ...(allRoutes ?? []).flatMap(r => [r.origin, r.destination, ...(r.stops ?? [])]),
+    ]),
+  ).sort((a, b) => a.localeCompare(b));
 
   const { data: buses, isLoading } = useSearchBuses({
     origin: origin || "",
@@ -133,13 +144,25 @@ export default function Search() {
       <div className="border-b border-border/50 bg-card/40 backdrop-blur sticky top-16 z-40">
         <div className="container mx-auto px-4 py-3">
           <div className="flex flex-wrap gap-2 items-center">
-            <div className="relative flex-1 min-w-[130px]">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input value={origin} onChange={e => setOrigin(e.target.value)} placeholder="From" className="pl-8 h-10 bg-background/50 text-sm" />
+            <div className="flex-1 min-w-[130px]">
+              <PlaceAutocomplete
+                value={origin}
+                onChange={setOrigin}
+                options={places}
+                placeholder="From"
+                ariaLabel="From"
+                inputClassName="pl-8 h-10 bg-background/50 text-sm"
+              />
             </div>
-            <div className="relative flex-1 min-w-[130px]">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input value={destination} onChange={e => setDestination(e.target.value)} placeholder="To" className="pl-8 h-10 bg-background/50 text-sm" />
+            <div className="flex-1 min-w-[130px]">
+              <PlaceAutocomplete
+                value={destination}
+                onChange={setDestination}
+                options={places}
+                placeholder="To"
+                ariaLabel="To"
+                inputClassName="pl-8 h-10 bg-background/50 text-sm"
+              />
             </div>
             <Input type="date" value={date} onChange={e => setDate(e.target.value)} className="h-10 bg-background/50 text-sm w-36 text-foreground" />
             <Button

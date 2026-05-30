@@ -310,6 +310,49 @@ export const GetPnrStatusResponse = zod.object({
 
 
 /**
+ * @summary Create a pending booking and a Razorpay order for its fare
+ */
+export const CreateBookingOrderBody = zod.object({
+  "passengerId": zod.number(),
+  "scheduleId": zod.number(),
+  "seatNumbers": zod.array(zod.string()),
+  "passengerName": zod.string(),
+  "passengerPhone": zod.string(),
+  "totalFare": zod.number(),
+  "paymentMethod": zod.string().optional().describe('How the fare is paid. When \"wallet\", the trusted server-side fare is debited from the passenger\'s wallet balance (this is how redeemed reward points are spent against fares). Any other value is treated as a simulated external payment.')
+})
+
+
+/**
+ * @summary Create a Razorpay order to top up the wallet
+ */
+export const CreateWalletTopUpOrderParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const CreateWalletTopUpOrderBody = zod.object({
+  "amount": zod.number(),
+  "method": zod.string().optional()
+})
+
+
+/**
+ * @summary Verify a completed Razorpay payment and apply it
+ */
+export const VerifyPaymentBody = zod.object({
+  "razorpayOrderId": zod.string(),
+  "razorpayPaymentId": zod.string(),
+  "razorpaySignature": zod.string()
+})
+
+export const VerifyPaymentResponse = zod.object({
+  "status": zod.string().describe('paid when the payment was verified and applied.'),
+  "kind": zod.string(),
+  "bookingId": zod.number().nullish()
+})
+
+
+/**
  * @summary Register a new passenger
  */
 export const CreatePassengerBody = zod.object({

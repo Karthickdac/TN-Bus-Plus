@@ -201,6 +201,38 @@ export interface WalletTopUpInput {
   method?: string;
 }
 
+export interface PaymentOrder {
+  orderId: string;
+  /** Amount in rupees. */
+  amount: number;
+  currency: string;
+  /** Public Razorpay key id for Checkout. */
+  keyId: string;
+  /** booking or wallet_topup. */
+  kind: string;
+  /**
+     * The pending booking this order pays for, when kind is booking.
+     * @nullable
+     */
+  bookingId?: number | null;
+  name?: string;
+  description?: string;
+}
+
+export interface PaymentVerifyInput {
+  razorpayOrderId: string;
+  razorpayPaymentId: string;
+  razorpaySignature: string;
+}
+
+export interface PaymentVerifyResult {
+  /** paid when the payment was verified and applied. */
+  status: string;
+  kind: string;
+  /** @nullable */
+  bookingId?: number | null;
+}
+
 export interface RewardRedeemInput {
   points: number;
 }

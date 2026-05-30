@@ -6,13 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   useGetWallet,
-  useTopUpWallet,
+  useCreateWalletTopUpOrder,
+  useVerifyPayment,
   useRedeemRewardPoints,
   getGetWalletQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { loadRazorpay, openRazorpayCheckout, PaymentCancelledError } from "@/lib/razorpay";
 
 const TOPUP_PRESETS = [100, 200, 500, 1000];
 
@@ -33,8 +35,10 @@ export default function WalletPage() {
   const { data: wallet, isLoading } = useGetWallet(passengerId, {
     query: { enabled: passengerId > 0, queryKey: getGetWalletQueryKey(passengerId) },
   });
-  const topUp = useTopUpWallet();
+  const topUpOrder = useCreateWalletTopUpOrder();
+  const verifyPayment = useVerifyPayment();
   const redeem = useRedeemRewardPoints();
+  const topUpPending = topUpOrder.isPending || verifyPayment.isPending;
 
   const [showTopUp, setShowTopUp] = useState(false);
   const [amount, setAmount] = useState<string>("500");
@@ -55,12 +59,41 @@ export default function WalletPage() {
       return;
     }
     try {
-      await topUp.mutateAsync({ id: passengerId, data: { amount: amt, method: "UPI" } });
+      const loaded = await loadRazorpay();
+      if (!loaded) throw new Error("Could not load the payment gateway. Please try again.");
+
+      const order = await topUpOrder.mutateAsync({ id: passengerId, data: { amount: amt } });
+
+      const success = await openRazorpayCheckout({
+        keyId: order.keyId,
+        orderId: order.orderId,
+        amount: order.amount,
+        currency: order.currency,
+        name: order.name ?? "TN Bus+ Wallet",
+        description: order.description ?? `Add ₹${amt.toFixed(2)} to wallet`,
+        prefill: { name: user?.name, contact: user?.phone, email: user?.email },
+      });
+
+      await verifyPayment.mutateAsync({
+        data: {
+          razorpayOrderId: success.razorpay_order_id,
+          razorpayPaymentId: success.razorpay_payment_id,
+          razorpaySignature: success.razorpay_signature,
+        },
+      });
+
       await refreshWallet();
       setShowTopUp(false);
       toast({ title: "Wallet topped up", description: `₹${amt.toFixed(2)} added to your wallet.` });
     } catch (err) {
-      toast({ title: "Top-up failed", description: readApiError(err, "Please try again."), variant: "destructive" });
+      if (err instanceof PaymentCancelledError) {
+        toast({ title: "Payment cancelled", description: err.message });
+        return;
+      }
+      const msg = err instanceof Error && !(err as { data?: unknown }).data
+        ? err.message
+        : readApiError(err, "Please try again.");
+      toast({ title: "Top-up failed", description: msg, variant: "destructive" });
     }
   };
 
@@ -157,9 +190,9 @@ export default function WalletPage() {
                 placeholder="Enter amount"
                 className="mb-3"
               />
-              <p className="text-xs text-muted-foreground mb-3 text-center">Simulated payment · secured with 256-bit SSL</p>
-              <Button className="w-full bg-primary hover:bg-primary/90" onClick={handleTopUp} disabled={topUp.isPending}>
-                {topUp.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing…</> : `Add ₹${Number(amount || 0).toFixed(0)}`}
+              <p className="text-xs text-muted-foreground mb-3 text-center">Secure payment by Razorpay · 256-bit SSL</p>
+              <Button className="w-full bg-primary hover:bg-primary/90" onClick={handleTopUp} disabled={topUpPending}>
+                {topUpPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing…</> : `Add ₹${Number(amount || 0).toFixed(0)}`}
               </Button>
             </motion.div>
           )}

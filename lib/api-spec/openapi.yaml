@@ -355,6 +355,76 @@ paths:
         "404":
           description: Not found
 
+  # Payments (Razorpay)
+  /bookings/checkout-order:
+    post:
+      operationId: createBookingOrder
+      tags: [payments]
+      summary: Create a pending booking and a Razorpay order for its fare
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingInput"
+      responses:
+        "201":
+          description: Payment order created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentOrder"
+        "400":
+          description: Invalid input
+
+  /passengers/{id}/wallet/topup-order:
+    post:
+      operationId: createWalletTopUpOrder
+      tags: [payments]
+      summary: Create a Razorpay order to top up the wallet
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WalletTopUpInput"
+      responses:
+        "201":
+          description: Payment order created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentOrder"
+        "400":
+          description: Invalid input
+
+  /payments/verify:
+    post:
+      operationId: verifyPayment
+      tags: [payments]
+      summary: Verify a completed Razorpay payment and apply it
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentVerifyInput"
+      responses:
+        "200":
+          description: Payment verified and applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentVerifyResult"
+        "400":
+          description: Verification failed
+
   # Passengers
   /passengers:
     post:
@@ -1386,6 +1456,64 @@ components:
           type: string
       required:
         - amount
+
+    PaymentOrder:
+      type: object
+      properties:
+        orderId:
+          type: string
+        amount:
+          type: number
+          description: Amount in rupees.
+        currency:
+          type: string
+        keyId:
+          type: string
+          description: Public Razorpay key id for Checkout.
+        kind:
+          type: string
+          description: booking or wallet_topup.
+        bookingId:
+          type: ["integer", "null"]
+          description: The pending booking this order pays for, when kind is booking.
+        name:
+          type: string
+        description:
+          type: string
+      required:
+        - orderId
+        - amount
+        - currency
+        - keyId
+        - kind
+
+    PaymentVerifyInput:
+      type: object
+      properties:
+        razorpayOrderId:
+          type: string
+        razorpayPaymentId:
+          type: string
+        razorpaySignature:
+          type: string
+      required:
+        - razorpayOrderId
+        - razorpayPaymentId
+        - razorpaySignature
+
+    PaymentVerifyResult:
+      type: object
+      properties:
+        status:
+          type: string
+          description: paid when the payment was verified and applied.
+        kind:
+          type: string
+        bookingId:
+          type: ["integer", "null"]
+      required:
+        - status
+        - kind
 
     RewardRedeemInput:
       type: object

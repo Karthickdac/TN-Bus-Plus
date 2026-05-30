@@ -1,9 +1,10 @@
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
-import { bookingsTable, schedulesTable, busesTable, routesTable, refundsTable, passengersTable, walletTransactionsTable } from "@workspace/db";
+import { bookingsTable, schedulesTable, busesTable, routesTable, refundsTable, passengersTable, walletTransactionsTable, paymentsTable } from "@workspace/db";
 import { eq, and, gt, sql } from "drizzle-orm";
 import { CreateBookingBody } from "@workspace/api-zod";
 import { createNotification } from "../lib/notify";
+import { getRazorpayClient } from "../lib/razorpay";
 
 const router: IRouter = Router();
 
@@ -216,6 +217,15 @@ router.post("/bookings/:id/cancel", async (req, res) => {
     if (!row) return null;
     if (row.status === "cancelled") return row;
 
+    // A booking that was never paid (e.g. an abandoned online payment left it
+    // pending) has nothing to refund — just void it without a refund record.
+    if (row.paymentStatus !== "paid") {
+      const [voided] = await tx.update(bookingsTable)
+        .set({ status: "cancelled", paymentStatus: row.paymentStatus })
+        .where(eq(bookingsTable.id, id)).returning();
+      return voided;
+    }
+
     const [cancelled] = await tx.update(bookingsTable)
       .set({ status: "cancelled", paymentStatus: "refund_pending" })
       .where(eq(bookingsTable.id, id)).returning();
@@ -248,6 +258,32 @@ router.post("/bookings/:id/cancel", async (req, res) => {
   });
 
   if (!updated) return res.status(404).json({ error: "Booking not found" });
+
+  // If this booking was paid online via Razorpay, issue a real refund through
+  // the provider. This runs after the DB transaction commits because it is an
+  // external network call; the refund record already exists, so a transient
+  // provider failure leaves the refund "processing" to be retried, never lost.
+  if (updated.status === "cancelled" && updated.paymentStatus === "refund_pending") {
+    try {
+      const [payment] = await db.select().from(paymentsTable)
+        .where(and(eq(paymentsTable.bookingId, updated.id), eq(paymentsTable.kind, "booking")));
+      if (payment && payment.status === "paid" && payment.razorpayPaymentId) {
+        const refund = await getRazorpayClient().payments.refund(payment.razorpayPaymentId, {
+          amount: Math.round(Number(payment.amount) * 100),
+          notes: { bookingId: String(updated.id), pnr: updated.pnr },
+        });
+        await db.update(paymentsTable)
+          .set({ status: "refunded", razorpayRefundId: refund.id })
+          .where(eq(paymentsTable.id, payment.id));
+        await db.update(refundsTable)
+          .set({ status: "processing", updatedAt: new Date() })
+          .where(eq(refundsTable.bookingId, updated.id));
+      }
+    } catch (err) {
+      req.log.error({ err }, "failed to issue razorpay refund on cancel");
+    }
+  }
+
   return res.json({ ...updated, totalFare: Number(updated.totalFare), createdAt: updated.createdAt.toISOString(), seatNumbers: updated.seatNumbers ?? [] });
 });
 
