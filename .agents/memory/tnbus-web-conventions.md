@@ -61,13 +61,16 @@ follow-up. Wallet/pass mutations (topup/redeem/purchase in `passes.ts`) use
 `db.transaction` + `.for("update")` row locks; post-commit notifications are
 best-effort (try/catch) so a notify failure never returns a false 500.
 
-## Money-moving endpoints DO enforce session ownership (rest of app does not)
-App-wide most `/passengers/:id/*` routes trust the path id with no authz. EXCEPTION:
-the wallet/pass financial endpoints (`POST /passengers/:id/wallet/topup`,
-`/rewards/redeem`, `POST`+`GET /passengers/:id/passes`) call `requireOwner()` in
-`passes.ts` — 401 if no `req.session.passengerId`, 403 if it != `:id`. Session is
-set on login/signup (`auth.ts`). Wallet-paid bookings (`paymentMethod:"wallet"`)
-debit the TRUSTED schedule fare, not client `totalFare`. The booking endpoint
-itself still trusts the body `passengerId` (POS walk-ins send 0), so the *web*
-Book.tsx must send the logged-in `user.id` for rewards to credit the right person.
-**Why:** these move real stored value; IDOR there is directly exploitable.
+## Money-moving paths must enforce session ownership; the rest of the app does not
+Most `/passengers/:id/*` routes intentionally trust the path/body id with no authz
+(POS/walk-in flows send sentinel passenger id 0). The EXCEPTION is anything that
+moves stored value — wallet top-up, reward redeem, pass purchase, and the
+wallet-funded branch of booking creation — which must require an authenticated
+session AND match it to the target passenger (401 unauthenticated, 403 mismatch).
+Value-moving amounts are always recomputed server-side from the trusted schedule
+fare, never from the client `totalFare`.
+**Why:** these are the only IDOR vectors that are directly exploitable for money;
+guarding them while leaving the rest open is a deliberate split, so when adding any
+new endpoint, decide which side of this line it falls on before shipping.
+**How to apply:** if an endpoint debits/credits a wallet, mints reward points, or
+sells a pass, gate it on session ownership and derive the amount from server data.

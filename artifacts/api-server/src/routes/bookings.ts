@@ -74,13 +74,22 @@ router.post("/bookings", async (req, res) => {
   const chargedFare = payByWallet ? trustedFare : data.totalFare;
   const rewardPointsEarned = Math.floor(trustedFare / 10);
 
-  // Wallet payment needs a real account; walk-in/counter bookings (id 0) and
-  // schedules with no known fare cannot be settled from a wallet.
-  if (payByWallet && !(data.passengerId > 0)) {
-    return res.status(400).json({ error: "Please sign in to pay from your wallet." });
-  }
-  if (payByWallet && !(trustedFare > 0)) {
-    return res.status(400).json({ error: "This fare cannot be paid from the wallet." });
+  // Wallet payment moves stored value, so it must come from the signed-in
+  // account and may only debit that same account. Without this, a caller could
+  // drain another passenger's wallet by submitting their id (IDOR). Walk-in /
+  // counter bookings (sentinel id 0) and schedules with no known fare cannot be
+  // settled from a wallet.
+  if (payByWallet) {
+    const sessionPassengerId = req.session?.passengerId;
+    if (!sessionPassengerId) {
+      return res.status(401).json({ error: "Please sign in to pay from your wallet." });
+    }
+    if (sessionPassengerId !== data.passengerId) {
+      return res.status(403).json({ error: "You can only pay from your own wallet." });
+    }
+    if (!(trustedFare > 0)) {
+      return res.status(400).json({ error: "This fare cannot be paid from the wallet." });
+    }
   }
 
   const qrCode = generateQrPayload({
@@ -184,7 +193,14 @@ router.get("/bookings/:id", async (req, res) => {
   const id = parseInt(req.params.id);
   const [row] = await db.select().from(bookingsTable).where(eq(bookingsTable.id, id));
   if (!row) return res.status(404).json({ error: "Booking not found" });
-  res.json({ ...row, totalFare: Number(row.totalFare), createdAt: row.createdAt.toISOString(), seatNumbers: row.seatNumbers ?? [] });
+  // Surface the AUTHORITATIVE loyalty award (1 pt per ₹10 of the trusted
+  // schedule fare) so the UI never has to re-derive it from the recorded
+  // totalFare, which can differ for non-wallet payments. Walk-in/counter
+  // bookings (sentinel passenger id 0) earn nothing.
+  const [schedule] = await db.select().from(schedulesTable).where(eq(schedulesTable.id, row.scheduleId));
+  const trustedFare = schedule ? Number(schedule.fare) * (row.seatNumbers?.length ?? 0) : 0;
+  const rewardPointsEarned = row.passengerId > 0 ? Math.floor(trustedFare / 10) : 0;
+  res.json({ ...row, rewardPointsEarned, totalFare: Number(row.totalFare), createdAt: row.createdAt.toISOString(), seatNumbers: row.seatNumbers ?? [] });
 });
 
 router.post("/bookings/:id/cancel", async (req, res) => {

@@ -203,7 +203,7 @@ export const ListBookingsResponseItem = zod.object({
   "passengerPhone": zod.string(),
   "createdAt": zod.string(),
   "qrCode": zod.string().nullish(),
-  "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking. Only present on the create-booking response.')
+  "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail.')
 })
 export const ListBookingsResponse = zod.array(ListBookingsResponseItem)
 
@@ -247,7 +247,7 @@ export const GetBookingResponse = zod.object({
   "passengerPhone": zod.string(),
   "createdAt": zod.string(),
   "qrCode": zod.string().nullish(),
-  "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking. Only present on the create-booking response.')
+  "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail.')
 })
 
 
@@ -276,7 +276,7 @@ export const CancelBookingResponse = zod.object({
   "passengerPhone": zod.string(),
   "createdAt": zod.string(),
   "qrCode": zod.string().nullish(),
-  "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking. Only present on the create-booking response.')
+  "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail.')
 })
 
 
@@ -305,7 +305,7 @@ export const GetPnrStatusResponse = zod.object({
   "passengerPhone": zod.string(),
   "createdAt": zod.string(),
   "qrCode": zod.string().nullish(),
-  "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking. Only present on the create-booking response.')
+  "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail.')
 })
 
 
@@ -560,7 +560,7 @@ export const GetUpcomingTripsResponseItem = zod.object({
   "passengerPhone": zod.string(),
   "createdAt": zod.string(),
   "qrCode": zod.string().nullish(),
-  "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking. Only present on the create-booking response.')
+  "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail.')
 })
 export const GetUpcomingTripsResponse = zod.array(GetUpcomingTripsResponseItem)
 
@@ -624,7 +624,7 @@ export const AdminListBookingsResponseItem = zod.object({
   "passengerPhone": zod.string(),
   "createdAt": zod.string(),
   "qrCode": zod.string().nullish(),
-  "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking. Only present on the create-booking response.')
+  "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail.')
 })
 export const AdminListBookingsResponse = zod.array(AdminListBookingsResponseItem)
 

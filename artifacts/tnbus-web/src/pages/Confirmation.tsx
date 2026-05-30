@@ -118,14 +118,15 @@ export default function Confirmation({ params }: Props) {
           </div>
         )}
 
-        {/* Loyalty: 1 point per ₹10 of fare, mirrors the server award rule */}
-        {isConfirmed && Math.floor(Number(booking.totalFare) / 10) > 0 && (
+        {/* Loyalty: show the AUTHORITATIVE award the server credited (derived
+            from the trusted schedule fare), not a client-side re-derivation. */}
+        {isConfirmed && (booking.rewardPointsEarned ?? 0) > 0 && (
           <div className="mx-5 mt-5 flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3">
             <Star className="w-4 h-4 text-amber-400 fill-amber-400 shrink-0" />
             <p className="text-sm">
               You earned{" "}
               <span className="font-semibold text-amber-400">
-                {Math.floor(Number(booking.totalFare) / 10)} reward points
+                {booking.rewardPointsEarned} reward points
               </span>{" "}
               — redeem them in your wallet.
             </p>
