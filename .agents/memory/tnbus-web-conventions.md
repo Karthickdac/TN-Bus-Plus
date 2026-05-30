@@ -41,6 +41,20 @@ shape (`POST /bookings`).
 from real booked `seatNumbers` — true occupancy + transactional booking remains
 unbuilt (separate task).
 
+## Dashboard/admin metrics are derived proxies (no dedicated source tables)
+There is no `saved_routes` table and no schedule-adherence/on-time feed. Current
+real-but-proxy derivations (keep consistent unless a real source is added):
+- Dashboard `savedRoutes` = count of distinct `origin→destination` the passenger
+  has booked. Stats endpoint returns zeros for missing/invalid passengerId (the
+  old all-hardcoded fallback was removed).
+- Dashboard popular-routes: `bookingsCount`/`avgFare` from real bookings grouped
+  by route; `nextDeparture` from the soonest future `schedules` row.
+- Admin `onTimePercentage` = mean `buses.punctualityScore` (active buses preferred).
+- Admin `revenueByBusType` = bookings aggregated by the bus's real `busType`,
+  resolved via `bookings.busNumber → buses.busNumber`.
+- Search/fare-calendar comfort/safety/driver/delay/fareTrend remain deterministic
+  `seeded()` derivations (stable per trip, still not real telemetry).
+
 ## Known systemic limitations (pre-existing, app-wide — see follow-up tasks)
 - `POST /bookings` is not transactional: no seat-availability check, no conflict
   detection, does not decrement `schedules.availableSeats` -> overbooking possible.

@@ -18,15 +18,28 @@ router.get("/admin/stats", async (_req, res) => {
   const todayBookings = bookings.filter(b => b.createdAt >= today);
   const revenueToday = todayBookings.reduce((sum, b) => sum + Number(b.totalFare), 0);
 
+  // On-time rate is the mean punctuality of the fleet (active buses preferred),
+  // derived from real per-bus punctuality scores rather than a fixed constant.
+  const activeBuses = buses.filter(b => b.status === "active");
+  const punctualityPool = activeBuses.length ? activeBuses : buses;
+  const onTimePercentage = punctualityPool.length
+    ? Number(
+        (
+          punctualityPool.reduce((sum, b) => sum + Number(b.punctualityScore ?? 0), 0) /
+          punctualityPool.length
+        ).toFixed(1)
+      )
+    : 0;
+
   res.json({
     totalBuses: buses.length,
-    activeBuses: buses.filter(b => b.status === "active").length,
+    activeBuses: activeBuses.length,
     totalBookingsToday: todayBookings.length,
     revenueToday,
     totalPassengers: passengers.length,
     activeRoutes: routes.length,
     pendingComplaints: complaints.filter(c => c.status === "open").length,
-    onTimePercentage: 87.4,
+    onTimePercentage,
   });
 });
 
@@ -49,6 +62,7 @@ router.get("/admin/bookings", async (req, res) => {
 
 router.get("/admin/revenue", async (req, res) => {
   const bookings = await db.select().from(bookingsTable);
+  const buses = await db.select().from(busesTable);
   const totalRevenue = bookings.reduce((sum, b) => sum + Number(b.totalFare), 0);
 
   // Daily revenue for last 14 days
@@ -76,13 +90,19 @@ router.get("/admin/revenue", async (req, res) => {
     routeRevenue[key].bookings++;
   });
 
-  // Revenue by bus type (mock)
-  const revenueByBusType = [
-    { busType: "AC Deluxe", revenue: totalRevenue * 0.4, bookings: Math.ceil(bookings.length * 0.4) },
-    { busType: "Ultra Deluxe", revenue: totalRevenue * 0.3, bookings: Math.ceil(bookings.length * 0.3) },
-    { busType: "Non-AC Express", revenue: totalRevenue * 0.2, bookings: Math.ceil(bookings.length * 0.2) },
-    { busType: "Sleeper", revenue: totalRevenue * 0.1, bookings: Math.ceil(bookings.length * 0.1) },
-  ];
+  // Revenue by bus type — aggregated from the actual bus type of each booking
+  // (resolved via the booking's bus number), not fixed ratios of the total.
+  const busTypeByNumber = new Map(buses.map(b => [b.busNumber, b.busType]));
+  const busTypeTotals: Record<string, { revenue: number; bookings: number }> = {};
+  bookings.forEach(b => {
+    const busType = busTypeByNumber.get(b.busNumber) ?? "Unknown";
+    if (!busTypeTotals[busType]) busTypeTotals[busType] = { revenue: 0, bookings: 0 };
+    busTypeTotals[busType].revenue += Number(b.totalFare);
+    busTypeTotals[busType].bookings++;
+  });
+  const revenueByBusType = Object.entries(busTypeTotals)
+    .map(([busType, v]) => ({ busType, ...v }))
+    .sort((a, b) => b.revenue - a.revenue);
 
   res.json({
     totalRevenue,
