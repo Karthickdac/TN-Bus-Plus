@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, LogOut, User, Wallet, Sparkles, Sun, Moon, Bell, Heart, History, RefreshCcw, Ticket } from "lucide-react";
+import { ShieldCheck, LogOut, User, Wallet, Sparkles, Sun, Moon, Bell, Heart, History, RefreshCcw, Ticket, Tag, Map, Package } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useListNotifications, getListNotificationsQueryKey } from "@workspace/api-client-react";
@@ -57,6 +57,18 @@ export default function Navbar() {
           <Link href="/assistant"
             className={`hidden sm:inline-flex items-center gap-1 text-sm font-medium transition-colors px-1 py-0.5 ${location === "/assistant" ? "text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400" : "text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"}`}>
             <Sparkles className="w-3.5 h-3.5 text-violet-500" /> {t.assistant}
+          </Link>
+          <Link href="/offers"
+            className={`hidden md:inline-flex items-center gap-1 text-sm font-medium transition-colors px-1 py-0.5 ${location === "/offers" ? "text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400" : "text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"}`}>
+            <Tag className="w-3.5 h-3.5 text-emerald-500" /> Offers
+          </Link>
+          <Link href="/tourism"
+            className={`hidden md:inline-flex items-center gap-1 text-sm font-medium transition-colors px-1 py-0.5 ${location.startsWith("/tourism") ? "text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400" : "text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"}`}>
+            <Map className="w-3.5 h-3.5 text-orange-500" /> Tourism
+          </Link>
+          <Link href="/cargo"
+            className={`hidden md:inline-flex items-center gap-1 text-sm font-medium transition-colors px-1 py-0.5 ${location === "/cargo" ? "text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400" : "text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"}`}>
+            <Package className="w-3.5 h-3.5 text-sky-500" /> Cargo
           </Link>
           {navLink("/pnr", t.pnrStatus)}
           {user && navLink("/dashboard", t.dashboard)}
@@ -132,6 +144,15 @@ export default function Navbar() {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setLocation("/dashboard/passes")} className="cursor-pointer">
                   <Ticket className="w-4 h-4 mr-2 text-violet-500" /> Travel Passes
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLocation("/offers")} className="cursor-pointer md:hidden">
+                  <Tag className="w-4 h-4 mr-2 text-emerald-500" /> Offers
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLocation("/tourism")} className="cursor-pointer md:hidden">
+                  <Map className="w-4 h-4 mr-2 text-orange-500" /> Tourism
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLocation("/cargo")} className="cursor-pointer md:hidden">
+                  <Package className="w-4 h-4 mr-2 text-sky-500" /> Cargo
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setLocation("/dashboard/wallet")} className="cursor-pointer">
                   <Wallet className="w-4 h-4 mr-2 text-orange-500" />

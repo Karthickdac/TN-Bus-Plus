@@ -19,6 +19,7 @@ import {
 } from "../lib/razorpay";
 import { createNotification } from "../lib/notify";
 import { validateCoPassengers } from "../lib/seats";
+import { resolveCheckoutExtras } from "../lib/checkout";
 
 const router: IRouter = Router();
 
@@ -71,6 +72,19 @@ router.post("/bookings/checkout-order", async (req, res) => {
     return res.status(400).json({ error: "This fare cannot be paid online." });
   }
 
+  // Apply offers + add-ons on top of the trusted fare, computed server-side so
+  // the amount charged online matches what is recorded on the booking and can't
+  // be tampered with from the client.
+  const extras = resolveCheckoutExtras({
+    promoCode: data.promoCode,
+    addOns: data.addOns,
+    baseFare: trustedFare,
+  });
+  const chargedFare = extras.finalTotal;
+  if (!(chargedFare > 0)) {
+    return res.status(400).json({ error: "The amount to pay must be greater than zero." });
+  }
+
   const pnr = generatePnr();
   const origin = route?.origin ?? "Chennai";
   const destination = route?.destination ?? "Madurai";
@@ -79,7 +93,7 @@ router.post("/bookings/checkout-order", async (req, res) => {
   let orderId: string;
   try {
     const order = await getRazorpayClient().orders.create({
-      amount: toPaise(trustedFare),
+      amount: toPaise(chargedFare),
       currency: "INR",
       receipt: pnr,
       notes: { kind: "booking", pnr },
@@ -101,7 +115,11 @@ router.post("/bookings/checkout-order", async (req, res) => {
     arrivalTime: schedule.arrivalTime.toISOString(),
     seatNumbers: data.seatNumbers,
     coPassengers,
-    totalFare: String(trustedFare),
+    totalFare: String(chargedFare),
+    promoCode: extras.promoCode,
+    discountAmount: String(extras.discountAmount),
+    addOns: extras.addOns,
+    addOnsTotal: String(extras.addOnsTotal),
     status: "pending_payment",
     paymentStatus: "pending",
     passengerName: data.passengerName,
@@ -112,7 +130,7 @@ router.post("/bookings/checkout-order", async (req, res) => {
     razorpayOrderId: orderId,
     passengerId: sessionPassengerId,
     kind: "booking",
-    amount: String(trustedFare),
+    amount: String(chargedFare),
     currency: "INR",
     status: "created",
     bookingId: booking.id,
@@ -120,7 +138,7 @@ router.post("/bookings/checkout-order", async (req, res) => {
 
   return res.status(201).json({
     orderId,
-    amount: trustedFare,
+    amount: chargedFare,
     currency: "INR",
     keyId: getRazorpayKeyId(),
     kind: "booking",

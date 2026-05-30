@@ -6,6 +6,7 @@ import { CreateBookingBody } from "@workspace/api-zod";
 import { createNotification } from "../lib/notify";
 import { getRazorpayClient } from "../lib/razorpay";
 import { validateCoPassengers } from "../lib/seats";
+import { resolveCheckoutExtras } from "../lib/checkout";
 
 const router: IRouter = Router();
 
@@ -44,6 +45,8 @@ router.get("/bookings", async (req, res) => {
   res.json(rows.map(b => ({
     ...b,
     totalFare: Number(b.totalFare),
+    discountAmount: Number(b.discountAmount),
+    addOnsTotal: Number(b.addOnsTotal),
     createdAt: b.createdAt.toISOString(),
     seatNumbers: b.seatNumbers ?? [],
   })));
@@ -79,7 +82,21 @@ router.post("/bookings", async (req, res) => {
   // amount. Reward value is always derived from the trusted fare.
   const trustedFare = schedule ? Number(schedule.fare) * data.seatNumbers.length : 0;
   const payByWallet = (data.paymentMethod ?? "").toLowerCase() === "wallet";
-  const chargedFare = payByWallet ? trustedFare : data.totalFare;
+
+  // Apply offers + add-ons on top of the base fare, computed server-side so the
+  // discount and add-on prices can't be tampered with from the client. Whenever
+  // we know the authoritative schedule fare we use it as the base (for every
+  // payment method) so a client can never reduce the charge by tampering with
+  // `totalFare`. Only walk-in/POS bookings against a schedule with no known fare
+  // fall back to the client-supplied amount, which is then the only source.
+  const baseFare = trustedFare > 0 ? trustedFare : data.totalFare;
+  const extras = resolveCheckoutExtras({
+    promoCode: data.promoCode,
+    addOns: data.addOns,
+    baseFare,
+  });
+  const chargedFare = extras.finalTotal;
+  // Reward value is always derived from the trusted fare only (not add-ons).
   const rewardPointsEarned = Math.floor(trustedFare / 10);
 
   // Wallet payment moves stored value, so it must come from the signed-in
@@ -119,13 +136,13 @@ router.post("/bookings", async (req, res) => {
       const [passenger] = await tx.select().from(passengersTable)
         .where(eq(passengersTable.id, data.passengerId)).for("update");
       if (!passenger) return { error: "no_passenger" as const };
-      if (Number(passenger.walletBalance) < trustedFare) return { error: "insufficient" as const };
+      if (Number(passenger.walletBalance) < chargedFare) return { error: "insufficient" as const };
       await tx.update(passengersTable)
-        .set({ walletBalance: sql`${passengersTable.walletBalance} - ${trustedFare}` })
+        .set({ walletBalance: sql`${passengersTable.walletBalance} - ${chargedFare}` })
         .where(eq(passengersTable.id, data.passengerId));
       await tx.insert(walletTransactionsTable).values({
         passengerId: data.passengerId,
-        amount: String(trustedFare),
+        amount: String(chargedFare),
         type: "debit",
         description: `Bus fare ${origin} → ${destination}`,
       });
@@ -143,6 +160,10 @@ router.post("/bookings", async (req, res) => {
       seatNumbers: data.seatNumbers,
       coPassengers,
       totalFare: String(chargedFare),
+      promoCode: extras.promoCode,
+      discountAmount: String(extras.discountAmount),
+      addOns: extras.addOns,
+      addOnsTotal: String(extras.addOnsTotal),
       status: "confirmed",
       paymentStatus: "paid",
       passengerName: data.passengerName,
@@ -193,6 +214,8 @@ router.post("/bookings", async (req, res) => {
     rewardPointsEarned,
     ...booking,
     totalFare: Number(booking.totalFare),
+    discountAmount: Number(booking.discountAmount),
+    addOnsTotal: Number(booking.addOnsTotal),
     createdAt: booking.createdAt.toISOString(),
     seatNumbers: booking.seatNumbers ?? [],
   });
@@ -209,7 +232,7 @@ router.get("/bookings/:id", async (req, res) => {
   const [schedule] = await db.select().from(schedulesTable).where(eq(schedulesTable.id, row.scheduleId));
   const trustedFare = schedule ? Number(schedule.fare) * (row.seatNumbers?.length ?? 0) : 0;
   const rewardPointsEarned = row.passengerId > 0 ? Math.floor(trustedFare / 10) : 0;
-  return res.json({ ...row, rewardPointsEarned, totalFare: Number(row.totalFare), createdAt: row.createdAt.toISOString(), seatNumbers: row.seatNumbers ?? [] });
+  return res.json({ ...row, rewardPointsEarned, totalFare: Number(row.totalFare), discountAmount: Number(row.discountAmount), addOnsTotal: Number(row.addOnsTotal), createdAt: row.createdAt.toISOString(), seatNumbers: row.seatNumbers ?? [] });
 });
 
 router.post("/bookings/:id/cancel", async (req, res) => {
@@ -292,7 +315,7 @@ router.post("/bookings/:id/cancel", async (req, res) => {
     }
   }
 
-  return res.json({ ...updated, totalFare: Number(updated.totalFare), createdAt: updated.createdAt.toISOString(), seatNumbers: updated.seatNumbers ?? [] });
+  return res.json({ ...updated, totalFare: Number(updated.totalFare), discountAmount: Number(updated.discountAmount), addOnsTotal: Number(updated.addOnsTotal), createdAt: updated.createdAt.toISOString(), seatNumbers: updated.seatNumbers ?? [] });
 });
 
 // Smart rebooking suggestions: other upcoming departures on the same route.
@@ -341,7 +364,7 @@ router.get("/bookings/:id/rebooking-suggestions", async (req, res) => {
 router.get("/pnr/:pnr", async (req, res) => {
   const [row] = await db.select().from(bookingsTable).where(eq(bookingsTable.pnr, req.params.pnr));
   if (!row) return res.status(404).json({ error: "PNR not found" });
-  return res.json({ ...row, totalFare: Number(row.totalFare), createdAt: row.createdAt.toISOString(), seatNumbers: row.seatNumbers ?? [] });
+  return res.json({ ...row, totalFare: Number(row.totalFare), discountAmount: Number(row.discountAmount), addOnsTotal: Number(row.addOnsTotal), createdAt: row.createdAt.toISOString(), seatNumbers: row.seatNumbers ?? [] });
 });
 
 export default router;

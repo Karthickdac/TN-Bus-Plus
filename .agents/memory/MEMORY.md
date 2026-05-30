@@ -1,1 +1,2 @@
 - [Staff portal auth & offline queue](staff-portals.md) — conductor/driver endpoints derive bus from session (no client id); offline queue only retries network errors.
+- [Checkout money trust](checkout-money-trust.md) — charge always derives from trusted schedule fare via resolveCheckoutExtras; never from client totalFare when fare is known.

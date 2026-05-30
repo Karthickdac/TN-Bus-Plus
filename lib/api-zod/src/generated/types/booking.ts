@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { CoPassenger } from './coPassenger';
+import type { ResolvedAddOn } from './resolvedAddOn';
 
 export interface Booking {
   id: number;
@@ -28,6 +29,17 @@ export interface Booking {
   qrCode?: string | null;
   /** One entry per seat for group/family bookings, naming each traveller and their gender. Empty for single-passenger or legacy bookings. */
   coPassengers?: CoPassenger[];
+  /**
+     * The offer code applied at checkout, if any.
+     * @nullable
+     */
+  promoCode?: string | null;
+  /** Discount applied from the promo code, computed server-side. */
+  discountAmount?: number;
+  /** Optional checkout add-ons (travel insurance, food pre-order) resolved and charged server-side. */
+  addOns?: ResolvedAddOn[];
+  /** Total charged for add-ons. */
+  addOnsTotal?: number;
   /** Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail. */
   rewardPointsEarned?: number;
 }

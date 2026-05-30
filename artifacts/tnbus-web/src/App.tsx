@@ -20,6 +20,10 @@ import Dashboard from "@/pages/Dashboard";
 import Trips from "@/pages/Trips";
 import WalletPage from "@/pages/WalletPage";
 import Passes from "@/pages/Passes";
+import Offers from "@/pages/Offers";
+import Tourism from "@/pages/Tourism";
+import TourismDetail from "@/pages/TourismDetail";
+import Cargo from "@/pages/Cargo";
 import Profile from "@/pages/Profile";
 import SavedRoutes from "@/pages/SavedRoutes";
 import History from "@/pages/History";
@@ -81,6 +85,10 @@ function Router() {
           <Route path="/search" component={Search} />
           <Route path="/bus/:id" component={BusDetail} />
           <Route path="/book" component={Book} />
+          <Route path="/offers" component={Offers} />
+          <Route path="/tourism" component={Tourism} />
+          <Route path="/tourism/:id">{(params) => <TourismDetail id={params.id} />}</Route>
+          <Route path="/cargo" component={Cargo} />
           <Route path="/booking/:id" component={Confirmation} />
           <Route path="/pnr" component={PNR} />
           <Route path="/track/:busId" component={Track} />

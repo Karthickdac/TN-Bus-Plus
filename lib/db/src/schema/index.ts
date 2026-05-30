@@ -20,3 +20,4 @@ export * from "./cashCollections";
 export * from "./fuelLogs";
 export * from "./inspections";
 export * from "./emergencyReports";
+export * from "./cargoBookings";

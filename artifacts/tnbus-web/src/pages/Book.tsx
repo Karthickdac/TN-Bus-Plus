@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
 import { useLocation, useSearch } from "wouter";
 import { motion } from "framer-motion";
-import { MapPin, Phone, User, Loader2, XCircle, ShieldCheck, Star, Users } from "lucide-react";
+import { MapPin, Phone, User, Loader2, XCircle, ShieldCheck, Star, Users, Tag, Check, Umbrella, UtensilsCrossed, Plus, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   useCreateBooking, useCreateBookingOrder, useVerifyPayment,
   useGetSeats, getGetSeatsQueryKey,
+  useListAddOns, useValidateOffer,
 } from "@workspace/api-client-react";
-import type { CoPassenger, CoPassengerGender } from "@workspace/api-client-react";
+import type { CoPassenger, CoPassengerGender, AddOnSelection, AddOnItem } from "@workspace/api-client-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { loadRazorpay, openRazorpayCheckout, PaymentCancelledError } from "@/lib/razorpay";
 import SafetyPanel from "@/components/SafetyPanel";
@@ -53,9 +54,56 @@ export default function Book() {
   const [error, setError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
 
+  // Offers + add-ons. The promo discount and add-on prices are confirmed
+  // server-side at booking; the figures here are for display only.
+  const [promoInput, setPromoInput] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<{ code: string; discountAmount: number } | null>(null);
+  const [promoError, setPromoError] = useState<string | null>(null);
+  const [qty, setQty] = useState<Record<string, number>>({});
+
   const createBooking = useCreateBooking();
   const createBookingOrder = useCreateBookingOrder();
   const verifyPayment = useVerifyPayment();
+  const validateOffer = useValidateOffer();
+  const { data: addOnCatalogue } = useListAddOns();
+
+  const allAddOns: AddOnItem[] = [
+    ...(addOnCatalogue?.insurance ?? []),
+    ...(addOnCatalogue?.food ?? []),
+  ];
+  const addOnsTotal = allAddOns.reduce((sum, item) => sum + item.price * (qty[item.id] ?? 0), 0);
+  const discount = appliedPromo?.discountAmount ?? 0;
+  const finalTotal = Math.max(0, fare - discount + addOnsTotal);
+  const addOnSelections: AddOnSelection[] = allAddOns
+    .filter(item => (qty[item.id] ?? 0) > 0)
+    .map(item => ({ id: item.id, qty: qty[item.id] ?? 0 }));
+
+  const setQtyFor = (id: string, next: number) =>
+    setQty(prev => ({ ...prev, [id]: Math.max(0, next) }));
+
+  const handleApplyPromo = async () => {
+    const code = promoInput.trim().toUpperCase();
+    if (!code) return;
+    try {
+      const res = await validateOffer.mutateAsync({ data: { code, fare } });
+      if (res.valid) {
+        setAppliedPromo({ code: res.code ?? code, discountAmount: res.discountAmount });
+        setPromoError(null);
+      } else {
+        setAppliedPromo(null);
+        setPromoError(res.message);
+      }
+    } catch (err) {
+      setAppliedPromo(null);
+      setPromoError(apiError(err, "Couldn't validate this code. Please try again."));
+    }
+  };
+
+  const clearPromo = () => {
+    setAppliedPromo(null);
+    setPromoInput("");
+    setPromoError(null);
+  };
 
   // Seat metadata tells us which selected seats are women-only so we can enforce
   // a female traveller on those seats (the server enforces this authoritatively).
@@ -131,6 +179,8 @@ export default function Book() {
             totalFare: fare,
             paymentMethod: "wallet",
             coPassengers,
+            promoCode: appliedPromo?.code,
+            addOns: addOnSelections,
           },
         });
         setTimeout(() => setLocation(`/booking/${result.id}`), 600);
@@ -160,6 +210,8 @@ export default function Book() {
           totalFare: fare,
           paymentMethod: method,
           coPassengers,
+          promoCode: appliedPromo?.code,
+          addOns: addOnSelections,
         },
       });
 
@@ -270,12 +322,38 @@ export default function Book() {
             </p>
           </div>
           <div className="text-right">
-            <p className="text-2xl font-bold text-primary">₹{fare.toFixed(2)}</p>
+            <p className="text-2xl font-bold text-primary">₹{finalTotal.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground">
               {seats.length} seat{seats.length > 1 ? "s" : ""}
             </p>
           </div>
         </div>
+
+        {/* Fare breakdown when a discount or add-on is in play */}
+        {(discount > 0 || addOnsTotal > 0) && (
+          <div className="mt-4 pt-4 border-t border-border/40 space-y-1.5 text-sm">
+            <div className="flex justify-between text-muted-foreground">
+              <span>Base fare</span>
+              <span>₹{fare.toFixed(2)}</span>
+            </div>
+            {discount > 0 && (
+              <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
+                <span>Promo {appliedPromo?.code}</span>
+                <span>− ₹{discount.toFixed(2)}</span>
+              </div>
+            )}
+            {addOnsTotal > 0 && (
+              <div className="flex justify-between text-muted-foreground">
+                <span>Add-ons</span>
+                <span>+ ₹{addOnsTotal.toFixed(2)}</span>
+              </div>
+            )}
+            <div className="flex justify-between font-semibold pt-1 border-t border-border/40">
+              <span>Total</span>
+              <span>₹{finalTotal.toFixed(2)}</span>
+            </div>
+          </div>
+        )}
 
         {/* Government subsidy + loyalty */}
         <div className="mt-4 pt-4 border-t border-border/40 space-y-2">
@@ -381,8 +459,118 @@ export default function Book() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-card border border-border/50 rounded-2xl p-6 space-y-4"
+          className="space-y-4"
         >
+          {/* Promo code */}
+          <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-3">
+            <h2 className="font-semibold text-lg flex items-center gap-2">
+              <Tag className="w-5 h-5 text-emerald-500" /> Promo code
+            </h2>
+            {appliedPromo ? (
+              <div className="flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="w-4 h-4 text-emerald-500" />
+                  <span className="font-mono font-semibold">{appliedPromo.code}</span>
+                  <span className="text-emerald-600 dark:text-emerald-400">− ₹{appliedPromo.discountAmount.toFixed(2)}</span>
+                </div>
+                <button type="button" onClick={clearPromo} className="text-xs text-muted-foreground hover:text-foreground underline">
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="flex gap-2">
+                  <Input
+                    value={promoInput}
+                    onChange={e => setPromoInput(e.target.value.toUpperCase())}
+                    placeholder="Enter code (e.g. WELCOME10)"
+                    className="font-mono"
+                  />
+                  <Button variant="outline" onClick={handleApplyPromo} disabled={!promoInput.trim() || validateOffer.isPending}>
+                    {validateOffer.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Apply"}
+                  </Button>
+                </div>
+                {promoError && <p className="text-sm text-red-500">{promoError}</p>}
+                <p className="text-xs text-muted-foreground">
+                  Browse current codes on the <button type="button" onClick={() => setLocation("/offers")} className="text-primary underline">Offers</button> page.
+                </p>
+              </>
+            )}
+          </div>
+
+          {/* Add-ons */}
+          {allAddOns.length > 0 && (
+            <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-4">
+              <h2 className="font-semibold text-lg">Add-ons</h2>
+
+              {(addOnCatalogue?.insurance ?? []).length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
+                    <Umbrella className="w-4 h-4 text-sky-500" /> Travel insurance
+                  </p>
+                  {(addOnCatalogue?.insurance ?? []).map(item => {
+                    const on = (qty[item.id] ?? 0) > 0;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setQtyFor(item.id, on ? 0 : 1)}
+                        className={`w-full text-left rounded-xl p-3 border transition-colors ${on ? "border-primary bg-primary/10 ring-1 ring-primary/40" : "border-border/60 hover:bg-primary/5"}`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-sm">{item.name}</span>
+                          <span className="text-sm font-semibold">₹{item.price} <span className="text-xs font-normal text-muted-foreground">{item.unit}</span></span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">{item.description}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {(addOnCatalogue?.food ?? []).length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
+                    <UtensilsCrossed className="w-4 h-4 text-orange-500" /> Food pre-order
+                  </p>
+                  {(addOnCatalogue?.food ?? []).map(item => {
+                    const count = qty[item.id] ?? 0;
+                    return (
+                      <div key={item.id} className="flex items-center justify-between rounded-xl p-3 border border-border/60">
+                        <div className="min-w-0 pr-3">
+                          <div className="font-medium text-sm">{item.name}</div>
+                          <p className="text-xs text-muted-foreground">{item.description}</p>
+                          <p className="text-xs font-semibold mt-0.5">₹{item.price} <span className="font-normal text-muted-foreground">{item.unit}</span></p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => setQtyFor(item.id, count - 1)}
+                            disabled={count === 0}
+                            className="w-8 h-8 rounded-lg border border-border/60 flex items-center justify-center disabled:opacity-40 hover:bg-primary/5"
+                            aria-label={`Remove one ${item.name}`}
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <span className="w-6 text-center text-sm font-semibold">{count}</span>
+                          <button
+                            type="button"
+                            onClick={() => setQtyFor(item.id, count + 1)}
+                            className="w-8 h-8 rounded-lg border border-border/60 flex items-center justify-center hover:bg-primary/5"
+                            aria-label={`Add one ${item.name}`}
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-4">
           <h2 className="font-semibold text-lg mb-2">Payment</h2>
           <div className="grid grid-cols-2 gap-3">
             {PAYMENT_METHODS.map(opt => {
@@ -410,6 +598,7 @@ export default function Book() {
               ? "Paid instantly from your TN Bus+ wallet balance."
               : "Secure payment by Razorpay · 256-bit SSL encryption"}
           </p>
+          </div>
         </motion.div>
       )}
 
@@ -424,7 +613,7 @@ export default function Book() {
           onClick={handleConfirm}
           disabled={createBooking.isPending}
         >
-          {step === "details" ? "Continue to Payment" : `Pay ₹${fare.toFixed(2)}`}
+          {step === "details" ? "Continue to Payment" : `Pay ₹${finalTotal.toFixed(2)}`}
         </Button>
       </div>
     </div>

@@ -12,6 +12,19 @@ export type CoPassenger = {
   gender: "male" | "female" | "other";
 };
 
+// A resolved checkout add-on stored on the booking. The server resolves each
+// selected add-on against the static catalogue and records the name + price it
+// charged, so the booking is a self-contained record even if the catalogue later
+// changes. `kind` is "insurance" or "food"; `lineTotal` = price × qty.
+export type BookingAddOn = {
+  id: string;
+  kind: "insurance" | "food";
+  name: string;
+  price: number;
+  qty: number;
+  lineTotal: number;
+};
+
 export const bookingsTable = pgTable("bookings", {
   id: serial("id").primaryKey(),
   pnr: text("pnr").notNull().unique(),
@@ -25,6 +38,11 @@ export const bookingsTable = pgTable("bookings", {
   seatNumbers: text("seat_numbers").array().notNull(),
   coPassengers: jsonb("co_passengers").$type<CoPassenger[]>().notNull().default([]),
   totalFare: numeric("total_fare", { precision: 10, scale: 2 }).notNull(),
+  // Offer + add-on extras applied at checkout, all computed server-side.
+  promoCode: text("promo_code"),
+  discountAmount: numeric("discount_amount", { precision: 10, scale: 2 }).notNull().default("0"),
+  addOns: jsonb("add_ons").$type<BookingAddOn[]>().notNull().default([]),
+  addOnsTotal: numeric("add_ons_total", { precision: 10, scale: 2 }).notNull().default("0"),
   status: text("status").notNull().default("confirmed"), // confirmed, cancelled, completed
   paymentStatus: text("payment_status").notNull().default("paid"), // paid, pending, refunded
   passengerName: text("passenger_name").notNull(),

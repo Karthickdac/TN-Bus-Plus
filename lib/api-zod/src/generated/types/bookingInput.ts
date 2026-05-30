@@ -5,6 +5,7 @@
  * TN Bus+ API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { AddOnSelection } from './addOnSelection';
 import type { CoPassenger } from './coPassenger';
 
 export interface BookingInput {
@@ -18,4 +19,8 @@ export interface BookingInput {
   paymentMethod?: string;
   /** Optional per-seat traveller list for group/family bookings. When provided there must be exactly one entry per seat, and every women-only seat must be assigned to a female traveller (enforced server-side). */
   coPassengers?: CoPassenger[];
+  /** Optional offer code to apply. Validated and applied server-side against the active offers; invalid or ineligible codes are ignored (no discount). */
+  promoCode?: string;
+  /** Optional checkout add-ons (travel insurance, food pre-order). Each is resolved against the static catalogue and priced server-side. */
+  addOns?: AddOnSelection[];
 }

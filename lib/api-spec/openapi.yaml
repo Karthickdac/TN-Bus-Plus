@@ -1585,6 +1585,132 @@ paths:
         "400":
           description: Invalid input
 
+  # Offers, add-ons, tourism & cargo
+  /offers:
+    get:
+      operationId: listOffers
+      tags: [offers]
+      summary: List active promotional offers
+      responses:
+        "200":
+          description: Active offers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Offer"
+
+  /offers/validate:
+    post:
+      operationId: validateOffer
+      tags: [offers]
+      summary: Validate a promo code against a fare and return the discount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PromoValidationInput"
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PromoValidationResult"
+
+  /addons:
+    get:
+      operationId: listAddOns
+      tags: [offers]
+      summary: List checkout add-ons (travel insurance & food)
+      responses:
+        "200":
+          description: Add-on catalogue
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddOnCatalogue"
+
+  /tourism-packages:
+    get:
+      operationId: listTourismPackages
+      tags: [tourism]
+      summary: List curated tourism packages
+      responses:
+        "200":
+          description: Tourism packages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TourismPackage"
+
+  /tourism-packages/{id}:
+    get:
+      operationId: getTourismPackage
+      tags: [tourism]
+      summary: Get a tourism package by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Tourism package detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TourismPackage"
+        "404":
+          description: Not found
+
+  /cargo:
+    post:
+      operationId: createCargoBooking
+      tags: [cargo]
+      summary: Book a parcel / cargo shipment on the bus network
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CargoInput"
+      responses:
+        "201":
+          description: Cargo booking created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CargoBooking"
+        "400":
+          description: Invalid input
+
+  /cargo/{trackingId}:
+    get:
+      operationId: trackCargoBooking
+      tags: [cargo]
+      summary: Track a cargo booking by its tracking id
+      parameters:
+        - name: trackingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Cargo booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CargoBooking"
+        "404":
+          description: Not found
+
 components:
   schemas:
     HealthStatus:
@@ -1873,6 +1999,20 @@ components:
           description: One entry per seat for group/family bookings, naming each traveller and their gender. Empty for single-passenger or legacy bookings.
           items:
             $ref: "#/components/schemas/CoPassenger"
+        promoCode:
+          type: ["string", "null"]
+          description: The offer code applied at checkout, if any.
+        discountAmount:
+          type: number
+          description: Discount applied from the promo code, computed server-side.
+        addOns:
+          type: array
+          description: Optional checkout add-ons (travel insurance, food pre-order) resolved and charged server-side.
+          items:
+            $ref: "#/components/schemas/ResolvedAddOn"
+        addOnsTotal:
+          type: number
+          description: Total charged for add-ons.
         rewardPointsEarned:
           type: integer
           description: Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail.
@@ -1918,6 +2058,14 @@ components:
           description: Optional per-seat traveller list for group/family bookings. When provided there must be exactly one entry per seat, and every women-only seat must be assigned to a female traveller (enforced server-side).
           items:
             $ref: "#/components/schemas/CoPassenger"
+        promoCode:
+          type: string
+          description: Optional offer code to apply. Validated and applied server-side against the active offers; invalid or ineligible codes are ignored (no discount).
+        addOns:
+          type: array
+          description: Optional checkout add-ons (travel insurance, food pre-order). Each is resolved against the static catalogue and priced server-side.
+          items:
+            $ref: "#/components/schemas/AddOnSelection"
       required:
         - passengerId
         - scheduleId
@@ -1940,6 +2088,289 @@ components:
         - seatNumber
         - name
         - gender
+
+    Offer:
+      type: object
+      properties:
+        code:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        discountType:
+          type: string
+          enum: [percent, flat]
+        discountValue:
+          type: number
+        maxDiscount:
+          type: ["number", "null"]
+          description: Cap on the discount for percent offers (rupees). Null when uncapped.
+        minFare:
+          type: number
+          description: Minimum base fare (rupees) required for the offer to apply.
+        category:
+          type: string
+          description: A short tag used for grouping/badging the offer in the UI.
+        validUntil:
+          type: string
+      required:
+        - code
+        - title
+        - description
+        - discountType
+        - discountValue
+        - minFare
+        - category
+        - validUntil
+
+    PromoValidationInput:
+      type: object
+      properties:
+        code:
+          type: string
+        fare:
+          type: number
+          description: The base fare the discount would apply to.
+      required:
+        - code
+        - fare
+
+    PromoValidationResult:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        code:
+          type: ["string", "null"]
+        discountAmount:
+          type: number
+        message:
+          type: string
+      required:
+        - valid
+        - discountAmount
+        - message
+
+    AddOnItem:
+      type: object
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+          enum: [insurance, food]
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        unit:
+          type: string
+          description: Human label for what the price covers (e.g. "per trip", "per item").
+      required:
+        - id
+        - kind
+        - name
+        - description
+        - price
+        - unit
+
+    AddOnCatalogue:
+      type: object
+      properties:
+        insurance:
+          type: array
+          items:
+            $ref: "#/components/schemas/AddOnItem"
+        food:
+          type: array
+          items:
+            $ref: "#/components/schemas/AddOnItem"
+      required:
+        - insurance
+        - food
+
+    AddOnSelection:
+      type: object
+      properties:
+        id:
+          type: string
+        qty:
+          type: integer
+          description: Quantity selected. Insurance items are capped at 1 server-side.
+      required:
+        - id
+        - qty
+
+    ResolvedAddOn:
+      type: object
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+          enum: [insurance, food]
+        name:
+          type: string
+        price:
+          type: number
+        qty:
+          type: integer
+        lineTotal:
+          type: number
+      required:
+        - id
+        - kind
+        - name
+        - price
+        - qty
+        - lineTotal
+
+    TourismItineraryStop:
+      type: object
+      properties:
+        day:
+          type: integer
+        title:
+          type: string
+        detail:
+          type: string
+      required:
+        - day
+        - title
+        - detail
+
+    TourismPackage:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        destination:
+          type: string
+        region:
+          type: string
+        durationDays:
+          type: integer
+        nights:
+          type: integer
+        price:
+          type: number
+        heroEmoji:
+          type: string
+        summary:
+          type: string
+        highlights:
+          type: array
+          items:
+            type: string
+        inclusions:
+          type: array
+          items:
+            type: string
+        itinerary:
+          type: array
+          items:
+            $ref: "#/components/schemas/TourismItineraryStop"
+      required:
+        - id
+        - name
+        - destination
+        - region
+        - durationDays
+        - nights
+        - price
+        - heroEmoji
+        - summary
+        - highlights
+        - inclusions
+        - itinerary
+
+    CargoInput:
+      type: object
+      properties:
+        senderName:
+          type: string
+        senderPhone:
+          type: string
+        receiverName:
+          type: string
+        receiverPhone:
+          type: string
+        origin:
+          type: string
+        destination:
+          type: string
+        parcelType:
+          type: string
+          enum: [document, package, fragile, electronics, other]
+        weightKg:
+          type: number
+        description:
+          type: string
+      required:
+        - senderName
+        - senderPhone
+        - receiverName
+        - receiverPhone
+        - origin
+        - destination
+        - parcelType
+        - weightKg
+
+    CargoBooking:
+      type: object
+      properties:
+        id:
+          type: integer
+        trackingId:
+          type: string
+        passengerId:
+          type: ["integer", "null"]
+        senderName:
+          type: string
+        senderPhone:
+          type: string
+        receiverName:
+          type: string
+        receiverPhone:
+          type: string
+        origin:
+          type: string
+        destination:
+          type: string
+        parcelType:
+          type: string
+        weightKg:
+          type: number
+        description:
+          type: ["string", "null"]
+        charge:
+          type: number
+        status:
+          type: string
+        estimatedDelivery:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - trackingId
+        - senderName
+        - senderPhone
+        - receiverName
+        - receiverPhone
+        - origin
+        - destination
+        - parcelType
+        - weightKg
+        - charge
+        - status
+        - estimatedDelivery
+        - createdAt
 
     Passenger:
       type: object

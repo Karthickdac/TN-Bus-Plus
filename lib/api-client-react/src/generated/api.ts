@@ -20,6 +20,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AddOnCatalogue,
   AdminListBookingsParams,
   AdminStats,
   AiInsights,
@@ -30,6 +31,8 @@ import type {
   BookingInput,
   Bus,
   BusTracking,
+  CargoBooking,
+  CargoInput,
   CashCollection,
   CashCollectionInput,
   Complaint,
@@ -61,6 +64,7 @@ import type {
   Notification,
   OccupancyReport,
   OccupancyReportInput,
+  Offer,
   OpsAnalytics,
   Pass,
   PassProduct,
@@ -73,6 +77,8 @@ import type {
   PaymentVerifyInput,
   PaymentVerifyResult,
   PopularRoute,
+  PromoValidationInput,
+  PromoValidationResult,
   RebookingSuggestion,
   Refund,
   RevenueAnalytics,
@@ -85,6 +91,7 @@ import type {
   SearchResult,
   Seat,
   StaffProfile,
+  TourismPackage,
   UserPreferences,
   UserPreferencesInput,
   ValidateTicketInput,
@@ -5976,4 +5983,531 @@ export const useCreateEmergencyReport = <TError = ErrorType<void>,
       > => {
       return useMutation(getCreateEmergencyReportMutationOptions(options));
     }
+
+export const getListOffersUrl = () => {
+
+
+
+
+  return `/api/offers`
+}
+
+/**
+ * @summary List active promotional offers
+ */
+export const listOffers = async ( options?: RequestInit): Promise<Offer[]> => {
+
+  return customFetch<Offer[]>(getListOffersUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListOffersQueryKey = () => {
+    return [
+    `/api/offers`
+    ] as const;
+    }
+
+
+export const getListOffersQueryOptions = <TData = Awaited<ReturnType<typeof listOffers>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listOffers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListOffersQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listOffers>>> = ({ signal }) => listOffers({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listOffers>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListOffersQueryResult = NonNullable<Awaited<ReturnType<typeof listOffers>>>
+export type ListOffersQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List active promotional offers
+ */
+
+export function useListOffers<TData = Awaited<ReturnType<typeof listOffers>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listOffers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListOffersQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getValidateOfferUrl = () => {
+
+
+
+
+  return `/api/offers/validate`
+}
+
+/**
+ * @summary Validate a promo code against a fare and return the discount
+ */
+export const validateOffer = async (promoValidationInput: PromoValidationInput, options?: RequestInit): Promise<PromoValidationResult> => {
+
+  return customFetch<PromoValidationResult>(getValidateOfferUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      promoValidationInput,)
+  }
+);}
+
+
+
+
+export const getValidateOfferMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof validateOffer>>, TError,{data: BodyType<PromoValidationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof validateOffer>>, TError,{data: BodyType<PromoValidationInput>}, TContext> => {
+
+const mutationKey = ['validateOffer'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof validateOffer>>, {data: BodyType<PromoValidationInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  validateOffer(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ValidateOfferMutationResult = NonNullable<Awaited<ReturnType<typeof validateOffer>>>
+    export type ValidateOfferMutationBody = BodyType<PromoValidationInput>
+    export type ValidateOfferMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Validate a promo code against a fare and return the discount
+ */
+export const useValidateOffer = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof validateOffer>>, TError,{data: BodyType<PromoValidationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof validateOffer>>,
+        TError,
+        {data: BodyType<PromoValidationInput>},
+        TContext
+      > => {
+      return useMutation(getValidateOfferMutationOptions(options));
+    }
+
+export const getListAddOnsUrl = () => {
+
+
+
+
+  return `/api/addons`
+}
+
+/**
+ * @summary List checkout add-ons (travel insurance & food)
+ */
+export const listAddOns = async ( options?: RequestInit): Promise<AddOnCatalogue> => {
+
+  return customFetch<AddOnCatalogue>(getListAddOnsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListAddOnsQueryKey = () => {
+    return [
+    `/api/addons`
+    ] as const;
+    }
+
+
+export const getListAddOnsQueryOptions = <TData = Awaited<ReturnType<typeof listAddOns>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAddOns>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListAddOnsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAddOns>>> = ({ signal }) => listAddOns({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAddOns>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListAddOnsQueryResult = NonNullable<Awaited<ReturnType<typeof listAddOns>>>
+export type ListAddOnsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List checkout add-ons (travel insurance & food)
+ */
+
+export function useListAddOns<TData = Awaited<ReturnType<typeof listAddOns>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAddOns>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListAddOnsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getListTourismPackagesUrl = () => {
+
+
+
+
+  return `/api/tourism-packages`
+}
+
+/**
+ * @summary List curated tourism packages
+ */
+export const listTourismPackages = async ( options?: RequestInit): Promise<TourismPackage[]> => {
+
+  return customFetch<TourismPackage[]>(getListTourismPackagesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListTourismPackagesQueryKey = () => {
+    return [
+    `/api/tourism-packages`
+    ] as const;
+    }
+
+
+export const getListTourismPackagesQueryOptions = <TData = Awaited<ReturnType<typeof listTourismPackages>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listTourismPackages>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListTourismPackagesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listTourismPackages>>> = ({ signal }) => listTourismPackages({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listTourismPackages>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListTourismPackagesQueryResult = NonNullable<Awaited<ReturnType<typeof listTourismPackages>>>
+export type ListTourismPackagesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List curated tourism packages
+ */
+
+export function useListTourismPackages<TData = Awaited<ReturnType<typeof listTourismPackages>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listTourismPackages>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListTourismPackagesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetTourismPackageUrl = (id: string,) => {
+
+
+
+
+  return `/api/tourism-packages/${id}`
+}
+
+/**
+ * @summary Get a tourism package by id
+ */
+export const getTourismPackage = async (id: string, options?: RequestInit): Promise<TourismPackage> => {
+
+  return customFetch<TourismPackage>(getGetTourismPackageUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetTourismPackageQueryKey = (id: string,) => {
+    return [
+    `/api/tourism-packages/${id}`
+    ] as const;
+    }
+
+
+export const getGetTourismPackageQueryOptions = <TData = Awaited<ReturnType<typeof getTourismPackage>>, TError = ErrorType<void>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTourismPackage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTourismPackageQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTourismPackage>>> = ({ signal }) => getTourismPackage(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTourismPackage>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetTourismPackageQueryResult = NonNullable<Awaited<ReturnType<typeof getTourismPackage>>>
+export type GetTourismPackageQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get a tourism package by id
+ */
+
+export function useGetTourismPackage<TData = Awaited<ReturnType<typeof getTourismPackage>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTourismPackage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetTourismPackageQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateCargoBookingUrl = () => {
+
+
+
+
+  return `/api/cargo`
+}
+
+/**
+ * @summary Book a parcel / cargo shipment on the bus network
+ */
+export const createCargoBooking = async (cargoInput: CargoInput, options?: RequestInit): Promise<CargoBooking> => {
+
+  return customFetch<CargoBooking>(getCreateCargoBookingUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      cargoInput,)
+  }
+);}
+
+
+
+
+export const getCreateCargoBookingMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCargoBooking>>, TError,{data: BodyType<CargoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createCargoBooking>>, TError,{data: BodyType<CargoInput>}, TContext> => {
+
+const mutationKey = ['createCargoBooking'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCargoBooking>>, {data: BodyType<CargoInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createCargoBooking(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateCargoBookingMutationResult = NonNullable<Awaited<ReturnType<typeof createCargoBooking>>>
+    export type CreateCargoBookingMutationBody = BodyType<CargoInput>
+    export type CreateCargoBookingMutationError = ErrorType<void>
+
+    /**
+ * @summary Book a parcel / cargo shipment on the bus network
+ */
+export const useCreateCargoBooking = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCargoBooking>>, TError,{data: BodyType<CargoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createCargoBooking>>,
+        TError,
+        {data: BodyType<CargoInput>},
+        TContext
+      > => {
+      return useMutation(getCreateCargoBookingMutationOptions(options));
+    }
+
+export const getTrackCargoBookingUrl = (trackingId: string,) => {
+
+
+
+
+  return `/api/cargo/${trackingId}`
+}
+
+/**
+ * @summary Track a cargo booking by its tracking id
+ */
+export const trackCargoBooking = async (trackingId: string, options?: RequestInit): Promise<CargoBooking> => {
+
+  return customFetch<CargoBooking>(getTrackCargoBookingUrl(trackingId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getTrackCargoBookingQueryKey = (trackingId: string,) => {
+    return [
+    `/api/cargo/${trackingId}`
+    ] as const;
+    }
+
+
+export const getTrackCargoBookingQueryOptions = <TData = Awaited<ReturnType<typeof trackCargoBooking>>, TError = ErrorType<void>>(trackingId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof trackCargoBooking>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getTrackCargoBookingQueryKey(trackingId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof trackCargoBooking>>> = ({ signal }) => trackCargoBooking(trackingId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(trackingId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof trackCargoBooking>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type TrackCargoBookingQueryResult = NonNullable<Awaited<ReturnType<typeof trackCargoBooking>>>
+export type TrackCargoBookingQueryError = ErrorType<void>
+
+
+/**
+ * @summary Track a cargo booking by its tracking id
+ */
+
+export function useTrackCargoBooking<TData = Awaited<ReturnType<typeof trackCargoBooking>>, TError = ErrorType<void>>(
+ trackingId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof trackCargoBooking>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getTrackCargoBookingQueryOptions(trackingId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 

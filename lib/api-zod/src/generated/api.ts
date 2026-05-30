@@ -208,6 +208,17 @@ export const ListBookingsResponseItem = zod.object({
   "name": zod.string(),
   "gender": zod.enum(['male', 'female', 'other'])
 })).optional().describe('One entry per seat for group\/family bookings, naming each traveller and their gender. Empty for single-passenger or legacy bookings.'),
+  "promoCode": zod.string().nullish().describe('The offer code applied at checkout, if any.'),
+  "discountAmount": zod.number().optional().describe('Discount applied from the promo code, computed server-side.'),
+  "addOns": zod.array(zod.object({
+  "id": zod.string(),
+  "kind": zod.enum(['insurance', 'food']),
+  "name": zod.string(),
+  "price": zod.number(),
+  "qty": zod.number(),
+  "lineTotal": zod.number()
+})).optional().describe('Optional checkout add-ons (travel insurance, food pre-order) resolved and charged server-side.'),
+  "addOnsTotal": zod.number().optional().describe('Total charged for add-ons.'),
   "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail.')
 })
 export const ListBookingsResponse = zod.array(ListBookingsResponseItem)
@@ -228,7 +239,12 @@ export const CreateBookingBody = zod.object({
   "seatNumber": zod.string(),
   "name": zod.string(),
   "gender": zod.enum(['male', 'female', 'other'])
-})).optional().describe('Optional per-seat traveller list for group\/family bookings. When provided there must be exactly one entry per seat, and every women-only seat must be assigned to a female traveller (enforced server-side).')
+})).optional().describe('Optional per-seat traveller list for group\/family bookings. When provided there must be exactly one entry per seat, and every women-only seat must be assigned to a female traveller (enforced server-side).'),
+  "promoCode": zod.string().optional().describe('Optional offer code to apply. Validated and applied server-side against the active offers; invalid or ineligible codes are ignored (no discount).'),
+  "addOns": zod.array(zod.object({
+  "id": zod.string(),
+  "qty": zod.number().describe('Quantity selected. Insurance items are capped at 1 server-side.')
+})).optional().describe('Optional checkout add-ons (travel insurance, food pre-order). Each is resolved against the static catalogue and priced server-side.')
 })
 
 
@@ -262,6 +278,17 @@ export const GetBookingResponse = zod.object({
   "name": zod.string(),
   "gender": zod.enum(['male', 'female', 'other'])
 })).optional().describe('One entry per seat for group\/family bookings, naming each traveller and their gender. Empty for single-passenger or legacy bookings.'),
+  "promoCode": zod.string().nullish().describe('The offer code applied at checkout, if any.'),
+  "discountAmount": zod.number().optional().describe('Discount applied from the promo code, computed server-side.'),
+  "addOns": zod.array(zod.object({
+  "id": zod.string(),
+  "kind": zod.enum(['insurance', 'food']),
+  "name": zod.string(),
+  "price": zod.number(),
+  "qty": zod.number(),
+  "lineTotal": zod.number()
+})).optional().describe('Optional checkout add-ons (travel insurance, food pre-order) resolved and charged server-side.'),
+  "addOnsTotal": zod.number().optional().describe('Total charged for add-ons.'),
   "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail.')
 })
 
@@ -296,6 +323,17 @@ export const CancelBookingResponse = zod.object({
   "name": zod.string(),
   "gender": zod.enum(['male', 'female', 'other'])
 })).optional().describe('One entry per seat for group\/family bookings, naming each traveller and their gender. Empty for single-passenger or legacy bookings.'),
+  "promoCode": zod.string().nullish().describe('The offer code applied at checkout, if any.'),
+  "discountAmount": zod.number().optional().describe('Discount applied from the promo code, computed server-side.'),
+  "addOns": zod.array(zod.object({
+  "id": zod.string(),
+  "kind": zod.enum(['insurance', 'food']),
+  "name": zod.string(),
+  "price": zod.number(),
+  "qty": zod.number(),
+  "lineTotal": zod.number()
+})).optional().describe('Optional checkout add-ons (travel insurance, food pre-order) resolved and charged server-side.'),
+  "addOnsTotal": zod.number().optional().describe('Total charged for add-ons.'),
   "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail.')
 })
 
@@ -330,6 +368,17 @@ export const GetPnrStatusResponse = zod.object({
   "name": zod.string(),
   "gender": zod.enum(['male', 'female', 'other'])
 })).optional().describe('One entry per seat for group\/family bookings, naming each traveller and their gender. Empty for single-passenger or legacy bookings.'),
+  "promoCode": zod.string().nullish().describe('The offer code applied at checkout, if any.'),
+  "discountAmount": zod.number().optional().describe('Discount applied from the promo code, computed server-side.'),
+  "addOns": zod.array(zod.object({
+  "id": zod.string(),
+  "kind": zod.enum(['insurance', 'food']),
+  "name": zod.string(),
+  "price": zod.number(),
+  "qty": zod.number(),
+  "lineTotal": zod.number()
+})).optional().describe('Optional checkout add-ons (travel insurance, food pre-order) resolved and charged server-side.'),
+  "addOnsTotal": zod.number().optional().describe('Total charged for add-ons.'),
   "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail.')
 })
 
@@ -349,7 +398,12 @@ export const CreateBookingOrderBody = zod.object({
   "seatNumber": zod.string(),
   "name": zod.string(),
   "gender": zod.enum(['male', 'female', 'other'])
-})).optional().describe('Optional per-seat traveller list for group\/family bookings. When provided there must be exactly one entry per seat, and every women-only seat must be assigned to a female traveller (enforced server-side).')
+})).optional().describe('Optional per-seat traveller list for group\/family bookings. When provided there must be exactly one entry per seat, and every women-only seat must be assigned to a female traveller (enforced server-side).'),
+  "promoCode": zod.string().optional().describe('Optional offer code to apply. Validated and applied server-side against the active offers; invalid or ineligible codes are ignored (no discount).'),
+  "addOns": zod.array(zod.object({
+  "id": zod.string(),
+  "qty": zod.number().describe('Quantity selected. Insurance items are capped at 1 server-side.')
+})).optional().describe('Optional checkout add-ons (travel insurance, food pre-order). Each is resolved against the static catalogue and priced server-side.')
 })
 
 
@@ -658,6 +712,17 @@ export const GetUpcomingTripsResponseItem = zod.object({
   "name": zod.string(),
   "gender": zod.enum(['male', 'female', 'other'])
 })).optional().describe('One entry per seat for group\/family bookings, naming each traveller and their gender. Empty for single-passenger or legacy bookings.'),
+  "promoCode": zod.string().nullish().describe('The offer code applied at checkout, if any.'),
+  "discountAmount": zod.number().optional().describe('Discount applied from the promo code, computed server-side.'),
+  "addOns": zod.array(zod.object({
+  "id": zod.string(),
+  "kind": zod.enum(['insurance', 'food']),
+  "name": zod.string(),
+  "price": zod.number(),
+  "qty": zod.number(),
+  "lineTotal": zod.number()
+})).optional().describe('Optional checkout add-ons (travel insurance, food pre-order) resolved and charged server-side.'),
+  "addOnsTotal": zod.number().optional().describe('Total charged for add-ons.'),
   "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail.')
 })
 export const GetUpcomingTripsResponse = zod.array(GetUpcomingTripsResponseItem)
@@ -727,6 +792,17 @@ export const AdminListBookingsResponseItem = zod.object({
   "name": zod.string(),
   "gender": zod.enum(['male', 'female', 'other'])
 })).optional().describe('One entry per seat for group\/family bookings, naming each traveller and their gender. Empty for single-passenger or legacy bookings.'),
+  "promoCode": zod.string().nullish().describe('The offer code applied at checkout, if any.'),
+  "discountAmount": zod.number().optional().describe('Discount applied from the promo code, computed server-side.'),
+  "addOns": zod.array(zod.object({
+  "id": zod.string(),
+  "kind": zod.enum(['insurance', 'food']),
+  "name": zod.string(),
+  "price": zod.number(),
+  "qty": zod.number(),
+  "lineTotal": zod.number()
+})).optional().describe('Optional checkout add-ons (travel insurance, food pre-order) resolved and charged server-side.'),
+  "addOnsTotal": zod.number().optional().describe('Total charged for add-ons.'),
   "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail.')
 })
 export const AdminListBookingsResponse = zod.array(AdminListBookingsResponseItem)
@@ -1627,6 +1703,156 @@ export const CreateEmergencyReportBody = zod.object({
   "description": zod.string(),
   "location": zod.string().nullish(),
   "severity": zod.string().nullish()
+})
+
+
+/**
+ * @summary List active promotional offers
+ */
+export const ListOffersResponseItem = zod.object({
+  "code": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "discountType": zod.enum(['percent', 'flat']),
+  "discountValue": zod.number(),
+  "maxDiscount": zod.number().nullish().describe('Cap on the discount for percent offers (rupees). Null when uncapped.'),
+  "minFare": zod.number().describe('Minimum base fare (rupees) required for the offer to apply.'),
+  "category": zod.string().describe('A short tag used for grouping\/badging the offer in the UI.'),
+  "validUntil": zod.string()
+})
+export const ListOffersResponse = zod.array(ListOffersResponseItem)
+
+
+/**
+ * @summary Validate a promo code against a fare and return the discount
+ */
+export const ValidateOfferBody = zod.object({
+  "code": zod.string(),
+  "fare": zod.number().describe('The base fare the discount would apply to.')
+})
+
+export const ValidateOfferResponse = zod.object({
+  "valid": zod.boolean(),
+  "code": zod.string().nullish(),
+  "discountAmount": zod.number(),
+  "message": zod.string()
+})
+
+
+/**
+ * @summary List checkout add-ons (travel insurance & food)
+ */
+export const ListAddOnsResponse = zod.object({
+  "insurance": zod.array(zod.object({
+  "id": zod.string(),
+  "kind": zod.enum(['insurance', 'food']),
+  "name": zod.string(),
+  "description": zod.string(),
+  "price": zod.number(),
+  "unit": zod.string().describe('Human label for what the price covers (e.g. \"per trip\", \"per item\").')
+})),
+  "food": zod.array(zod.object({
+  "id": zod.string(),
+  "kind": zod.enum(['insurance', 'food']),
+  "name": zod.string(),
+  "description": zod.string(),
+  "price": zod.number(),
+  "unit": zod.string().describe('Human label for what the price covers (e.g. \"per trip\", \"per item\").')
+}))
+})
+
+
+/**
+ * @summary List curated tourism packages
+ */
+export const ListTourismPackagesResponseItem = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "destination": zod.string(),
+  "region": zod.string(),
+  "durationDays": zod.number(),
+  "nights": zod.number(),
+  "price": zod.number(),
+  "heroEmoji": zod.string(),
+  "summary": zod.string(),
+  "highlights": zod.array(zod.string()),
+  "inclusions": zod.array(zod.string()),
+  "itinerary": zod.array(zod.object({
+  "day": zod.number(),
+  "title": zod.string(),
+  "detail": zod.string()
+}))
+})
+export const ListTourismPackagesResponse = zod.array(ListTourismPackagesResponseItem)
+
+
+/**
+ * @summary Get a tourism package by id
+ */
+export const GetTourismPackageParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetTourismPackageResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "destination": zod.string(),
+  "region": zod.string(),
+  "durationDays": zod.number(),
+  "nights": zod.number(),
+  "price": zod.number(),
+  "heroEmoji": zod.string(),
+  "summary": zod.string(),
+  "highlights": zod.array(zod.string()),
+  "inclusions": zod.array(zod.string()),
+  "itinerary": zod.array(zod.object({
+  "day": zod.number(),
+  "title": zod.string(),
+  "detail": zod.string()
+}))
+})
+
+
+/**
+ * @summary Book a parcel / cargo shipment on the bus network
+ */
+export const CreateCargoBookingBody = zod.object({
+  "senderName": zod.string(),
+  "senderPhone": zod.string(),
+  "receiverName": zod.string(),
+  "receiverPhone": zod.string(),
+  "origin": zod.string(),
+  "destination": zod.string(),
+  "parcelType": zod.enum(['document', 'package', 'fragile', 'electronics', 'other']),
+  "weightKg": zod.number(),
+  "description": zod.string().optional()
+})
+
+
+/**
+ * @summary Track a cargo booking by its tracking id
+ */
+export const TrackCargoBookingParams = zod.object({
+  "trackingId": zod.coerce.string()
+})
+
+export const TrackCargoBookingResponse = zod.object({
+  "id": zod.number(),
+  "trackingId": zod.string(),
+  "passengerId": zod.number().nullish(),
+  "senderName": zod.string(),
+  "senderPhone": zod.string(),
+  "receiverName": zod.string(),
+  "receiverPhone": zod.string(),
+  "origin": zod.string(),
+  "destination": zod.string(),
+  "parcelType": zod.string(),
+  "weightKg": zod.number(),
+  "description": zod.string().nullish(),
+  "charge": zod.number(),
+  "status": zod.string(),
+  "estimatedDelivery": zod.string(),
+  "createdAt": zod.string()
 })
 
 

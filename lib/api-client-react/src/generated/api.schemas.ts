@@ -140,6 +140,23 @@ export interface CoPassenger {
   gender: CoPassengerGender;
 }
 
+export type ResolvedAddOnKind = typeof ResolvedAddOnKind[keyof typeof ResolvedAddOnKind];
+
+
+export const ResolvedAddOnKind = {
+  insurance: 'insurance',
+  food: 'food',
+} as const;
+
+export interface ResolvedAddOn {
+  id: string;
+  kind: ResolvedAddOnKind;
+  name: string;
+  price: number;
+  qty: number;
+  lineTotal: number;
+}
+
 export interface Booking {
   id: number;
   pnr: string;
@@ -161,8 +178,25 @@ export interface Booking {
   qrCode?: string | null;
   /** One entry per seat for group/family bookings, naming each traveller and their gender. Empty for single-passenger or legacy bookings. */
   coPassengers?: CoPassenger[];
+  /**
+     * The offer code applied at checkout, if any.
+     * @nullable
+     */
+  promoCode?: string | null;
+  /** Discount applied from the promo code, computed server-side. */
+  discountAmount?: number;
+  /** Optional checkout add-ons (travel insurance, food pre-order) resolved and charged server-side. */
+  addOns?: ResolvedAddOn[];
+  /** Total charged for add-ons. */
+  addOnsTotal?: number;
   /** Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail. */
   rewardPointsEarned?: number;
+}
+
+export interface AddOnSelection {
+  id: string;
+  /** Quantity selected. Insurance items are capped at 1 server-side. */
+  qty: number;
 }
 
 export interface BookingInput {
@@ -176,6 +210,138 @@ export interface BookingInput {
   paymentMethod?: string;
   /** Optional per-seat traveller list for group/family bookings. When provided there must be exactly one entry per seat, and every women-only seat must be assigned to a female traveller (enforced server-side). */
   coPassengers?: CoPassenger[];
+  /** Optional offer code to apply. Validated and applied server-side against the active offers; invalid or ineligible codes are ignored (no discount). */
+  promoCode?: string;
+  /** Optional checkout add-ons (travel insurance, food pre-order). Each is resolved against the static catalogue and priced server-side. */
+  addOns?: AddOnSelection[];
+}
+
+export type OfferDiscountType = typeof OfferDiscountType[keyof typeof OfferDiscountType];
+
+
+export const OfferDiscountType = {
+  percent: 'percent',
+  flat: 'flat',
+} as const;
+
+export interface Offer {
+  code: string;
+  title: string;
+  description: string;
+  discountType: OfferDiscountType;
+  discountValue: number;
+  /**
+     * Cap on the discount for percent offers (rupees). Null when uncapped.
+     * @nullable
+     */
+  maxDiscount?: number | null;
+  /** Minimum base fare (rupees) required for the offer to apply. */
+  minFare: number;
+  /** A short tag used for grouping/badging the offer in the UI. */
+  category: string;
+  validUntil: string;
+}
+
+export interface PromoValidationInput {
+  code: string;
+  /** The base fare the discount would apply to. */
+  fare: number;
+}
+
+export interface PromoValidationResult {
+  valid: boolean;
+  /** @nullable */
+  code?: string | null;
+  discountAmount: number;
+  message: string;
+}
+
+export type AddOnItemKind = typeof AddOnItemKind[keyof typeof AddOnItemKind];
+
+
+export const AddOnItemKind = {
+  insurance: 'insurance',
+  food: 'food',
+} as const;
+
+export interface AddOnItem {
+  id: string;
+  kind: AddOnItemKind;
+  name: string;
+  description: string;
+  price: number;
+  /** Human label for what the price covers (e.g. "per trip", "per item"). */
+  unit: string;
+}
+
+export interface AddOnCatalogue {
+  insurance: AddOnItem[];
+  food: AddOnItem[];
+}
+
+export interface TourismItineraryStop {
+  day: number;
+  title: string;
+  detail: string;
+}
+
+export interface TourismPackage {
+  id: string;
+  name: string;
+  destination: string;
+  region: string;
+  durationDays: number;
+  nights: number;
+  price: number;
+  heroEmoji: string;
+  summary: string;
+  highlights: string[];
+  inclusions: string[];
+  itinerary: TourismItineraryStop[];
+}
+
+export type CargoInputParcelType = typeof CargoInputParcelType[keyof typeof CargoInputParcelType];
+
+
+export const CargoInputParcelType = {
+  document: 'document',
+  package: 'package',
+  fragile: 'fragile',
+  electronics: 'electronics',
+  other: 'other',
+} as const;
+
+export interface CargoInput {
+  senderName: string;
+  senderPhone: string;
+  receiverName: string;
+  receiverPhone: string;
+  origin: string;
+  destination: string;
+  parcelType: CargoInputParcelType;
+  weightKg: number;
+  description?: string;
+}
+
+export interface CargoBooking {
+  id: number;
+  trackingId: string;
+  /** @nullable */
+  passengerId?: number | null;
+  senderName: string;
+  senderPhone: string;
+  receiverName: string;
+  receiverPhone: string;
+  origin: string;
+  destination: string;
+  parcelType: string;
+  weightKg: number;
+  /** @nullable */
+  description?: string | null;
+  charge: number;
+  status: string;
+  estimatedDelivery: string;
+  createdAt: string;
 }
 
 export interface Passenger {

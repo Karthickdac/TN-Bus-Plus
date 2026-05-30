@@ -19,6 +19,8 @@ import preferencesRouter from "./preferences";
 import passesRouter from "./passes";
 import paymentsRouter from "./payments";
 import staffRouter from "./staff";
+import offersRouter from "./offers";
+import cargoRouter from "./cargo";
 
 const router: IRouter = Router();
 
@@ -37,6 +39,8 @@ router.use(preferencesRouter);
 router.use(passesRouter);
 router.use(paymentsRouter);
 router.use(staffRouter);
+router.use(offersRouter);
+router.use(cargoRouter);
 router.use(trackingRouter);
 router.use(dashboardRouter);
 router.use(adminRouter);
