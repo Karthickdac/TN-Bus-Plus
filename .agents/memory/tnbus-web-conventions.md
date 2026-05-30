@@ -75,6 +75,26 @@ follow-up. Wallet/pass mutations (topup/redeem/purchase in `passes.ts`) use
 `db.transaction` + `.for("update")` row locks; post-commit notifications are
 best-effort (try/catch) so a notify failure never returns a false 500.
 
+## Women-only seat enforcement is scoped to group bookings only (opt-in by payload)
+Women-only seats are front-row: parsed from `seatNumber` as row<=2 AND column A/B
+(`isWomenOnlySeat` in `api-server/src/lib/seats.ts`). `validateCoPassengers`
+enforces (one entry per seat, women-only seats require `gender:"female"`) ONLY when
+a `coPassengers` list is present on the booking. Legacy single bookings and POS/
+AdminPOS flows omit `coPassengers`, so they bypass enforcement and stay unaffected.
+Online `Book.tsx` always sends `coPassengers` (per-seat name+gender); lead =
+`coPassengers[0]` → `passengerName`; one shared `passengerPhone` contact.
+**Why:** retrofitting strict gender rules onto counter/walk-in flows would break
+them; making enforcement payload-driven keeps the new group flow strict without
+touching existing surfaces.
+**How to apply:** seat occupancy/women-only is still deterministic-seeded, not real
+inventory — don't treat `isWomenOnly` as authoritative inventory state.
+
+## SOS / safety is presentational only (no real dispatch)
+`SosButton.tsx` (floating button + dialog: helplines 112/1091/108/1098 + share/copy
+location context) and `SafetyPanel.tsx` are pure UI. SOS appears on `Track.tsx`
+(live context: busNumber/lat/lng/nextStop/speed) and `Confirmation.tsx` (upcoming/
+active trip, no live coords). No backend emergency endpoint exists by design.
+
 ## Money-moving paths must enforce session ownership; the rest of the app does not
 Most `/passengers/:id/*` routes intentionally trust the path/body id with no authz
 (POS/walk-in flows send sentinel passenger id 0). The EXCEPTION is anything that

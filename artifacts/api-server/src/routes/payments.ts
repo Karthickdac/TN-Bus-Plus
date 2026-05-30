@@ -18,6 +18,7 @@ import {
   verifyPaymentSignature,
 } from "../lib/razorpay";
 import { createNotification } from "../lib/notify";
+import { validateCoPassengers } from "../lib/seats";
 
 const router: IRouter = Router();
 
@@ -42,6 +43,12 @@ router.post("/bookings/checkout-order", async (req, res) => {
   const parsed = CreateBookingOrderBody.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input" });
   const data = parsed.data;
+
+  // Group/family booking: validate the per-seat traveller list and enforce
+  // women-only seat rules before any money is moved.
+  const coCheck = validateCoPassengers(data.seatNumbers, data.coPassengers);
+  if (!coCheck.ok) return res.status(400).json({ error: coCheck.error });
+  const coPassengers = coCheck.coPassengers;
 
   // Online payment confirms a booking against a real account (rewards, refunds,
   // history), so it must be initiated by the signed-in passenger. The booking is
@@ -93,6 +100,7 @@ router.post("/bookings/checkout-order", async (req, res) => {
     departureTime: schedule.departureTime.toISOString(),
     arrivalTime: schedule.arrivalTime.toISOString(),
     seatNumbers: data.seatNumbers,
+    coPassengers,
     totalFare: String(trustedFare),
     status: "pending_payment",
     paymentStatus: "pending",

@@ -125,6 +125,21 @@ export interface Seat {
   price: number;
 }
 
+export type CoPassengerGender = typeof CoPassengerGender[keyof typeof CoPassengerGender];
+
+
+export const CoPassengerGender = {
+  male: 'male',
+  female: 'female',
+  other: 'other',
+} as const;
+
+export interface CoPassenger {
+  seatNumber: string;
+  name: string;
+  gender: CoPassengerGender;
+}
+
 export interface Booking {
   id: number;
   pnr: string;
@@ -144,6 +159,8 @@ export interface Booking {
   createdAt: string;
   /** @nullable */
   qrCode?: string | null;
+  /** One entry per seat for group/family bookings, naming each traveller and their gender. Empty for single-passenger or legacy bookings. */
+  coPassengers?: CoPassenger[];
   /** Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail. */
   rewardPointsEarned?: number;
 }
@@ -157,6 +174,8 @@ export interface BookingInput {
   totalFare: number;
   /** How the fare is paid. When "wallet", the trusted server-side fare is debited from the passenger's wallet balance (this is how redeemed reward points are spent against fares). Any other value is treated as a simulated external payment. */
   paymentMethod?: string;
+  /** Optional per-seat traveller list for group/family bookings. When provided there must be exactly one entry per seat, and every women-only seat must be assigned to a female traveller (enforced server-side). */
+  coPassengers?: CoPassenger[];
 }
 
 export interface Passenger {

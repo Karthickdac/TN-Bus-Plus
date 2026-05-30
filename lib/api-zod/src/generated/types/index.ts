@@ -32,6 +32,8 @@ export * from './complaintIntelDepotsItem';
 export * from './complaintIntelDepotsItemByCategory';
 export * from './complaintIntelSentimentBreakdown';
 export * from './complaintIntelTrendsItem';
+export * from './coPassenger';
+export * from './coPassengerGender';
 export * from './crew';
 export * from './crewInput';
 export * from './dailyRevenue';

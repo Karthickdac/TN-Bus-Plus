@@ -5,6 +5,7 @@
  * TN Bus+ API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { CoPassenger } from './coPassenger';
 
 export interface BookingInput {
   passengerId: number;
@@ -15,4 +16,6 @@ export interface BookingInput {
   totalFare: number;
   /** How the fare is paid. When "wallet", the trusted server-side fare is debited from the passenger's wallet balance (this is how redeemed reward points are spent against fares). Any other value is treated as a simulated external payment. */
   paymentMethod?: string;
+  /** Optional per-seat traveller list for group/family bookings. When provided there must be exactly one entry per seat, and every women-only seat must be assigned to a female traveller (enforced server-side). */
+  coPassengers?: CoPassenger[];
 }

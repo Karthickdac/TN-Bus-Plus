@@ -5,6 +5,7 @@
  * TN Bus+ API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { CoPassenger } from './coPassenger';
 
 export interface Booking {
   id: number;
@@ -25,6 +26,8 @@ export interface Booking {
   createdAt: string;
   /** @nullable */
   qrCode?: string | null;
+  /** One entry per seat for group/family bookings, naming each traveller and their gender. Empty for single-passenger or legacy bookings. */
+  coPassengers?: CoPassenger[];
   /** Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail. */
   rewardPointsEarned?: number;
 }

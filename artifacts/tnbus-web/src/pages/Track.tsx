@@ -18,6 +18,7 @@ import { Marker, Polyline, Popup } from "react-leaflet";
 import { useGetBusLocation, getGetBusLocationQueryKey } from "@workspace/api-client-react";
 import type { TrackAlert } from "@workspace/api-client-react";
 import { LiveMap, busIcon, stopIcon, PanTo } from "@/components/LiveMap";
+import SosButton from "@/components/SosButton";
 
 interface Props {
   params: { busId: string };
@@ -172,6 +173,18 @@ export default function Track({ params }: Props) {
             </p>
           </div>
         </div>
+      )}
+
+      {loc && (
+        <SosButton
+          context={{
+            busNumber: loc.busNumber,
+            latitude: Number(loc.latitude),
+            longitude: Number(loc.longitude),
+            nextStop: loc.nextStop,
+            speed: Number(loc.speed),
+          }}
+        />
       )}
     </div>
   );

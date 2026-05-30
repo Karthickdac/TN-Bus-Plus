@@ -10,12 +10,14 @@ import {
   Armchair,
   Bus,
   User,
+  Users,
   Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetBooking, getGetBookingQueryKey } from "@workspace/api-client-react";
 import TicketQR from "@/components/TicketQR";
+import SosButton from "@/components/SosButton";
 
 interface Props {
   params: { id: string };
@@ -155,6 +157,25 @@ export default function Confirmation({ params }: Props) {
             <Detail icon={User} label="Passenger" value={booking.passengerName} />
             <Detail icon={MapPin} label="Status" value={booking.status} />
           </div>
+
+          {/* Group/family booking: every named traveller under this PNR */}
+          {(booking.coPassengers?.length ?? 0) > 0 && (
+            <div className="pt-2">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
+                <Users className="w-3.5 h-3.5" /> Passengers ({booking.coPassengers!.length})
+              </div>
+              <div className="space-y-2">
+                {booking.coPassengers!.map(pax => (
+                  <div key={pax.seatNumber} className="flex items-center justify-between bg-background/50 rounded-xl px-3 py-2">
+                    <span className="text-sm font-medium">{pax.name}</span>
+                    <span className="text-xs text-muted-foreground capitalize">
+                      Seat {pax.seatNumber} · {pax.gender}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </motion.div>
 
@@ -166,6 +187,17 @@ export default function Confirmation({ params }: Props) {
           <Home className="w-4 h-4 mr-2" /> Home
         </Button>
       </div>
+
+      {/* Emergency SOS is available while the trip is still upcoming/active. */}
+      {isConfirmed && (
+        <SosButton
+          context={{
+            busNumber: booking.busNumber,
+            origin: booking.origin,
+            destination: booking.destination,
+          }}
+        />
+      )}
     </div>
   );
 }

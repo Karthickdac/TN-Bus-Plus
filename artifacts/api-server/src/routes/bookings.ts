@@ -5,6 +5,7 @@ import { eq, and, gt, sql } from "drizzle-orm";
 import { CreateBookingBody } from "@workspace/api-zod";
 import { createNotification } from "../lib/notify";
 import { getRazorpayClient } from "../lib/razorpay";
+import { validateCoPassengers } from "../lib/seats";
 
 const router: IRouter = Router();
 
@@ -52,6 +53,12 @@ router.post("/bookings", async (req, res) => {
   const parsed = CreateBookingBody.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input" });
   const data = parsed.data;
+
+  // Group/family booking: validate the per-seat traveller list and enforce
+  // women-only seat rules server-side so they can't be bypassed from the client.
+  const coCheck = validateCoPassengers(data.seatNumbers, data.coPassengers);
+  if (!coCheck.ok) return res.status(400).json({ error: coCheck.error });
+  const coPassengers = coCheck.coPassengers;
 
   // Look up schedule, bus, route for full info
   const [schedule] = await db.select().from(schedulesTable).where(eq(schedulesTable.id, data.scheduleId));
@@ -134,6 +141,7 @@ router.post("/bookings", async (req, res) => {
       departureTime,
       arrivalTime,
       seatNumbers: data.seatNumbers,
+      coPassengers,
       totalFare: String(chargedFare),
       status: "confirmed",
       paymentStatus: "paid",

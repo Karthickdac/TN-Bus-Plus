@@ -1,12 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useSearch } from "wouter";
 import { motion } from "framer-motion";
-import { MapPin, Phone, User, Loader2, XCircle, ShieldCheck, Star } from "lucide-react";
+import { MapPin, Phone, User, Loader2, XCircle, ShieldCheck, Star, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useCreateBooking, useCreateBookingOrder, useVerifyPayment } from "@workspace/api-client-react";
+import {
+  useCreateBooking, useCreateBookingOrder, useVerifyPayment,
+  useGetSeats, getGetSeatsQueryKey,
+} from "@workspace/api-client-react";
+import type { CoPassenger, CoPassengerGender } from "@workspace/api-client-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { loadRazorpay, openRazorpayCheckout, PaymentCancelledError } from "@/lib/razorpay";
+import SafetyPanel from "@/components/SafetyPanel";
 
 type Step = "details" | "payment" | "processing" | "failed";
 
@@ -15,6 +20,12 @@ const PAYMENT_METHODS = [
   { label: "Net Banking", icon: "🏦", desc: "All major banks" },
   { label: "Credit Card", icon: "💳", desc: "Visa, Mastercard" },
   { label: "Wallet", icon: "👛", desc: "TN Bus+ wallet" },
+];
+
+const GENDERS: { value: CoPassengerGender; label: string }[] = [
+  { value: "female", label: "Female" },
+  { value: "male", label: "Male" },
+  { value: "other", label: "Other" },
 ];
 
 export default function Book() {
@@ -26,15 +37,58 @@ export default function Book() {
   const seats = (p.get("seats") ?? "").split(",").filter(Boolean);
   const fare = parseFloat(p.get("fare") ?? "0");
 
-  const [name, setName] = useState(user?.name ?? "");
+  // One traveller per selected seat (group/family booking). The first traveller
+  // is the lead/contact passenger; their name + the phone below become the
+  // booking's primary contact.
+  const [passengers, setPassengers] = useState<CoPassenger[]>(
+    () => seats.map((sn, i) => ({
+      seatNumber: sn,
+      name: i === 0 ? (user?.name ?? "") : "",
+      gender: "female" as CoPassengerGender,
+    })),
+  );
   const [phone, setPhone] = useState(user?.phone ?? "");
   const [method, setMethod] = useState("UPI");
   const [step, setStep] = useState<Step>("details");
   const [error, setError] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const createBooking = useCreateBooking();
   const createBookingOrder = useCreateBookingOrder();
   const verifyPayment = useVerifyPayment();
+
+  // Seat metadata tells us which selected seats are women-only so we can enforce
+  // a female traveller on those seats (the server enforces this authoritatively).
+  const { data: seatData } = useGetSeats(scheduleId, {
+    query: { enabled: !!scheduleId, queryKey: getGetSeatsQueryKey(scheduleId) },
+  });
+  const isWomenOnly = (sn: string) => seatData?.find(s => s.seatNumber === sn)?.isWomenOnly ?? false;
+
+  // When seat data loads, force women-only seats to a female traveller.
+  useEffect(() => {
+    if (!seatData) return;
+    setPassengers(prev =>
+      prev.map(pax => (isWomenOnly(pax.seatNumber) ? { ...pax, gender: "female" } : pax)),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seatData]);
+
+  const updatePassenger = (seatNumber: string, patch: Partial<CoPassenger>) => {
+    setPassengers(prev => prev.map(pax => (pax.seatNumber === seatNumber ? { ...pax, ...patch } : pax)));
+  };
+
+  const leadName = passengers[0]?.name ?? "";
+
+  const validateDetails = (): string | null => {
+    for (const pax of passengers) {
+      if (!pax.name.trim()) return "Please enter a name for every passenger.";
+      if (isWomenOnly(pax.seatNumber) && pax.gender !== "female") {
+        return `Seat ${pax.seatNumber} is women-only — assign a female traveller or pick another seat.`;
+      }
+    }
+    if (!/^\d{10}$/.test(phone.trim())) return "Enter a valid 10-digit contact number.";
+    return null;
+  };
 
   const apiError = (err: unknown, fallback: string): string => {
     const data = (err as { data?: { error?: string } } | undefined)?.data;
@@ -43,6 +97,9 @@ export default function Book() {
 
   const handleConfirm = async () => {
     if (step === "details") {
+      const v = validateDetails();
+      if (v) { setValidationError(v); return; }
+      setValidationError(null);
       setStep("payment");
       return;
     }
@@ -54,6 +111,12 @@ export default function Book() {
     }
     setError(null);
 
+    const coPassengers = passengers.map(pax => ({
+      seatNumber: pax.seatNumber,
+      name: pax.name.trim(),
+      gender: pax.gender,
+    }));
+
     // Wallet payments settle internally against the passenger's stored balance.
     if (method.toLowerCase().includes("wallet")) {
       setStep("processing");
@@ -63,10 +126,11 @@ export default function Book() {
             passengerId: user.id,
             scheduleId,
             seatNumbers: seats,
-            passengerName: name,
+            passengerName: leadName,
             passengerPhone: phone,
             totalFare: fare,
             paymentMethod: "wallet",
+            coPassengers,
           },
         });
         setTimeout(() => setLocation(`/booking/${result.id}`), 600);
@@ -91,10 +155,11 @@ export default function Book() {
           passengerId: user.id,
           scheduleId,
           seatNumbers: seats,
-          passengerName: name,
+          passengerName: leadName,
           passengerPhone: phone,
           totalFare: fare,
           paymentMethod: method,
+          coPassengers,
         },
       });
 
@@ -105,7 +170,7 @@ export default function Book() {
         currency: order.currency,
         name: order.name ?? "TN Bus+",
         description: order.description ?? `Seats ${seats.join(", ")}`,
-        prefill: { name, contact: phone },
+        prefill: { name: leadName, contact: phone },
       });
 
       await verifyPayment.mutateAsync({
@@ -233,23 +298,82 @@ export default function Book() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-card border border-border/50 rounded-2xl p-6 space-y-4"
+          className="space-y-4"
         >
-          <h2 className="font-semibold text-lg mb-2">Passenger Information</h2>
-          <div className="space-y-1">
-            <label className="text-sm text-muted-foreground">Full Name</label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input value={name} onChange={e => setName(e.target.value)} className="pl-9" placeholder="Full name" />
+          <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-5">
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold text-lg flex items-center gap-2">
+                <Users className="w-5 h-5 text-primary" />
+                {passengers.length > 1 ? `${passengers.length} Passengers` : "Passenger Information"}
+              </h2>
+              <span className="text-xs text-muted-foreground">One PNR for the whole group</span>
             </div>
-          </div>
-          <div className="space-y-1">
-            <label className="text-sm text-muted-foreground">Phone Number</label>
-            <div className="relative">
-              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input value={phone} onChange={e => setPhone(e.target.value)} className="pl-9" placeholder="10-digit number" />
+
+            {passengers.map((pax, idx) => {
+              const womenOnly = isWomenOnly(pax.seatNumber);
+              return (
+                <div key={pax.seatNumber} className="rounded-xl border border-border/50 bg-background/40 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold">
+                      Seat {pax.seatNumber}{idx === 0 && " · Lead passenger"}
+                    </span>
+                    {womenOnly && (
+                      <span className="text-xs font-medium text-rose-300 bg-rose-500/15 border border-rose-500/30 rounded-full px-2 py-0.5">
+                        Women only
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      value={pax.name}
+                      onChange={e => updatePassenger(pax.seatNumber, { name: e.target.value })}
+                      className="pl-9"
+                      placeholder={idx === 0 ? "Lead passenger full name" : "Co-passenger full name"}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    {GENDERS.map(g => {
+                      const selected = pax.gender === g.value;
+                      const disabled = womenOnly && g.value !== "female";
+                      return (
+                        <button
+                          key={g.value}
+                          type="button"
+                          disabled={disabled}
+                          onClick={() => updatePassenger(pax.seatNumber, { gender: g.value })}
+                          className={`flex-1 rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors ${
+                            selected
+                              ? "border-primary bg-primary/10 text-foreground"
+                              : disabled
+                              ? "border-border/40 text-muted-foreground/40 cursor-not-allowed"
+                              : "border-border/60 text-muted-foreground hover:border-primary/40"
+                          }`}
+                        >
+                          {g.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+
+            <div className="space-y-1 pt-1">
+              <label className="text-sm text-muted-foreground">Contact Phone Number</label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input value={phone} onChange={e => setPhone(e.target.value)} className="pl-9" placeholder="10-digit number" />
+              </div>
+              <p className="text-xs text-muted-foreground">Ticket and trip updates are sent to this number.</p>
             </div>
+
+            {validationError && (
+              <p className="text-sm text-red-400">{validationError}</p>
+            )}
           </div>
+
+          <SafetyPanel />
         </motion.div>
       )}
 

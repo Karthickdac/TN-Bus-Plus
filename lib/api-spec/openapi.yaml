@@ -1868,6 +1868,11 @@ components:
           type: string
         qrCode:
           type: ["string", "null"]
+        coPassengers:
+          type: array
+          description: One entry per seat for group/family bookings, naming each traveller and their gender. Empty for single-passenger or legacy bookings.
+          items:
+            $ref: "#/components/schemas/CoPassenger"
         rewardPointsEarned:
           type: integer
           description: Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail.
@@ -1908,6 +1913,11 @@ components:
         paymentMethod:
           type: string
           description: How the fare is paid. When "wallet", the trusted server-side fare is debited from the passenger's wallet balance (this is how redeemed reward points are spent against fares). Any other value is treated as a simulated external payment.
+        coPassengers:
+          type: array
+          description: Optional per-seat traveller list for group/family bookings. When provided there must be exactly one entry per seat, and every women-only seat must be assigned to a female traveller (enforced server-side).
+          items:
+            $ref: "#/components/schemas/CoPassenger"
       required:
         - passengerId
         - scheduleId
@@ -1915,6 +1925,21 @@ components:
         - passengerName
         - passengerPhone
         - totalFare
+
+    CoPassenger:
+      type: object
+      properties:
+        seatNumber:
+          type: string
+        name:
+          type: string
+        gender:
+          type: string
+          enum: [male, female, other]
+      required:
+        - seatNumber
+        - name
+        - gender
 
     Passenger:
       type: object

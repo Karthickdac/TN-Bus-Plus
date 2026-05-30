@@ -203,6 +203,11 @@ export const ListBookingsResponseItem = zod.object({
   "passengerPhone": zod.string(),
   "createdAt": zod.string(),
   "qrCode": zod.string().nullish(),
+  "coPassengers": zod.array(zod.object({
+  "seatNumber": zod.string(),
+  "name": zod.string(),
+  "gender": zod.enum(['male', 'female', 'other'])
+})).optional().describe('One entry per seat for group\/family bookings, naming each traveller and their gender. Empty for single-passenger or legacy bookings.'),
   "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail.')
 })
 export const ListBookingsResponse = zod.array(ListBookingsResponseItem)
@@ -218,7 +223,12 @@ export const CreateBookingBody = zod.object({
   "passengerName": zod.string(),
   "passengerPhone": zod.string(),
   "totalFare": zod.number(),
-  "paymentMethod": zod.string().optional().describe('How the fare is paid. When \"wallet\", the trusted server-side fare is debited from the passenger\'s wallet balance (this is how redeemed reward points are spent against fares). Any other value is treated as a simulated external payment.')
+  "paymentMethod": zod.string().optional().describe('How the fare is paid. When \"wallet\", the trusted server-side fare is debited from the passenger\'s wallet balance (this is how redeemed reward points are spent against fares). Any other value is treated as a simulated external payment.'),
+  "coPassengers": zod.array(zod.object({
+  "seatNumber": zod.string(),
+  "name": zod.string(),
+  "gender": zod.enum(['male', 'female', 'other'])
+})).optional().describe('Optional per-seat traveller list for group\/family bookings. When provided there must be exactly one entry per seat, and every women-only seat must be assigned to a female traveller (enforced server-side).')
 })
 
 
@@ -247,6 +257,11 @@ export const GetBookingResponse = zod.object({
   "passengerPhone": zod.string(),
   "createdAt": zod.string(),
   "qrCode": zod.string().nullish(),
+  "coPassengers": zod.array(zod.object({
+  "seatNumber": zod.string(),
+  "name": zod.string(),
+  "gender": zod.enum(['male', 'female', 'other'])
+})).optional().describe('One entry per seat for group\/family bookings, naming each traveller and their gender. Empty for single-passenger or legacy bookings.'),
   "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail.')
 })
 
@@ -276,6 +291,11 @@ export const CancelBookingResponse = zod.object({
   "passengerPhone": zod.string(),
   "createdAt": zod.string(),
   "qrCode": zod.string().nullish(),
+  "coPassengers": zod.array(zod.object({
+  "seatNumber": zod.string(),
+  "name": zod.string(),
+  "gender": zod.enum(['male', 'female', 'other'])
+})).optional().describe('One entry per seat for group\/family bookings, naming each traveller and their gender. Empty for single-passenger or legacy bookings.'),
   "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail.')
 })
 
@@ -305,6 +325,11 @@ export const GetPnrStatusResponse = zod.object({
   "passengerPhone": zod.string(),
   "createdAt": zod.string(),
   "qrCode": zod.string().nullish(),
+  "coPassengers": zod.array(zod.object({
+  "seatNumber": zod.string(),
+  "name": zod.string(),
+  "gender": zod.enum(['male', 'female', 'other'])
+})).optional().describe('One entry per seat for group\/family bookings, naming each traveller and their gender. Empty for single-passenger or legacy bookings.'),
   "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail.')
 })
 
@@ -319,7 +344,12 @@ export const CreateBookingOrderBody = zod.object({
   "passengerName": zod.string(),
   "passengerPhone": zod.string(),
   "totalFare": zod.number(),
-  "paymentMethod": zod.string().optional().describe('How the fare is paid. When \"wallet\", the trusted server-side fare is debited from the passenger\'s wallet balance (this is how redeemed reward points are spent against fares). Any other value is treated as a simulated external payment.')
+  "paymentMethod": zod.string().optional().describe('How the fare is paid. When \"wallet\", the trusted server-side fare is debited from the passenger\'s wallet balance (this is how redeemed reward points are spent against fares). Any other value is treated as a simulated external payment.'),
+  "coPassengers": zod.array(zod.object({
+  "seatNumber": zod.string(),
+  "name": zod.string(),
+  "gender": zod.enum(['male', 'female', 'other'])
+})).optional().describe('Optional per-seat traveller list for group\/family bookings. When provided there must be exactly one entry per seat, and every women-only seat must be assigned to a female traveller (enforced server-side).')
 })
 
 
@@ -623,6 +653,11 @@ export const GetUpcomingTripsResponseItem = zod.object({
   "passengerPhone": zod.string(),
   "createdAt": zod.string(),
   "qrCode": zod.string().nullish(),
+  "coPassengers": zod.array(zod.object({
+  "seatNumber": zod.string(),
+  "name": zod.string(),
+  "gender": zod.enum(['male', 'female', 'other'])
+})).optional().describe('One entry per seat for group\/family bookings, naming each traveller and their gender. Empty for single-passenger or legacy bookings.'),
   "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail.')
 })
 export const GetUpcomingTripsResponse = zod.array(GetUpcomingTripsResponseItem)
@@ -687,6 +722,11 @@ export const AdminListBookingsResponseItem = zod.object({
   "passengerPhone": zod.string(),
   "createdAt": zod.string(),
   "qrCode": zod.string().nullish(),
+  "coPassengers": zod.array(zod.object({
+  "seatNumber": zod.string(),
+  "name": zod.string(),
+  "gender": zod.enum(['male', 'female', 'other'])
+})).optional().describe('One entry per seat for group\/family bookings, naming each traveller and their gender. Empty for single-passenger or legacy bookings.'),
   "rewardPointsEarned": zod.number().optional().describe('Reward points credited for this booking, derived from the trusted schedule fare. Present on the create-booking response and on booking detail.')
 })
 export const AdminListBookingsResponse = zod.array(AdminListBookingsResponseItem)
