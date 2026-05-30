@@ -5,6 +5,17 @@ import { eq, sql } from "drizzle-orm";
 import { CreateComplaintBody, CreateRouteBody, UpdateRouteBody } from "@workspace/api-zod";
 import { buildRouteGeometry, computeAlerts, type TrackAlert } from "../lib/trackingAlerts";
 import { cityCoord } from "../lib/tnGeo";
+import { analyzeComplaint } from "../lib/complaintAI";
+import { isNull } from "drizzle-orm";
+
+function serializeComplaint(c: typeof complaintsTable.$inferSelect) {
+  return {
+    ...c,
+    sentimentScore: c.sentimentScore === null ? null : Number(c.sentimentScore),
+    aiAnalyzedAt: c.aiAnalyzedAt ? c.aiAnalyzedAt.toISOString() : null,
+    createdAt: c.createdAt.toISOString(),
+  };
+}
 
 // Routes drive the live map polyline/stops, which only render for places we have
 // coordinates for. Reject any place name we can't resolve so a saved route never
@@ -123,7 +134,7 @@ router.get("/admin/revenue", async (req, res) => {
 
 router.get("/admin/complaints", async (_req, res) => {
   const rows = await db.select().from(complaintsTable);
-  res.json(rows.map(c => ({ ...c, createdAt: c.createdAt.toISOString() })));
+  res.json(rows.map(serializeComplaint));
 });
 
 router.post("/admin/complaints", async (req, res) => {
@@ -131,7 +142,23 @@ router.post("/admin/complaints", async (req, res) => {
   if (!parsed.success) return res.status(400).json({ error: "Invalid input" });
   const data = parsed.data;
 
-  const priority = data.category === "safety" ? "high" : data.category === "delay" ? "medium" : "low";
+  // Run AI analysis up front so the complaint lands already categorized,
+  // sentiment-scored and escalation-flagged. analyzeComplaint never throws —
+  // it falls back to a deterministic heuristic if the AI service is down.
+  const analysis = await analyzeComplaint({
+    description: data.description,
+    category: data.category,
+    busNumber: data.busNumber,
+  });
+
+  const priority = analysis.escalated
+    ? "high"
+    : data.category === "safety"
+      ? "high"
+      : data.category === "delay" || analysis.sentiment === "negative"
+        ? "medium"
+        : "low";
+
   const [complaint] = await db.insert(complaintsTable).values({
     passengerId: data.passengerId,
     busNumber: data.busNumber,
@@ -139,9 +166,40 @@ router.post("/admin/complaints", async (req, res) => {
     description: data.description,
     status: "open",
     priority,
+    aiCategory: analysis.aiCategory,
+    sentiment: analysis.sentiment,
+    sentimentScore: String(analysis.sentimentScore),
+    escalated: analysis.escalated,
+    aiSummary: analysis.aiSummary,
+    aiAnalyzedAt: new Date(),
   }).returning();
 
-  res.status(201).json({ ...complaint, createdAt: complaint.createdAt.toISOString() });
+  return res.status(201).json(serializeComplaint(complaint));
+});
+
+// Backfill: analyze any complaints that were created before AI analysis ran
+// (or whose analysis never completed). Idempotent — only touches unanalyzed rows.
+router.post("/admin/complaints/analyze-pending", async (req, res) => {
+  const pending = await db.select().from(complaintsTable).where(isNull(complaintsTable.aiAnalyzedAt));
+  let analyzed = 0;
+  for (const c of pending) {
+    const analysis = await analyzeComplaint({
+      description: c.description,
+      category: c.category,
+      busNumber: c.busNumber,
+    });
+    await db.update(complaintsTable).set({
+      aiCategory: analysis.aiCategory,
+      sentiment: analysis.sentiment,
+      sentimentScore: String(analysis.sentimentScore),
+      escalated: analysis.escalated,
+      aiSummary: analysis.aiSummary,
+      aiAnalyzedAt: new Date(),
+    }).where(eq(complaintsTable.id, c.id));
+    analyzed++;
+  }
+  req.log.info({ analyzed }, "analyzed pending complaints");
+  res.json({ analyzed });
 });
 
 // Live fleet GPS monitoring — all buses with locations, plus derived alerts.
@@ -254,7 +312,7 @@ router.post("/admin/routes", async (req, res) => {
       stops: d.stops ?? [],
     })
     .returning();
-  res.status(201).json(serializeRoute(route));
+  return res.status(201).json(serializeRoute(route));
 });
 
 router.patch("/admin/routes/:id", async (req, res) => {
@@ -278,14 +336,14 @@ router.patch("/admin/routes/:id", async (req, res) => {
     .where(eq(routesTable.id, id))
     .returning();
   if (!route) return res.status(404).json({ error: "Route not found" });
-  res.json(serializeRoute(route));
+  return res.json(serializeRoute(route));
 });
 
 router.delete("/admin/routes/:id", async (req, res) => {
   const id = parseInt(req.params.id);
   const [route] = await db.delete(routesTable).where(eq(routesTable.id, id)).returning();
   if (!route) return res.status(404).json({ error: "Route not found" });
-  res.status(204).end();
+  return res.status(204).end();
 });
 
 export default router;

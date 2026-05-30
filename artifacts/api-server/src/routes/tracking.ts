@@ -41,7 +41,7 @@ router.get("/tracking/:busId", async (req, res) => {
     etaToDestinationMinutes = Math.max(1, Math.round((remainingKm / speed) * 60));
   }
 
-  res.json({
+  return res.json({
     busId: row.busId,
     busNumber: row.busNumber,
     latitude: pos.lat,

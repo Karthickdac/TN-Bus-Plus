@@ -24,7 +24,7 @@ router.get("/routes/:id", async (req, res) => {
   const id = parseInt(req.params.id);
   const [row] = await db.select().from(routesTable).where(eq(routesTable.id, id));
   if (!row) return res.status(404).json({ error: "Route not found" });
-  res.json({ ...row, distanceKm: Number(row.distanceKm), basefare: Number(row.basefare), stops: row.stops ?? [] });
+  return res.json({ ...row, distanceKm: Number(row.distanceKm), basefare: Number(row.basefare), stops: row.stops ?? [] });
 });
 
 export default router;

@@ -15,5 +15,16 @@ export interface Complaint {
   description: string;
   status: string;
   priority: string;
+  /** @nullable */
+  aiCategory?: string | null;
+  /** @nullable */
+  sentiment?: string | null;
+  /** @nullable */
+  sentimentScore?: number | null;
+  escalated: boolean;
+  /** @nullable */
+  aiSummary?: string | null;
+  /** @nullable */
+  aiAnalyzedAt?: string | null;
   createdAt: string;
 }

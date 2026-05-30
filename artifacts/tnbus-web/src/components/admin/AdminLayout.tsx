@@ -13,6 +13,9 @@ import {
   Settings,
   ScrollText,
   ShieldCheck,
+  Sparkles,
+  Gauge,
+  UsersRound,
   Menu,
   X,
   ArrowLeft,
@@ -33,6 +36,15 @@ const GROUPS: NavGroup[] = [
       { href: "/admin/bookings", label: "Bookings", icon: Ticket },
       { href: "/admin/revenue", label: "Revenue Analytics", icon: BarChart3 },
       { href: "/admin/complaints", label: "Complaints", icon: AlertCircle },
+    ],
+  },
+  {
+    label: "Intelligence",
+    badge: "AI",
+    items: [
+      { href: "/admin/insights", label: "AI Insights", icon: Sparkles },
+      { href: "/admin/ops", label: "Predictive Ops", icon: Gauge },
+      { href: "/admin/crew", label: "Crew & Depots", icon: UsersRound },
     ],
   },
   {

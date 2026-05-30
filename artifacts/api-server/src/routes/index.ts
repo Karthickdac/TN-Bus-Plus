@@ -8,6 +8,8 @@ import passengersRouter from "./passengers";
 import trackingRouter from "./tracking";
 import dashboardRouter from "./dashboard";
 import adminRouter from "./admin";
+import adminAnalyticsRouter from "./adminAnalytics";
+import adminCrewRouter from "./adminCrew";
 import authRouter from "./auth";
 import assistantRouter from "./assistant";
 import savedRoutesRouter from "./savedRoutes";
@@ -36,5 +38,7 @@ router.use(paymentsRouter);
 router.use(trackingRouter);
 router.use(dashboardRouter);
 router.use(adminRouter);
+router.use(adminAnalyticsRouter);
+router.use(adminCrewRouter);
 
 export default router;

@@ -32,6 +32,9 @@ import AdminRoutes from "@/pages/admin/AdminRoutes";
 import AdminBookings from "@/pages/admin/AdminBookings";
 import AdminRevenue from "@/pages/admin/AdminRevenue";
 import AdminComplaints from "@/pages/admin/AdminComplaints";
+import AdminInsights from "@/pages/admin/AdminInsights";
+import AdminCrew from "@/pages/admin/AdminCrew";
+import AdminOps from "@/pages/admin/AdminOps";
 import AdminPOS from "@/pages/admin/AdminPOS";
 import ComingSoon from "@/pages/admin/ComingSoon";
 import AdminLayout from "@/components/admin/AdminLayout";
@@ -79,6 +82,9 @@ function Router() {
           <Route path="/admin/bookings">{() => <AdminLayout><AdminBookings /></AdminLayout>}</Route>
           <Route path="/admin/revenue">{() => <AdminLayout><AdminRevenue /></AdminLayout>}</Route>
           <Route path="/admin/complaints">{() => <AdminLayout><AdminComplaints /></AdminLayout>}</Route>
+          <Route path="/admin/insights">{() => <AdminLayout><AdminInsights /></AdminLayout>}</Route>
+          <Route path="/admin/ops">{() => <AdminLayout><AdminOps /></AdminLayout>}</Route>
+          <Route path="/admin/crew">{() => <AdminLayout><AdminCrew /></AdminLayout>}</Route>
           <Route path="/admin/users">
             {() => (
               <AdminLayout>

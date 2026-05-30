@@ -6,6 +6,8 @@ export * from "./bookings";
 export * from "./walletTransactions";
 export * from "./busLocations";
 export * from "./complaints";
+export * from "./depots";
+export * from "./crew";
 export * from "./savedRoutes";
 export * from "./notifications";
 export * from "./refunds";

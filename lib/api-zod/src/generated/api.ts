@@ -731,6 +731,12 @@ export const ListComplaintsResponseItem = zod.object({
   "description": zod.string(),
   "status": zod.string(),
   "priority": zod.string(),
+  "aiCategory": zod.string().nullish(),
+  "sentiment": zod.string().nullish(),
+  "sentimentScore": zod.number().nullish(),
+  "escalated": zod.boolean(),
+  "aiSummary": zod.string().nullish(),
+  "aiAnalyzedAt": zod.string().nullish(),
   "createdAt": zod.string()
 })
 export const ListComplaintsResponse = zod.array(ListComplaintsResponseItem)
@@ -842,6 +848,281 @@ export const UpdateRouteResponse = zod.object({
  * @summary Delete a route
  */
 export const DeleteRouteParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Run AI analysis on complaints not yet analyzed
+ */
+export const AnalyzePendingComplaintsResponse = zod.object({
+  "analyzed": zod.number()
+})
+
+
+/**
+ * @summary Depot-wise complaint heatmap, trends and sentiment breakdown
+ */
+export const GetComplaintIntelResponse = zod.object({
+  "categories": zod.array(zod.string()),
+  "depots": zod.array(zod.object({
+  "depotId": zod.number().nullish(),
+  "depotName": zod.string(),
+  "total": zod.number(),
+  "escalated": zod.number(),
+  "negative": zod.number(),
+  "byCategory": zod.record(zod.string(), zod.number())
+})),
+  "trends": zod.array(zod.object({
+  "date": zod.string(),
+  "total": zod.number(),
+  "negative": zod.number(),
+  "escalated": zod.number()
+})),
+  "sentimentBreakdown": zod.object({
+  "positive": zod.number(),
+  "neutral": zod.number(),
+  "negative": zod.number(),
+  "unanalyzed": zod.number()
+})
+})
+
+
+/**
+ * @summary Plain-language AI operational insights
+ */
+export const GetAiInsightsResponse = zod.object({
+  "generatedAt": zod.string(),
+  "source": zod.string(),
+  "insights": zod.array(zod.object({
+  "title": zod.string(),
+  "detail": zod.string(),
+  "severity": zod.string(),
+  "category": zod.string()
+}))
+})
+
+
+/**
+ * @summary Passenger demand heatmaps by origin, destination, route and time
+ */
+export const GetPassengerDemandResponse = zod.object({
+  "byOrigin": zod.array(zod.object({
+  "label": zod.string(),
+  "bookings": zod.number(),
+  "revenue": zod.number()
+})),
+  "byDestination": zod.array(zod.object({
+  "label": zod.string(),
+  "bookings": zod.number(),
+  "revenue": zod.number()
+})),
+  "byRoute": zod.array(zod.object({
+  "label": zod.string(),
+  "bookings": zod.number(),
+  "revenue": zod.number()
+})),
+  "byHour": zod.array(zod.object({
+  "hour": zod.number(),
+  "bookings": zod.number()
+})),
+  "byDay": zod.array(zod.object({
+  "day": zod.string(),
+  "bookings": zod.number()
+}))
+})
+
+
+/**
+ * @summary Predictive maintenance, driver behaviour and fuel analytics
+ */
+export const GetOpsAnalyticsResponse = zod.object({
+  "maintenance": zod.array(zod.object({
+  "busId": zod.number(),
+  "busNumber": zod.string(),
+  "busType": zod.string(),
+  "status": zod.string(),
+  "odometerKm": zod.number(),
+  "kmSinceService": zod.number(),
+  "engineHealthScore": zod.number(),
+  "risk": zod.string(),
+  "predictedServiceInDays": zod.number()
+})),
+  "maintenanceSummary": zod.object({
+  "highRisk": zod.number(),
+  "mediumRisk": zod.number(),
+  "lowRisk": zod.number(),
+  "dueWithin7Days": zod.number()
+}),
+  "drivers": zod.array(zod.object({
+  "busNumber": zod.string(),
+  "driverName": zod.string(),
+  "rating": zod.number(),
+  "safetyScore": zod.number(),
+  "harshBrakingPer100km": zod.number(),
+  "overspeedEvents": zod.number(),
+  "idlingPct": zod.number(),
+  "behaviour": zod.string()
+})),
+  "driverSummary": zod.object({
+  "avgSafetyScore": zod.number(),
+  "flagged": zod.number()
+}),
+  "fuel": zod.array(zod.object({
+  "busId": zod.number(),
+  "busNumber": zod.string(),
+  "busType": zod.string(),
+  "fuelEfficiencyKmpl": zod.number(),
+  "monthlyKm": zod.number(),
+  "monthlyFuelCostInr": zod.number(),
+  "co2KgPerMonth": zod.number()
+})),
+  "fuelSummary": zod.object({
+  "totalMonthlyFuelCostInr": zod.number(),
+  "avgEfficiencyKmpl": zod.number(),
+  "totalCo2KgPerMonth": zod.number()
+})
+})
+
+
+/**
+ * @summary List all depots
+ */
+export const ListDepotsResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "code": zod.string(),
+  "city": zod.string(),
+  "latitude": zod.number(),
+  "longitude": zod.number(),
+  "manager": zod.string().nullish(),
+  "capacity": zod.number(),
+  "createdAt": zod.string()
+})
+export const ListDepotsResponse = zod.array(ListDepotsResponseItem)
+
+
+/**
+ * @summary Create a depot
+ */
+export const CreateDepotBody = zod.object({
+  "name": zod.string(),
+  "code": zod.string(),
+  "city": zod.string(),
+  "manager": zod.string().nullish(),
+  "capacity": zod.number().optional()
+})
+
+
+/**
+ * @summary Update a depot
+ */
+export const UpdateDepotParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateDepotBody = zod.object({
+  "name": zod.string(),
+  "code": zod.string(),
+  "city": zod.string(),
+  "manager": zod.string().nullish(),
+  "capacity": zod.number().optional()
+})
+
+export const UpdateDepotResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "code": zod.string(),
+  "city": zod.string(),
+  "latitude": zod.number(),
+  "longitude": zod.number(),
+  "manager": zod.string().nullish(),
+  "capacity": zod.number(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Delete a depot
+ */
+export const DeleteDepotParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary List all crew members
+ */
+export const ListCrewResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "role": zod.string(),
+  "depotId": zod.number().nullish(),
+  "phone": zod.string().nullish(),
+  "licenseNumber": zod.string().nullish(),
+  "status": zod.string(),
+  "experienceYears": zod.number(),
+  "safetyScore": zod.number(),
+  "assignedBusNumber": zod.string().nullish(),
+  "createdAt": zod.string()
+})
+export const ListCrewResponse = zod.array(ListCrewResponseItem)
+
+
+/**
+ * @summary Create a crew member
+ */
+export const CreateCrewBody = zod.object({
+  "name": zod.string(),
+  "role": zod.string(),
+  "depotId": zod.number().nullish(),
+  "phone": zod.string().nullish(),
+  "licenseNumber": zod.string().nullish(),
+  "status": zod.string().optional(),
+  "experienceYears": zod.number().optional(),
+  "safetyScore": zod.number().optional(),
+  "assignedBusNumber": zod.string().nullish()
+})
+
+
+/**
+ * @summary Update a crew member
+ */
+export const UpdateCrewParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateCrewBody = zod.object({
+  "name": zod.string(),
+  "role": zod.string(),
+  "depotId": zod.number().nullish(),
+  "phone": zod.string().nullish(),
+  "licenseNumber": zod.string().nullish(),
+  "status": zod.string().optional(),
+  "experienceYears": zod.number().optional(),
+  "safetyScore": zod.number().optional(),
+  "assignedBusNumber": zod.string().nullish()
+})
+
+export const UpdateCrewResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "role": zod.string(),
+  "depotId": zod.number().nullish(),
+  "phone": zod.string().nullish(),
+  "licenseNumber": zod.string().nullish(),
+  "status": zod.string(),
+  "experienceYears": zod.number(),
+  "safetyScore": zod.number(),
+  "assignedBusNumber": zod.string().nullish(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Delete a crew member
+ */
+export const DeleteCrewParams = zod.object({
   "id": zod.coerce.number()
 })
 

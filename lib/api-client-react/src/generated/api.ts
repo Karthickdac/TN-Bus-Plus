@@ -22,6 +22,8 @@ import type {
 import type {
   AdminListBookingsParams,
   AdminStats,
+  AiInsights,
+  AnalyzePendingResult,
   AssistantChatInput,
   AssistantChatResult,
   Booking,
@@ -30,7 +32,12 @@ import type {
   BusTracking,
   Complaint,
   ComplaintInput,
+  ComplaintIntel,
+  Crew,
+  CrewInput,
   DashboardStats,
+  Depot,
+  DepotInput,
   FareCalendarDay,
   FleetOverview,
   GetDashboardStatsParams,
@@ -41,10 +48,12 @@ import type {
   ListBookingsParams,
   ListRoutesParams,
   Notification,
+  OpsAnalytics,
   Pass,
   PassProduct,
   PassPurchaseInput,
   Passenger,
+  PassengerDemand,
   PassengerInput,
   PassengerUpdate,
   PaymentOrder,
@@ -3134,6 +3143,964 @@ export const useDeleteRoute = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getDeleteRouteMutationOptions(options));
+    }
+
+export const getAnalyzePendingComplaintsUrl = () => {
+
+
+
+
+  return `/api/admin/complaints/analyze-pending`
+}
+
+/**
+ * @summary Run AI analysis on complaints not yet analyzed
+ */
+export const analyzePendingComplaints = async ( options?: RequestInit): Promise<AnalyzePendingResult> => {
+
+  return customFetch<AnalyzePendingResult>(getAnalyzePendingComplaintsUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getAnalyzePendingComplaintsMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof analyzePendingComplaints>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof analyzePendingComplaints>>, TError,void, TContext> => {
+
+const mutationKey = ['analyzePendingComplaints'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof analyzePendingComplaints>>, void> = () => {
+
+
+          return  analyzePendingComplaints(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AnalyzePendingComplaintsMutationResult = NonNullable<Awaited<ReturnType<typeof analyzePendingComplaints>>>
+
+    export type AnalyzePendingComplaintsMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Run AI analysis on complaints not yet analyzed
+ */
+export const useAnalyzePendingComplaints = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof analyzePendingComplaints>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof analyzePendingComplaints>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getAnalyzePendingComplaintsMutationOptions(options));
+    }
+
+export const getGetComplaintIntelUrl = () => {
+
+
+
+
+  return `/api/admin/complaint-intel`
+}
+
+/**
+ * @summary Depot-wise complaint heatmap, trends and sentiment breakdown
+ */
+export const getComplaintIntel = async ( options?: RequestInit): Promise<ComplaintIntel> => {
+
+  return customFetch<ComplaintIntel>(getGetComplaintIntelUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetComplaintIntelQueryKey = () => {
+    return [
+    `/api/admin/complaint-intel`
+    ] as const;
+    }
+
+
+export const getGetComplaintIntelQueryOptions = <TData = Awaited<ReturnType<typeof getComplaintIntel>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getComplaintIntel>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetComplaintIntelQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getComplaintIntel>>> = ({ signal }) => getComplaintIntel({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getComplaintIntel>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetComplaintIntelQueryResult = NonNullable<Awaited<ReturnType<typeof getComplaintIntel>>>
+export type GetComplaintIntelQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Depot-wise complaint heatmap, trends and sentiment breakdown
+ */
+
+export function useGetComplaintIntel<TData = Awaited<ReturnType<typeof getComplaintIntel>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getComplaintIntel>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetComplaintIntelQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetAiInsightsUrl = () => {
+
+
+
+
+  return `/api/admin/ai-insights`
+}
+
+/**
+ * @summary Plain-language AI operational insights
+ */
+export const getAiInsights = async ( options?: RequestInit): Promise<AiInsights> => {
+
+  return customFetch<AiInsights>(getGetAiInsightsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAiInsightsQueryKey = () => {
+    return [
+    `/api/admin/ai-insights`
+    ] as const;
+    }
+
+
+export const getGetAiInsightsQueryOptions = <TData = Awaited<ReturnType<typeof getAiInsights>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAiInsights>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAiInsightsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAiInsights>>> = ({ signal }) => getAiInsights({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAiInsights>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAiInsightsQueryResult = NonNullable<Awaited<ReturnType<typeof getAiInsights>>>
+export type GetAiInsightsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Plain-language AI operational insights
+ */
+
+export function useGetAiInsights<TData = Awaited<ReturnType<typeof getAiInsights>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAiInsights>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAiInsightsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetPassengerDemandUrl = () => {
+
+
+
+
+  return `/api/admin/passenger-demand`
+}
+
+/**
+ * @summary Passenger demand heatmaps by origin, destination, route and time
+ */
+export const getPassengerDemand = async ( options?: RequestInit): Promise<PassengerDemand> => {
+
+  return customFetch<PassengerDemand>(getGetPassengerDemandUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPassengerDemandQueryKey = () => {
+    return [
+    `/api/admin/passenger-demand`
+    ] as const;
+    }
+
+
+export const getGetPassengerDemandQueryOptions = <TData = Awaited<ReturnType<typeof getPassengerDemand>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPassengerDemand>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPassengerDemandQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPassengerDemand>>> = ({ signal }) => getPassengerDemand({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPassengerDemand>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPassengerDemandQueryResult = NonNullable<Awaited<ReturnType<typeof getPassengerDemand>>>
+export type GetPassengerDemandQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Passenger demand heatmaps by origin, destination, route and time
+ */
+
+export function useGetPassengerDemand<TData = Awaited<ReturnType<typeof getPassengerDemand>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPassengerDemand>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPassengerDemandQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetOpsAnalyticsUrl = () => {
+
+
+
+
+  return `/api/admin/ops-analytics`
+}
+
+/**
+ * @summary Predictive maintenance, driver behaviour and fuel analytics
+ */
+export const getOpsAnalytics = async ( options?: RequestInit): Promise<OpsAnalytics> => {
+
+  return customFetch<OpsAnalytics>(getGetOpsAnalyticsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetOpsAnalyticsQueryKey = () => {
+    return [
+    `/api/admin/ops-analytics`
+    ] as const;
+    }
+
+
+export const getGetOpsAnalyticsQueryOptions = <TData = Awaited<ReturnType<typeof getOpsAnalytics>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOpsAnalytics>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetOpsAnalyticsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getOpsAnalytics>>> = ({ signal }) => getOpsAnalytics({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getOpsAnalytics>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetOpsAnalyticsQueryResult = NonNullable<Awaited<ReturnType<typeof getOpsAnalytics>>>
+export type GetOpsAnalyticsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Predictive maintenance, driver behaviour and fuel analytics
+ */
+
+export function useGetOpsAnalytics<TData = Awaited<ReturnType<typeof getOpsAnalytics>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOpsAnalytics>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetOpsAnalyticsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getListDepotsUrl = () => {
+
+
+
+
+  return `/api/admin/depots`
+}
+
+/**
+ * @summary List all depots
+ */
+export const listDepots = async ( options?: RequestInit): Promise<Depot[]> => {
+
+  return customFetch<Depot[]>(getListDepotsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListDepotsQueryKey = () => {
+    return [
+    `/api/admin/depots`
+    ] as const;
+    }
+
+
+export const getListDepotsQueryOptions = <TData = Awaited<ReturnType<typeof listDepots>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDepots>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListDepotsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDepots>>> = ({ signal }) => listDepots({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDepots>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListDepotsQueryResult = NonNullable<Awaited<ReturnType<typeof listDepots>>>
+export type ListDepotsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all depots
+ */
+
+export function useListDepots<TData = Awaited<ReturnType<typeof listDepots>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDepots>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListDepotsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateDepotUrl = () => {
+
+
+
+
+  return `/api/admin/depots`
+}
+
+/**
+ * @summary Create a depot
+ */
+export const createDepot = async (depotInput: DepotInput, options?: RequestInit): Promise<Depot> => {
+
+  return customFetch<Depot>(getCreateDepotUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      depotInput,)
+  }
+);}
+
+
+
+
+export const getCreateDepotMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDepot>>, TError,{data: BodyType<DepotInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createDepot>>, TError,{data: BodyType<DepotInput>}, TContext> => {
+
+const mutationKey = ['createDepot'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createDepot>>, {data: BodyType<DepotInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createDepot(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateDepotMutationResult = NonNullable<Awaited<ReturnType<typeof createDepot>>>
+    export type CreateDepotMutationBody = BodyType<DepotInput>
+    export type CreateDepotMutationError = ErrorType<void>
+
+    /**
+ * @summary Create a depot
+ */
+export const useCreateDepot = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDepot>>, TError,{data: BodyType<DepotInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createDepot>>,
+        TError,
+        {data: BodyType<DepotInput>},
+        TContext
+      > => {
+      return useMutation(getCreateDepotMutationOptions(options));
+    }
+
+export const getUpdateDepotUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/depots/${id}`
+}
+
+/**
+ * @summary Update a depot
+ */
+export const updateDepot = async (id: number,
+    depotInput: DepotInput, options?: RequestInit): Promise<Depot> => {
+
+  return customFetch<Depot>(getUpdateDepotUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      depotInput,)
+  }
+);}
+
+
+
+
+export const getUpdateDepotMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDepot>>, TError,{id: number;data: BodyType<DepotInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateDepot>>, TError,{id: number;data: BodyType<DepotInput>}, TContext> => {
+
+const mutationKey = ['updateDepot'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateDepot>>, {id: number;data: BodyType<DepotInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateDepot(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateDepotMutationResult = NonNullable<Awaited<ReturnType<typeof updateDepot>>>
+    export type UpdateDepotMutationBody = BodyType<DepotInput>
+    export type UpdateDepotMutationError = ErrorType<void>
+
+    /**
+ * @summary Update a depot
+ */
+export const useUpdateDepot = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDepot>>, TError,{id: number;data: BodyType<DepotInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateDepot>>,
+        TError,
+        {id: number;data: BodyType<DepotInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateDepotMutationOptions(options));
+    }
+
+export const getDeleteDepotUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/depots/${id}`
+}
+
+/**
+ * @summary Delete a depot
+ */
+export const deleteDepot = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteDepotUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteDepotMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDepot>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteDepot>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteDepot'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteDepot>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteDepot(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteDepotMutationResult = NonNullable<Awaited<ReturnType<typeof deleteDepot>>>
+
+    export type DeleteDepotMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a depot
+ */
+export const useDeleteDepot = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDepot>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteDepot>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteDepotMutationOptions(options));
+    }
+
+export const getListCrewUrl = () => {
+
+
+
+
+  return `/api/admin/crew`
+}
+
+/**
+ * @summary List all crew members
+ */
+export const listCrew = async ( options?: RequestInit): Promise<Crew[]> => {
+
+  return customFetch<Crew[]>(getListCrewUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListCrewQueryKey = () => {
+    return [
+    `/api/admin/crew`
+    ] as const;
+    }
+
+
+export const getListCrewQueryOptions = <TData = Awaited<ReturnType<typeof listCrew>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCrew>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListCrewQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCrew>>> = ({ signal }) => listCrew({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCrew>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListCrewQueryResult = NonNullable<Awaited<ReturnType<typeof listCrew>>>
+export type ListCrewQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all crew members
+ */
+
+export function useListCrew<TData = Awaited<ReturnType<typeof listCrew>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCrew>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListCrewQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateCrewUrl = () => {
+
+
+
+
+  return `/api/admin/crew`
+}
+
+/**
+ * @summary Create a crew member
+ */
+export const createCrew = async (crewInput: CrewInput, options?: RequestInit): Promise<Crew> => {
+
+  return customFetch<Crew>(getCreateCrewUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      crewInput,)
+  }
+);}
+
+
+
+
+export const getCreateCrewMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCrew>>, TError,{data: BodyType<CrewInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createCrew>>, TError,{data: BodyType<CrewInput>}, TContext> => {
+
+const mutationKey = ['createCrew'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCrew>>, {data: BodyType<CrewInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createCrew(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateCrewMutationResult = NonNullable<Awaited<ReturnType<typeof createCrew>>>
+    export type CreateCrewMutationBody = BodyType<CrewInput>
+    export type CreateCrewMutationError = ErrorType<void>
+
+    /**
+ * @summary Create a crew member
+ */
+export const useCreateCrew = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCrew>>, TError,{data: BodyType<CrewInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createCrew>>,
+        TError,
+        {data: BodyType<CrewInput>},
+        TContext
+      > => {
+      return useMutation(getCreateCrewMutationOptions(options));
+    }
+
+export const getUpdateCrewUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/crew/${id}`
+}
+
+/**
+ * @summary Update a crew member
+ */
+export const updateCrew = async (id: number,
+    crewInput: CrewInput, options?: RequestInit): Promise<Crew> => {
+
+  return customFetch<Crew>(getUpdateCrewUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      crewInput,)
+  }
+);}
+
+
+
+
+export const getUpdateCrewMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCrew>>, TError,{id: number;data: BodyType<CrewInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateCrew>>, TError,{id: number;data: BodyType<CrewInput>}, TContext> => {
+
+const mutationKey = ['updateCrew'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCrew>>, {id: number;data: BodyType<CrewInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateCrew(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateCrewMutationResult = NonNullable<Awaited<ReturnType<typeof updateCrew>>>
+    export type UpdateCrewMutationBody = BodyType<CrewInput>
+    export type UpdateCrewMutationError = ErrorType<void>
+
+    /**
+ * @summary Update a crew member
+ */
+export const useUpdateCrew = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCrew>>, TError,{id: number;data: BodyType<CrewInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateCrew>>,
+        TError,
+        {id: number;data: BodyType<CrewInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateCrewMutationOptions(options));
+    }
+
+export const getDeleteCrewUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/crew/${id}`
+}
+
+/**
+ * @summary Delete a crew member
+ */
+export const deleteCrew = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteCrewUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteCrewMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCrew>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteCrew>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteCrew'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteCrew>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteCrew(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteCrewMutationResult = NonNullable<Awaited<ReturnType<typeof deleteCrew>>>
+
+    export type DeleteCrewMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a crew member
+ */
+export const useDeleteCrew = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCrew>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteCrew>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteCrewMutationOptions(options));
     }
 
 export const getAssistantChatUrl = () => {

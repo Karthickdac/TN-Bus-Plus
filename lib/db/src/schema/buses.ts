@@ -13,6 +13,7 @@ export const busesTable = pgTable("buses", {
   punctualityScore: numeric("punctuality_score", { precision: 4, scale: 2 }).default("85.00"),
   driverName: text("driver_name"),
   routeId: integer("route_id"),
+  depotId: integer("depot_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

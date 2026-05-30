@@ -894,6 +894,229 @@ paths:
         "404":
           description: Not found
 
+  /admin/complaints/analyze-pending:
+    post:
+      operationId: analyzePendingComplaints
+      tags: [admin]
+      summary: Run AI analysis on complaints not yet analyzed
+      responses:
+        "200":
+          description: Count of complaints analyzed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyzePendingResult"
+
+  /admin/complaint-intel:
+    get:
+      operationId: getComplaintIntel
+      tags: [admin]
+      summary: Depot-wise complaint heatmap, trends and sentiment breakdown
+      responses:
+        "200":
+          description: Complaint intelligence
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplaintIntel"
+
+  /admin/ai-insights:
+    get:
+      operationId: getAiInsights
+      tags: [admin]
+      summary: Plain-language AI operational insights
+      responses:
+        "200":
+          description: AI insights
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiInsights"
+
+  /admin/passenger-demand:
+    get:
+      operationId: getPassengerDemand
+      tags: [admin]
+      summary: Passenger demand heatmaps by origin, destination, route and time
+      responses:
+        "200":
+          description: Passenger demand
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassengerDemand"
+
+  /admin/ops-analytics:
+    get:
+      operationId: getOpsAnalytics
+      tags: [admin]
+      summary: Predictive maintenance, driver behaviour and fuel analytics
+      responses:
+        "200":
+          description: Operations analytics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpsAnalytics"
+
+  /admin/depots:
+    get:
+      operationId: listDepots
+      tags: [admin]
+      summary: List all depots
+      responses:
+        "200":
+          description: Depots list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Depot"
+    post:
+      operationId: createDepot
+      tags: [admin]
+      summary: Create a depot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DepotInput"
+      responses:
+        "201":
+          description: Depot created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Depot"
+        "400":
+          description: Invalid input
+
+  /admin/depots/{id}:
+    patch:
+      operationId: updateDepot
+      tags: [admin]
+      summary: Update a depot
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DepotInput"
+      responses:
+        "200":
+          description: Depot updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Depot"
+        "400":
+          description: Invalid input
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteDepot
+      tags: [admin]
+      summary: Delete a depot
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Depot deleted
+        "404":
+          description: Not found
+        "409":
+          description: Depot in use
+
+  /admin/crew:
+    get:
+      operationId: listCrew
+      tags: [admin]
+      summary: List all crew members
+      responses:
+        "200":
+          description: Crew list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Crew"
+    post:
+      operationId: createCrew
+      tags: [admin]
+      summary: Create a crew member
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CrewInput"
+      responses:
+        "201":
+          description: Crew created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Crew"
+        "400":
+          description: Invalid input
+
+  /admin/crew/{id}:
+    patch:
+      operationId: updateCrew
+      tags: [admin]
+      summary: Update a crew member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CrewInput"
+      responses:
+        "200":
+          description: Crew updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Crew"
+        "400":
+          description: Invalid input
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteCrew
+      tags: [admin]
+      summary: Delete a crew member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Crew deleted
+        "404":
+          description: Not found
+
   /assistant/chat:
     post:
       operationId: assistantChat
@@ -2097,6 +2320,18 @@ components:
           type: string
         priority:
           type: string
+        aiCategory:
+          type: ["string", "null"]
+        sentiment:
+          type: ["string", "null"]
+        sentimentScore:
+          type: ["number", "null"]
+        escalated:
+          type: boolean
+        aiSummary:
+          type: ["string", "null"]
+        aiAnalyzedAt:
+          type: ["string", "null"]
         createdAt:
           type: string
       required:
@@ -2106,6 +2341,7 @@ components:
         - description
         - status
         - priority
+        - escalated
         - createdAt
 
     ComplaintInput:
@@ -2272,3 +2508,421 @@ components:
           type: ["string", "null"]
         preferredBusType:
           type: ["string", "null"]
+
+    Depot:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        code:
+          type: string
+        city:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        manager:
+          type: ["string", "null"]
+        capacity:
+          type: integer
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - code
+        - city
+        - latitude
+        - longitude
+        - capacity
+        - createdAt
+
+    DepotInput:
+      type: object
+      properties:
+        name:
+          type: string
+        code:
+          type: string
+        city:
+          type: string
+        manager:
+          type: ["string", "null"]
+        capacity:
+          type: integer
+      required:
+        - name
+        - code
+        - city
+
+    Crew:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        role:
+          type: string
+        depotId:
+          type: ["integer", "null"]
+        phone:
+          type: ["string", "null"]
+        licenseNumber:
+          type: ["string", "null"]
+        status:
+          type: string
+        experienceYears:
+          type: integer
+        safetyScore:
+          type: number
+        assignedBusNumber:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - role
+        - status
+        - experienceYears
+        - safetyScore
+        - createdAt
+
+    CrewInput:
+      type: object
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+        depotId:
+          type: ["integer", "null"]
+        phone:
+          type: ["string", "null"]
+        licenseNumber:
+          type: ["string", "null"]
+        status:
+          type: string
+        experienceYears:
+          type: integer
+        safetyScore:
+          type: number
+        assignedBusNumber:
+          type: ["string", "null"]
+      required:
+        - name
+        - role
+
+    AnalyzePendingResult:
+      type: object
+      properties:
+        analyzed:
+          type: integer
+      required:
+        - analyzed
+
+    ComplaintIntel:
+      type: object
+      properties:
+        categories:
+          type: array
+          items:
+            type: string
+        depots:
+          type: array
+          items:
+            type: object
+            properties:
+              depotId:
+                type: ["integer", "null"]
+              depotName:
+                type: string
+              total:
+                type: integer
+              escalated:
+                type: integer
+              negative:
+                type: integer
+              byCategory:
+                type: object
+                additionalProperties:
+                  type: integer
+            required:
+              - depotName
+              - total
+              - escalated
+              - negative
+              - byCategory
+        trends:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+              total:
+                type: integer
+              negative:
+                type: integer
+              escalated:
+                type: integer
+            required:
+              - date
+              - total
+              - negative
+              - escalated
+        sentimentBreakdown:
+          type: object
+          properties:
+            positive:
+              type: integer
+            neutral:
+              type: integer
+            negative:
+              type: integer
+            unanalyzed:
+              type: integer
+          required:
+            - positive
+            - neutral
+            - negative
+            - unanalyzed
+      required:
+        - categories
+        - depots
+        - trends
+        - sentimentBreakdown
+
+    AiInsights:
+      type: object
+      properties:
+        generatedAt:
+          type: string
+        source:
+          type: string
+        insights:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+              detail:
+                type: string
+              severity:
+                type: string
+              category:
+                type: string
+            required:
+              - title
+              - detail
+              - severity
+              - category
+      required:
+        - generatedAt
+        - source
+        - insights
+
+    PassengerDemand:
+      type: object
+      properties:
+        byOrigin:
+          type: array
+          items:
+            $ref: "#/components/schemas/DemandCount"
+        byDestination:
+          type: array
+          items:
+            $ref: "#/components/schemas/DemandCount"
+        byRoute:
+          type: array
+          items:
+            $ref: "#/components/schemas/DemandCount"
+        byHour:
+          type: array
+          items:
+            type: object
+            properties:
+              hour:
+                type: integer
+              bookings:
+                type: integer
+            required:
+              - hour
+              - bookings
+        byDay:
+          type: array
+          items:
+            type: object
+            properties:
+              day:
+                type: string
+              bookings:
+                type: integer
+            required:
+              - day
+              - bookings
+      required:
+        - byOrigin
+        - byDestination
+        - byRoute
+        - byHour
+        - byDay
+
+    DemandCount:
+      type: object
+      properties:
+        label:
+          type: string
+        bookings:
+          type: integer
+        revenue:
+          type: number
+      required:
+        - label
+        - bookings
+        - revenue
+
+    OpsAnalytics:
+      type: object
+      properties:
+        maintenance:
+          type: array
+          items:
+            type: object
+            properties:
+              busId:
+                type: integer
+              busNumber:
+                type: string
+              busType:
+                type: string
+              status:
+                type: string
+              odometerKm:
+                type: number
+              kmSinceService:
+                type: number
+              engineHealthScore:
+                type: number
+              risk:
+                type: string
+              predictedServiceInDays:
+                type: integer
+            required:
+              - busId
+              - busNumber
+              - busType
+              - status
+              - odometerKm
+              - kmSinceService
+              - engineHealthScore
+              - risk
+              - predictedServiceInDays
+        maintenanceSummary:
+          type: object
+          properties:
+            highRisk:
+              type: integer
+            mediumRisk:
+              type: integer
+            lowRisk:
+              type: integer
+            dueWithin7Days:
+              type: integer
+          required:
+            - highRisk
+            - mediumRisk
+            - lowRisk
+            - dueWithin7Days
+        drivers:
+          type: array
+          items:
+            type: object
+            properties:
+              busNumber:
+                type: string
+              driverName:
+                type: string
+              rating:
+                type: number
+              safetyScore:
+                type: number
+              harshBrakingPer100km:
+                type: number
+              overspeedEvents:
+                type: integer
+              idlingPct:
+                type: number
+              behaviour:
+                type: string
+            required:
+              - busNumber
+              - driverName
+              - rating
+              - safetyScore
+              - harshBrakingPer100km
+              - overspeedEvents
+              - idlingPct
+              - behaviour
+        driverSummary:
+          type: object
+          properties:
+            avgSafetyScore:
+              type: number
+            flagged:
+              type: integer
+          required:
+            - avgSafetyScore
+            - flagged
+        fuel:
+          type: array
+          items:
+            type: object
+            properties:
+              busId:
+                type: integer
+              busNumber:
+                type: string
+              busType:
+                type: string
+              fuelEfficiencyKmpl:
+                type: number
+              monthlyKm:
+                type: number
+              monthlyFuelCostInr:
+                type: number
+              co2KgPerMonth:
+                type: number
+            required:
+              - busId
+              - busNumber
+              - busType
+              - fuelEfficiencyKmpl
+              - monthlyKm
+              - monthlyFuelCostInr
+              - co2KgPerMonth
+        fuelSummary:
+          type: object
+          properties:
+            totalMonthlyFuelCostInr:
+              type: number
+            avgEfficiencyKmpl:
+              type: number
+            totalCo2KgPerMonth:
+              type: number
+          required:
+            - totalMonthlyFuelCostInr
+            - avgEfficiencyKmpl
+            - totalCo2KgPerMonth
+      required:
+        - maintenance
+        - maintenanceSummary
+        - drivers
+        - driverSummary
+        - fuel
+        - fuelSummary

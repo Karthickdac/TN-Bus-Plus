@@ -18,7 +18,7 @@ router.get("/buses/:id", async (req, res) => {
   const id = parseInt(req.params.id);
   const [row] = await db.select().from(busesTable).where(eq(busesTable.id, id));
   if (!row) return res.status(404).json({ error: "Bus not found" });
-  res.json({ ...row, punctualityScore: Number(row.punctualityScore), amenities: row.amenities ?? [] });
+  return res.json({ ...row, punctualityScore: Number(row.punctualityScore), amenities: row.amenities ?? [] });
 });
 
 // Seat layout for a schedule
@@ -66,7 +66,7 @@ router.get("/schedules/:scheduleId/seats", async (req, res) => {
       seatIndex++;
     }
   }
-  res.json(seats);
+  return res.json(seats);
 });
 
 export default router;

@@ -181,7 +181,7 @@ router.post("/bookings", async (req, res) => {
     req.log.error({ err }, "failed to send booking notification");
   }
 
-  res.status(201).json({
+  return res.status(201).json({
     rewardPointsEarned,
     ...booking,
     totalFare: Number(booking.totalFare),
@@ -201,7 +201,7 @@ router.get("/bookings/:id", async (req, res) => {
   const [schedule] = await db.select().from(schedulesTable).where(eq(schedulesTable.id, row.scheduleId));
   const trustedFare = schedule ? Number(schedule.fare) * (row.seatNumbers?.length ?? 0) : 0;
   const rewardPointsEarned = row.passengerId > 0 ? Math.floor(trustedFare / 10) : 0;
-  res.json({ ...row, rewardPointsEarned, totalFare: Number(row.totalFare), createdAt: row.createdAt.toISOString(), seatNumbers: row.seatNumbers ?? [] });
+  return res.json({ ...row, rewardPointsEarned, totalFare: Number(row.totalFare), createdAt: row.createdAt.toISOString(), seatNumbers: row.seatNumbers ?? [] });
 });
 
 router.post("/bookings/:id/cancel", async (req, res) => {
@@ -333,7 +333,7 @@ router.get("/bookings/:id/rebooking-suggestions", async (req, res) => {
 router.get("/pnr/:pnr", async (req, res) => {
   const [row] = await db.select().from(bookingsTable).where(eq(bookingsTable.pnr, req.params.pnr));
   if (!row) return res.status(404).json({ error: "PNR not found" });
-  res.json({ ...row, totalFare: Number(row.totalFare), createdAt: row.createdAt.toISOString(), seatNumbers: row.seatNumbers ?? [] });
+  return res.json({ ...row, totalFare: Number(row.totalFare), createdAt: row.createdAt.toISOString(), seatNumbers: row.seatNumbers ?? [] });
 });
 
 export default router;

@@ -434,6 +434,17 @@ export interface Complaint {
   description: string;
   status: string;
   priority: string;
+  /** @nullable */
+  aiCategory?: string | null;
+  /** @nullable */
+  sentiment?: string | null;
+  /** @nullable */
+  sentimentScore?: number | null;
+  escalated: boolean;
+  /** @nullable */
+  aiSummary?: string | null;
+  /** @nullable */
+  aiAnalyzedAt?: string | null;
   createdAt: string;
 }
 
@@ -512,6 +523,196 @@ export interface UserPreferencesInput {
   preferredSeatType?: string | null;
   /** @nullable */
   preferredBusType?: string | null;
+}
+
+export interface Depot {
+  id: number;
+  name: string;
+  code: string;
+  city: string;
+  latitude: number;
+  longitude: number;
+  /** @nullable */
+  manager?: string | null;
+  capacity: number;
+  createdAt: string;
+}
+
+export interface DepotInput {
+  name: string;
+  code: string;
+  city: string;
+  /** @nullable */
+  manager?: string | null;
+  capacity?: number;
+}
+
+export interface Crew {
+  id: number;
+  name: string;
+  role: string;
+  /** @nullable */
+  depotId?: number | null;
+  /** @nullable */
+  phone?: string | null;
+  /** @nullable */
+  licenseNumber?: string | null;
+  status: string;
+  experienceYears: number;
+  safetyScore: number;
+  /** @nullable */
+  assignedBusNumber?: string | null;
+  createdAt: string;
+}
+
+export interface CrewInput {
+  name: string;
+  role: string;
+  /** @nullable */
+  depotId?: number | null;
+  /** @nullable */
+  phone?: string | null;
+  /** @nullable */
+  licenseNumber?: string | null;
+  status?: string;
+  experienceYears?: number;
+  safetyScore?: number;
+  /** @nullable */
+  assignedBusNumber?: string | null;
+}
+
+export interface AnalyzePendingResult {
+  analyzed: number;
+}
+
+export type ComplaintIntelDepotsItemByCategory = {[key: string]: number};
+
+export type ComplaintIntelDepotsItem = {
+  /** @nullable */
+  depotId?: number | null;
+  depotName: string;
+  total: number;
+  escalated: number;
+  negative: number;
+  byCategory: ComplaintIntelDepotsItemByCategory;
+};
+
+export type ComplaintIntelTrendsItem = {
+  date: string;
+  total: number;
+  negative: number;
+  escalated: number;
+};
+
+export type ComplaintIntelSentimentBreakdown = {
+  positive: number;
+  neutral: number;
+  negative: number;
+  unanalyzed: number;
+};
+
+export interface ComplaintIntel {
+  categories: string[];
+  depots: ComplaintIntelDepotsItem[];
+  trends: ComplaintIntelTrendsItem[];
+  sentimentBreakdown: ComplaintIntelSentimentBreakdown;
+}
+
+export type AiInsightsInsightsItem = {
+  title: string;
+  detail: string;
+  severity: string;
+  category: string;
+};
+
+export interface AiInsights {
+  generatedAt: string;
+  source: string;
+  insights: AiInsightsInsightsItem[];
+}
+
+export type PassengerDemandByHourItem = {
+  hour: number;
+  bookings: number;
+};
+
+export type PassengerDemandByDayItem = {
+  day: string;
+  bookings: number;
+};
+
+export interface DemandCount {
+  label: string;
+  bookings: number;
+  revenue: number;
+}
+
+export interface PassengerDemand {
+  byOrigin: DemandCount[];
+  byDestination: DemandCount[];
+  byRoute: DemandCount[];
+  byHour: PassengerDemandByHourItem[];
+  byDay: PassengerDemandByDayItem[];
+}
+
+export type OpsAnalyticsMaintenanceItem = {
+  busId: number;
+  busNumber: string;
+  busType: string;
+  status: string;
+  odometerKm: number;
+  kmSinceService: number;
+  engineHealthScore: number;
+  risk: string;
+  predictedServiceInDays: number;
+};
+
+export type OpsAnalyticsMaintenanceSummary = {
+  highRisk: number;
+  mediumRisk: number;
+  lowRisk: number;
+  dueWithin7Days: number;
+};
+
+export type OpsAnalyticsDriversItem = {
+  busNumber: string;
+  driverName: string;
+  rating: number;
+  safetyScore: number;
+  harshBrakingPer100km: number;
+  overspeedEvents: number;
+  idlingPct: number;
+  behaviour: string;
+};
+
+export type OpsAnalyticsDriverSummary = {
+  avgSafetyScore: number;
+  flagged: number;
+};
+
+export type OpsAnalyticsFuelItem = {
+  busId: number;
+  busNumber: string;
+  busType: string;
+  fuelEfficiencyKmpl: number;
+  monthlyKm: number;
+  monthlyFuelCostInr: number;
+  co2KgPerMonth: number;
+};
+
+export type OpsAnalyticsFuelSummary = {
+  totalMonthlyFuelCostInr: number;
+  avgEfficiencyKmpl: number;
+  totalCo2KgPerMonth: number;
+};
+
+export interface OpsAnalytics {
+  maintenance: OpsAnalyticsMaintenanceItem[];
+  maintenanceSummary: OpsAnalyticsMaintenanceSummary;
+  drivers: OpsAnalyticsDriversItem[];
+  driverSummary: OpsAnalyticsDriverSummary;
+  fuel: OpsAnalyticsFuelItem[];
+  fuelSummary: OpsAnalyticsFuelSummary;
 }
 
 export type ListRoutesParams = {
