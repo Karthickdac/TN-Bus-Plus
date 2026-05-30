@@ -1,20 +1,28 @@
 import { useEffect } from "react";
 import { useLocation } from "wouter";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, roleHome, type UserRole } from "@/contexts/AuthContext";
 
 interface ProtectedRouteProps {
   component: React.ComponentType;
+  // When set, only these roles may view the route. Other signed-in users are
+  // bounced to their own role home; signed-out users go to /login.
+  allowedRoles?: UserRole[];
 }
 
-export default function ProtectedRoute({ component: Component }: ProtectedRouteProps) {
+export default function ProtectedRoute({ component: Component, allowedRoles }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (loading) return;
+    if (!user) {
       setLocation("/login");
+      return;
     }
-  }, [loading, user, setLocation]);
+    if (allowedRoles && !allowedRoles.includes(user.role)) {
+      setLocation(roleHome(user.role));
+    }
+  }, [loading, user, allowedRoles, setLocation]);
 
   if (loading) {
     return (
@@ -25,6 +33,7 @@ export default function ProtectedRoute({ component: Component }: ProtectedRouteP
   }
 
   if (!user) return null;
+  if (allowedRoles && !allowedRoles.includes(user.role)) return null;
 
   return <Component />;
 }

@@ -1350,3 +1350,243 @@ export const UpdatePreferencesResponse = zod.object({
 })
 
 
+/**
+ * @summary Signed-in staff member's role, crew profile and assigned bus
+ */
+export const GetStaffProfileResponse = zod.object({
+  "role": zod.string(),
+  "crew": zod.object({
+  "id": zod.number().optional(),
+  "name": zod.string().optional(),
+  "role": zod.string().optional(),
+  "depotId": zod.number().nullish(),
+  "phone": zod.string().nullish(),
+  "licenseNumber": zod.string().nullish(),
+  "status": zod.string().optional(),
+  "experienceYears": zod.number().optional(),
+  "safetyScore": zod.number().optional(),
+  "assignedBusNumber": zod.string().nullish()
+}).nullish(),
+  "bus": zod.object({
+  "id": zod.number().optional(),
+  "busNumber": zod.string().optional(),
+  "busType": zod.string().optional(),
+  "totalSeats": zod.number().optional()
+}).nullish(),
+  "depot": zod.object({
+  "id": zod.number().optional(),
+  "name": zod.string().optional(),
+  "city": zod.string().optional()
+}).nullish()
+})
+
+
+/**
+ * @summary Validate a scanned ticket QR/PNR against real bookings
+ */
+export const ValidateTicketBody = zod.object({
+  "qr": zod.string().nullish(),
+  "pnr": zod.string().nullish(),
+  "scheduleId": zod.number().nullish()
+})
+
+export const ValidateTicketResponse = zod.object({
+  "result": zod.string(),
+  "message": zod.string(),
+  "booking": zod.union([zod.object({
+  "bookingId": zod.number(),
+  "pnr": zod.string(),
+  "passengerName": zod.string(),
+  "passengerPhone": zod.string(),
+  "seatNumbers": zod.array(zod.string()),
+  "status": zod.string(),
+  "totalFare": zod.number(),
+  "origin": zod.string(),
+  "destination": zod.string(),
+  "departureTime": zod.string(),
+  "scheduleId": zod.number(),
+  "validated": zod.boolean()
+}),zod.null()]).optional()
+})
+
+
+/**
+ * @summary Passenger manifest for the conductor's assigned bus
+ */
+export const GetManifestQueryParams = zod.object({
+  "scheduleId": zod.coerce.number().optional()
+})
+
+export const GetManifestResponseItem = zod.object({
+  "bookingId": zod.number(),
+  "pnr": zod.string(),
+  "passengerName": zod.string(),
+  "passengerPhone": zod.string(),
+  "seatNumbers": zod.array(zod.string()),
+  "status": zod.string(),
+  "totalFare": zod.number(),
+  "origin": zod.string(),
+  "destination": zod.string(),
+  "departureTime": zod.string(),
+  "scheduleId": zod.number(),
+  "validated": zod.boolean()
+})
+export const GetManifestResponse = zod.array(GetManifestResponseItem)
+
+
+/**
+ * @summary Recent live occupancy reports for the assigned bus
+ */
+export const ListOccupancyReportsResponseItem = zod.object({
+  "id": zod.number(),
+  "crewId": zod.number().nullish(),
+  "busNumber": zod.string(),
+  "scheduleId": zod.number().nullish(),
+  "occupancy": zod.number(),
+  "capacity": zod.number(),
+  "reportedAt": zod.string()
+})
+export const ListOccupancyReportsResponse = zod.array(ListOccupancyReportsResponseItem)
+
+
+/**
+ * @summary Report current live occupancy
+ */
+export const CreateOccupancyReportBody = zod.object({
+  "occupancy": zod.number(),
+  "scheduleId": zod.number().nullish()
+})
+
+
+/**
+ * @summary Cash collection records for the assigned bus
+ */
+export const ListCashCollectionsResponseItem = zod.object({
+  "id": zod.number(),
+  "crewId": zod.number().nullish(),
+  "busNumber": zod.string(),
+  "scheduleId": zod.number().nullish(),
+  "amount": zod.number(),
+  "ticketsCount": zod.number(),
+  "notes": zod.string().nullish(),
+  "synced": zod.boolean(),
+  "collectedAt": zod.string()
+})
+export const ListCashCollectionsResponse = zod.array(ListCashCollectionsResponseItem)
+
+
+/**
+ * @summary Sync a cash collection record
+ */
+export const CreateCashCollectionBody = zod.object({
+  "amount": zod.number(),
+  "ticketsCount": zod.number(),
+  "notes": zod.string().nullish(),
+  "scheduleId": zod.number().nullish()
+})
+
+
+/**
+ * @summary Upcoming duty schedule for the driver's assigned bus
+ */
+export const GetDriverDutyResponseItem = zod.object({
+  "scheduleId": zod.number(),
+  "busNumber": zod.string(),
+  "busType": zod.string(),
+  "origin": zod.string(),
+  "destination": zod.string(),
+  "departureTime": zod.string(),
+  "arrivalTime": zod.string(),
+  "fare": zod.number(),
+  "availableSeats": zod.number()
+})
+export const GetDriverDutyResponse = zod.array(GetDriverDutyResponseItem)
+
+
+/**
+ * @summary Fuel logs for the assigned bus
+ */
+export const ListFuelLogsResponseItem = zod.object({
+  "id": zod.number(),
+  "crewId": zod.number().nullish(),
+  "busNumber": zod.string(),
+  "liters": zod.number(),
+  "cost": zod.number(),
+  "odometer": zod.number().nullish(),
+  "fuelType": zod.string(),
+  "notes": zod.string().nullish(),
+  "loggedAt": zod.string()
+})
+export const ListFuelLogsResponse = zod.array(ListFuelLogsResponseItem)
+
+
+/**
+ * @summary Log a refuelling event
+ */
+export const CreateFuelLogBody = zod.object({
+  "liters": zod.number(),
+  "cost": zod.number(),
+  "odometer": zod.number().nullish(),
+  "fuelType": zod.string().nullish(),
+  "notes": zod.string().nullish()
+})
+
+
+/**
+ * @summary Vehicle inspection records for the assigned bus
+ */
+export const ListInspectionsResponseItem = zod.object({
+  "id": zod.number(),
+  "crewId": zod.number().nullish(),
+  "busNumber": zod.string(),
+  "items": zod.array(zod.object({
+  "label": zod.string(),
+  "ok": zod.boolean()
+})),
+  "passed": zod.boolean(),
+  "notes": zod.string().nullish(),
+  "inspectedAt": zod.string()
+})
+export const ListInspectionsResponse = zod.array(ListInspectionsResponseItem)
+
+
+/**
+ * @summary Submit a vehicle inspection checklist
+ */
+export const CreateInspectionBody = zod.object({
+  "items": zod.array(zod.object({
+  "label": zod.string(),
+  "ok": zod.boolean()
+})),
+  "notes": zod.string().nullish()
+})
+
+
+/**
+ * @summary Emergency reports filed for the assigned bus
+ */
+export const ListEmergencyReportsResponseItem = zod.object({
+  "id": zod.number(),
+  "crewId": zod.number().nullish(),
+  "busNumber": zod.string(),
+  "type": zod.string(),
+  "description": zod.string(),
+  "location": zod.string().nullish(),
+  "severity": zod.string(),
+  "status": zod.string(),
+  "reportedAt": zod.string()
+})
+export const ListEmergencyReportsResponse = zod.array(ListEmergencyReportsResponseItem)
+
+
+/**
+ * @summary File an emergency report
+ */
+export const CreateEmergencyReportBody = zod.object({
+  "type": zod.string(),
+  "description": zod.string(),
+  "location": zod.string().nullish(),
+  "severity": zod.string().nullish()
+})
+
+

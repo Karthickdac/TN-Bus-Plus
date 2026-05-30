@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Bus, Mail, Lock, User, Phone, Eye, EyeOff, ArrowRight, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, roleHome } from "@/contexts/AuthContext";
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -23,12 +23,11 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      if (mode === "login") {
-        await login(form.email, form.password);
-      } else {
-        await signup(form.name, form.email, form.phone, form.password);
-      }
-      setLocation("/dashboard");
+      const u =
+        mode === "login"
+          ? await login(form.email, form.password)
+          : await signup(form.name, form.email, form.phone, form.password);
+      setLocation(roleHome(u.role));
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {

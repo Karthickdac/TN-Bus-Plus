@@ -38,8 +38,27 @@ import AdminOps from "@/pages/admin/AdminOps";
 import AdminPOS from "@/pages/admin/AdminPOS";
 import ComingSoon from "@/pages/admin/ComingSoon";
 import AdminLayout from "@/components/admin/AdminLayout";
+import StaffLayout from "@/components/staff/StaffLayout";
+import ConductorHome from "@/pages/conductor/ConductorHome";
+import Validate from "@/pages/conductor/Validate";
+import Manifest from "@/pages/conductor/Manifest";
+import Occupancy from "@/pages/conductor/Occupancy";
+import Cash from "@/pages/conductor/Cash";
+import DriverHome from "@/pages/driver/DriverHome";
+import Duty from "@/pages/driver/Duty";
+import Fuel from "@/pages/driver/Fuel";
+import Inspection from "@/pages/driver/Inspection";
+import Emergency from "@/pages/driver/Emergency";
 import { Users, Settings, ScrollText } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
+
+function ConductorPage({ component: C }: { component: React.ComponentType }) {
+  return <ProtectedRoute allowedRoles={["conductor", "admin"]} component={() => <StaffLayout><C /></StaffLayout>} />;
+}
+
+function DriverPage({ component: C }: { component: React.ComponentType }) {
+  return <ProtectedRoute allowedRoles={["driver", "admin"]} component={() => <StaffLayout><C /></StaffLayout>} />;
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -74,6 +93,16 @@ function Router() {
           <Route path="/dashboard/wallet">{() => <ProtectedRoute component={WalletPage} />}</Route>
           <Route path="/dashboard/passes">{() => <ProtectedRoute component={Passes} />}</Route>
           <Route path="/dashboard/profile">{() => <ProtectedRoute component={Profile} />}</Route>
+          <Route path="/conductor">{() => <ConductorPage component={ConductorHome} />}</Route>
+          <Route path="/conductor/validate">{() => <ConductorPage component={Validate} />}</Route>
+          <Route path="/conductor/manifest">{() => <ConductorPage component={Manifest} />}</Route>
+          <Route path="/conductor/occupancy">{() => <ConductorPage component={Occupancy} />}</Route>
+          <Route path="/conductor/cash">{() => <ConductorPage component={Cash} />}</Route>
+          <Route path="/driver">{() => <DriverPage component={DriverHome} />}</Route>
+          <Route path="/driver/duty">{() => <DriverPage component={Duty} />}</Route>
+          <Route path="/driver/fuel">{() => <DriverPage component={Fuel} />}</Route>
+          <Route path="/driver/inspection">{() => <DriverPage component={Inspection} />}</Route>
+          <Route path="/driver/emergency">{() => <DriverPage component={Emergency} />}</Route>
           <Route path="/admin">{() => <AdminLayout><AdminDashboard /></AdminLayout>}</Route>
           <Route path="/admin/pos">{() => <AdminLayout><AdminPOS /></AdminLayout>}</Route>
           <Route path="/admin/fleet">{() => <AdminLayout><AdminFleet /></AdminLayout>}</Route>

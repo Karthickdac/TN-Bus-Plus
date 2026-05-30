@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
+export type UserRole = "passenger" | "admin" | "conductor" | "driver";
+
 export interface AuthUser {
   id: number;
   name: string;
@@ -7,14 +9,30 @@ export interface AuthUser {
   phone: string;
   walletBalance: string;
   rewardPoints: number;
+  role: UserRole;
+  crewId: number | null;
   createdAt: string;
+}
+
+// Where each role lands after signing in.
+export function roleHome(role: UserRole | undefined): string {
+  switch (role) {
+    case "admin":
+      return "/admin";
+    case "conductor":
+      return "/conductor";
+    case "driver":
+      return "/driver";
+    default:
+      return "/dashboard";
+  }
 }
 
 interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, phone: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<AuthUser>;
+  signup: (name: string, email: string, phone: string, password: string) => Promise<AuthUser>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -22,8 +40,12 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
-  login: async () => {},
-  signup: async () => {},
+  login: async () => {
+    throw new Error("AuthProvider not mounted");
+  },
+  signup: async () => {
+    throw new Error("AuthProvider not mounted");
+  },
   logout: async () => {},
   refresh: async () => {},
 });
@@ -64,13 +86,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const data = await apiPost("/auth/login", { email, password });
+    const data = (await apiPost("/auth/login", { email, password })) as AuthUser;
     setUser(data);
+    return data;
   };
 
   const signup = async (name: string, email: string, phone: string, password: string) => {
-    const data = await apiPost("/auth/signup", { name, email, phone, password });
+    const data = (await apiPost("/auth/signup", { name, email, phone, password })) as AuthUser;
     setUser(data);
+    return data;
   };
 
   const logout = async () => {

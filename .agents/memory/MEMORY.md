@@ -1,2 +1,1 @@
-- [React Query hook options](react-query-hook-options.md) — generated hooks require an explicit `queryKey` in query options or TS2741 fires.
-- [API server conventions](api-server-conventions.md) — noImplicitReturns means every route branch must return; numeric→Number/timestamp→ISO serialization; AI calls need heuristic fallback.
+- [Staff portal auth & offline queue](staff-portals.md) — conductor/driver endpoints derive bus from session (no client id); offline queue only retries network errors.

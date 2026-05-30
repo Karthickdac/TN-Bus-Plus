@@ -715,6 +715,211 @@ export interface OpsAnalytics {
   fuelSummary: OpsAnalyticsFuelSummary;
 }
 
+/**
+ * @nullable
+ */
+export type StaffProfileCrew = {
+  id?: number;
+  name?: string;
+  role?: string;
+  /** @nullable */
+  depotId?: number | null;
+  /** @nullable */
+  phone?: string | null;
+  /** @nullable */
+  licenseNumber?: string | null;
+  status?: string;
+  experienceYears?: number;
+  safetyScore?: number;
+  /** @nullable */
+  assignedBusNumber?: string | null;
+} | null;
+
+/**
+ * @nullable
+ */
+export type StaffProfileBus = {
+  id?: number;
+  busNumber?: string;
+  busType?: string;
+  totalSeats?: number;
+} | null;
+
+/**
+ * @nullable
+ */
+export type StaffProfileDepot = {
+  id?: number;
+  name?: string;
+  city?: string;
+} | null;
+
+export interface StaffProfile {
+  role: string;
+  /** @nullable */
+  crew?: StaffProfileCrew;
+  /** @nullable */
+  bus?: StaffProfileBus;
+  /** @nullable */
+  depot?: StaffProfileDepot;
+}
+
+export interface ValidateTicketInput {
+  /** @nullable */
+  qr?: string | null;
+  /** @nullable */
+  pnr?: string | null;
+  /** @nullable */
+  scheduleId?: number | null;
+}
+
+export interface ManifestEntry {
+  bookingId: number;
+  pnr: string;
+  passengerName: string;
+  passengerPhone: string;
+  seatNumbers: string[];
+  status: string;
+  totalFare: number;
+  origin: string;
+  destination: string;
+  departureTime: string;
+  scheduleId: number;
+  validated: boolean;
+}
+
+export interface ValidationResult {
+  result: string;
+  message: string;
+  booking?: ManifestEntry | null;
+}
+
+export interface OccupancyReport {
+  id: number;
+  /** @nullable */
+  crewId?: number | null;
+  busNumber: string;
+  /** @nullable */
+  scheduleId?: number | null;
+  occupancy: number;
+  capacity: number;
+  reportedAt: string;
+}
+
+export interface OccupancyReportInput {
+  occupancy: number;
+  /** @nullable */
+  scheduleId?: number | null;
+}
+
+export interface CashCollection {
+  id: number;
+  /** @nullable */
+  crewId?: number | null;
+  busNumber: string;
+  /** @nullable */
+  scheduleId?: number | null;
+  amount: number;
+  ticketsCount: number;
+  /** @nullable */
+  notes?: string | null;
+  synced: boolean;
+  collectedAt: string;
+}
+
+export interface CashCollectionInput {
+  amount: number;
+  ticketsCount: number;
+  /** @nullable */
+  notes?: string | null;
+  /** @nullable */
+  scheduleId?: number | null;
+}
+
+export interface DutyEntry {
+  scheduleId: number;
+  busNumber: string;
+  busType: string;
+  origin: string;
+  destination: string;
+  departureTime: string;
+  arrivalTime: string;
+  fare: number;
+  availableSeats: number;
+}
+
+export interface FuelLog {
+  id: number;
+  /** @nullable */
+  crewId?: number | null;
+  busNumber: string;
+  liters: number;
+  cost: number;
+  /** @nullable */
+  odometer?: number | null;
+  fuelType: string;
+  /** @nullable */
+  notes?: string | null;
+  loggedAt: string;
+}
+
+export interface FuelLogInput {
+  liters: number;
+  cost: number;
+  /** @nullable */
+  odometer?: number | null;
+  /** @nullable */
+  fuelType?: string | null;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export interface InspectionItem {
+  label: string;
+  ok: boolean;
+}
+
+export interface Inspection {
+  id: number;
+  /** @nullable */
+  crewId?: number | null;
+  busNumber: string;
+  items: InspectionItem[];
+  passed: boolean;
+  /** @nullable */
+  notes?: string | null;
+  inspectedAt: string;
+}
+
+export interface InspectionInput {
+  items: InspectionItem[];
+  /** @nullable */
+  notes?: string | null;
+}
+
+export interface EmergencyReport {
+  id: number;
+  /** @nullable */
+  crewId?: number | null;
+  busNumber: string;
+  type: string;
+  description: string;
+  /** @nullable */
+  location?: string | null;
+  severity: string;
+  status: string;
+  reportedAt: string;
+}
+
+export interface EmergencyReportInput {
+  type: string;
+  description: string;
+  /** @nullable */
+  location?: string | null;
+  /** @nullable */
+  severity?: string | null;
+}
+
 export type ListRoutesParams = {
 origin?: string;
 destination?: string;
@@ -764,5 +969,9 @@ date?: string;
 export type GetRevenueAnalyticsParams = {
 from?: string;
 to?: string;
+};
+
+export type GetManifestParams = {
+scheduleId?: number;
 };
 

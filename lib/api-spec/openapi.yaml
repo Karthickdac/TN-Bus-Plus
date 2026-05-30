@@ -1341,6 +1341,250 @@ paths:
               schema:
                 $ref: "#/components/schemas/UserPreferences"
 
+  /staff/profile:
+    get:
+      operationId: getStaffProfile
+      tags: [staff]
+      summary: Signed-in staff member's role, crew profile and assigned bus
+      responses:
+        "200":
+          description: Staff profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaffProfile"
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not a staff account
+
+  /conductor/validate:
+    post:
+      operationId: validateTicket
+      tags: [staff]
+      summary: Validate a scanned ticket QR/PNR against real bookings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ValidateTicketInput"
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationResult"
+        "400":
+          description: Invalid input
+
+  /conductor/manifest:
+    get:
+      operationId: getManifest
+      tags: [staff]
+      summary: Passenger manifest for the conductor's assigned bus
+      parameters:
+        - name: scheduleId
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Manifest entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ManifestEntry"
+
+  /conductor/occupancy:
+    get:
+      operationId: listOccupancyReports
+      tags: [staff]
+      summary: Recent live occupancy reports for the assigned bus
+      responses:
+        "200":
+          description: Occupancy reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OccupancyReport"
+    post:
+      operationId: createOccupancyReport
+      tags: [staff]
+      summary: Report current live occupancy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OccupancyReportInput"
+      responses:
+        "201":
+          description: Occupancy recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OccupancyReport"
+        "400":
+          description: Invalid input
+
+  /conductor/cash:
+    get:
+      operationId: listCashCollections
+      tags: [staff]
+      summary: Cash collection records for the assigned bus
+      responses:
+        "200":
+          description: Cash collections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CashCollection"
+    post:
+      operationId: createCashCollection
+      tags: [staff]
+      summary: Sync a cash collection record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CashCollectionInput"
+      responses:
+        "201":
+          description: Cash collection recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CashCollection"
+        "400":
+          description: Invalid input
+
+  /driver/duty:
+    get:
+      operationId: getDriverDuty
+      tags: [staff]
+      summary: Upcoming duty schedule for the driver's assigned bus
+      responses:
+        "200":
+          description: Duty entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DutyEntry"
+
+  /driver/fuel:
+    get:
+      operationId: listFuelLogs
+      tags: [staff]
+      summary: Fuel logs for the assigned bus
+      responses:
+        "200":
+          description: Fuel logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FuelLog"
+    post:
+      operationId: createFuelLog
+      tags: [staff]
+      summary: Log a refuelling event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FuelLogInput"
+      responses:
+        "201":
+          description: Fuel log recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuelLog"
+        "400":
+          description: Invalid input
+
+  /driver/inspection:
+    get:
+      operationId: listInspections
+      tags: [staff]
+      summary: Vehicle inspection records for the assigned bus
+      responses:
+        "200":
+          description: Inspections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Inspection"
+    post:
+      operationId: createInspection
+      tags: [staff]
+      summary: Submit a vehicle inspection checklist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InspectionInput"
+      responses:
+        "201":
+          description: Inspection recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Inspection"
+        "400":
+          description: Invalid input
+
+  /driver/emergency:
+    get:
+      operationId: listEmergencyReports
+      tags: [staff]
+      summary: Emergency reports filed for the assigned bus
+      responses:
+        "200":
+          description: Emergency reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EmergencyReport"
+    post:
+      operationId: createEmergencyReport
+      tags: [staff]
+      summary: File an emergency report
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmergencyReportInput"
+      responses:
+        "201":
+          description: Emergency report filed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmergencyReport"
+        "400":
+          description: Invalid input
+
 components:
   schemas:
     HealthStatus:
@@ -2926,3 +3170,373 @@ components:
         - driverSummary
         - fuel
         - fuelSummary
+
+    StaffProfile:
+      type: object
+      properties:
+        role:
+          type: string
+        crew:
+          type: ["object", "null"]
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            role:
+              type: string
+            depotId:
+              type: ["integer", "null"]
+            phone:
+              type: ["string", "null"]
+            licenseNumber:
+              type: ["string", "null"]
+            status:
+              type: string
+            experienceYears:
+              type: integer
+            safetyScore:
+              type: number
+            assignedBusNumber:
+              type: ["string", "null"]
+        bus:
+          type: ["object", "null"]
+          properties:
+            id:
+              type: integer
+            busNumber:
+              type: string
+            busType:
+              type: string
+            totalSeats:
+              type: integer
+        depot:
+          type: ["object", "null"]
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            city:
+              type: string
+      required:
+        - role
+
+    ValidateTicketInput:
+      type: object
+      properties:
+        qr:
+          type: ["string", "null"]
+        pnr:
+          type: ["string", "null"]
+        scheduleId:
+          type: ["integer", "null"]
+      required: []
+
+    ManifestEntry:
+      type: object
+      properties:
+        bookingId:
+          type: integer
+        pnr:
+          type: string
+        passengerName:
+          type: string
+        passengerPhone:
+          type: string
+        seatNumbers:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        totalFare:
+          type: number
+        origin:
+          type: string
+        destination:
+          type: string
+        departureTime:
+          type: string
+        scheduleId:
+          type: integer
+        validated:
+          type: boolean
+      required:
+        - bookingId
+        - pnr
+        - passengerName
+        - passengerPhone
+        - seatNumbers
+        - status
+        - totalFare
+        - origin
+        - destination
+        - departureTime
+        - scheduleId
+        - validated
+
+    ValidationResult:
+      type: object
+      properties:
+        result:
+          type: string
+        message:
+          type: string
+        booking:
+          oneOf:
+            - $ref: "#/components/schemas/ManifestEntry"
+            - type: "null"
+      required:
+        - result
+        - message
+
+    OccupancyReport:
+      type: object
+      properties:
+        id:
+          type: integer
+        crewId:
+          type: ["integer", "null"]
+        busNumber:
+          type: string
+        scheduleId:
+          type: ["integer", "null"]
+        occupancy:
+          type: integer
+        capacity:
+          type: integer
+        reportedAt:
+          type: string
+      required:
+        - id
+        - busNumber
+        - occupancy
+        - capacity
+        - reportedAt
+
+    OccupancyReportInput:
+      type: object
+      properties:
+        occupancy:
+          type: integer
+        scheduleId:
+          type: ["integer", "null"]
+      required:
+        - occupancy
+
+    CashCollection:
+      type: object
+      properties:
+        id:
+          type: integer
+        crewId:
+          type: ["integer", "null"]
+        busNumber:
+          type: string
+        scheduleId:
+          type: ["integer", "null"]
+        amount:
+          type: number
+        ticketsCount:
+          type: integer
+        notes:
+          type: ["string", "null"]
+        synced:
+          type: boolean
+        collectedAt:
+          type: string
+      required:
+        - id
+        - busNumber
+        - amount
+        - ticketsCount
+        - synced
+        - collectedAt
+
+    CashCollectionInput:
+      type: object
+      properties:
+        amount:
+          type: number
+        ticketsCount:
+          type: integer
+        notes:
+          type: ["string", "null"]
+        scheduleId:
+          type: ["integer", "null"]
+      required:
+        - amount
+        - ticketsCount
+
+    DutyEntry:
+      type: object
+      properties:
+        scheduleId:
+          type: integer
+        busNumber:
+          type: string
+        busType:
+          type: string
+        origin:
+          type: string
+        destination:
+          type: string
+        departureTime:
+          type: string
+        arrivalTime:
+          type: string
+        fare:
+          type: number
+        availableSeats:
+          type: integer
+      required:
+        - scheduleId
+        - busNumber
+        - busType
+        - origin
+        - destination
+        - departureTime
+        - arrivalTime
+        - fare
+        - availableSeats
+
+    FuelLog:
+      type: object
+      properties:
+        id:
+          type: integer
+        crewId:
+          type: ["integer", "null"]
+        busNumber:
+          type: string
+        liters:
+          type: number
+        cost:
+          type: number
+        odometer:
+          type: ["integer", "null"]
+        fuelType:
+          type: string
+        notes:
+          type: ["string", "null"]
+        loggedAt:
+          type: string
+      required:
+        - id
+        - busNumber
+        - liters
+        - cost
+        - fuelType
+        - loggedAt
+
+    FuelLogInput:
+      type: object
+      properties:
+        liters:
+          type: number
+        cost:
+          type: number
+        odometer:
+          type: ["integer", "null"]
+        fuelType:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+      required:
+        - liters
+        - cost
+
+    InspectionItem:
+      type: object
+      properties:
+        label:
+          type: string
+        ok:
+          type: boolean
+      required:
+        - label
+        - ok
+
+    Inspection:
+      type: object
+      properties:
+        id:
+          type: integer
+        crewId:
+          type: ["integer", "null"]
+        busNumber:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/InspectionItem"
+        passed:
+          type: boolean
+        notes:
+          type: ["string", "null"]
+        inspectedAt:
+          type: string
+      required:
+        - id
+        - busNumber
+        - items
+        - passed
+        - inspectedAt
+
+    InspectionInput:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/InspectionItem"
+        notes:
+          type: ["string", "null"]
+      required:
+        - items
+
+    EmergencyReport:
+      type: object
+      properties:
+        id:
+          type: integer
+        crewId:
+          type: ["integer", "null"]
+        busNumber:
+          type: string
+        type:
+          type: string
+        description:
+          type: string
+        location:
+          type: ["string", "null"]
+        severity:
+          type: string
+        status:
+          type: string
+        reportedAt:
+          type: string
+      required:
+        - id
+        - busNumber
+        - type
+        - description
+        - severity
+        - status
+        - reportedAt
+
+    EmergencyReportInput:
+      type: object
+      properties:
+        type:
+          type: string
+        description:
+          type: string
+        location:
+          type: ["string", "null"]
+        severity:
+          type: ["string", "null"]
+      required:
+        - type
+        - description
